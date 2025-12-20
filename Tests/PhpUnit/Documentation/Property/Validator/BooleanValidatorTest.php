@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\BooleanValidator;
-use apivalk\ApivalkPHP\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Documentation\Property\Validator\BooleanValidator;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
 
 class BooleanValidatorTest extends TestCase
 {

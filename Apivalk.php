@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP;
+namespace apivalk\apivalk;
 
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Middleware\MiddlewareStack;
-use apivalk\ApivalkPHP\Http\Renderer\RendererInterface;
-use apivalk\ApivalkPHP\Router\AbstractRouter;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Http\Renderer\RendererInterface;
+use apivalk\apivalk\Router\AbstractRouter;
 use Psr\Container\ContainerInterface;
 
 class Apivalk

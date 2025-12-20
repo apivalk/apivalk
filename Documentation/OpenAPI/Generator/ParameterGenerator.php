@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ParameterObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SingleSchemaObject;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SingleSchemaObject;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 class ParameterGenerator
 {

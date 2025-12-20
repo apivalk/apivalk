@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property;
+namespace apivalk\apivalk\Documentation\Property;
 
 class ArrayProperty extends AbstractProperty
 {

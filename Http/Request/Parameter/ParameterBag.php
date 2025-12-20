@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Request\Parameter;
+namespace apivalk\apivalk\Http\Request\Parameter;
 
 class ParameterBag implements \IteratorAggregate, \Countable
 {

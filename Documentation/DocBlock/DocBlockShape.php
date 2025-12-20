@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\DocBlock;
+namespace apivalk\apivalk\Documentation\DocBlock;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 class DocBlockShape
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\OpenAPIGenerator;
-use apivalk\ApivalkPHP\Apivalk;
-use apivalk\ApivalkPHP\Router\AbstractRouter;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheInterface;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheCollection;
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Router\Cache\RouterCacheInterface;
+use apivalk\apivalk\Router\Cache\RouterCacheCollection;
 
 class OpenAPIGeneratorTest extends TestCase
 {

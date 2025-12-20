@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Response;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Response\BadValidationApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\ErrorObject;
+use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Http\Response\ErrorObject;
 
 class BadValidationApivalkResponseTest extends TestCase
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP;
+namespace apivalk\apivalk;
 
-use apivalk\ApivalkPHP\Http\Renderer\JsonRenderer;
-use apivalk\ApivalkPHP\Http\Response\InternalServerErrorApivalkResponse;
+use apivalk\apivalk\Http\Renderer\JsonRenderer;
+use apivalk\apivalk\Http\Response\InternalServerErrorApivalkResponse;
 
 class ApivalkExceptionHandler
 {

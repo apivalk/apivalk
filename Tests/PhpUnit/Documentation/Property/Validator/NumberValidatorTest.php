@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\NumberValidator;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\Validator\NumberValidator;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
 
 class NumberValidatorTest extends TestCase
 {

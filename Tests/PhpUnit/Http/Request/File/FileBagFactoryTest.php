@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Request\File;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\File;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Request\File\FileBagFactory;
+use apivalk\apivalk\Http\Request\File\FileBagFactory;
 
 class FileBagFactoryTest extends TestCase
 {

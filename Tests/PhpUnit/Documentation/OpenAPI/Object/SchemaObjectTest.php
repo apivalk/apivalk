@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SchemaObject;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class SchemaObjectTest extends TestCase
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Controller;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Controller;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Controller\ApivalkControllerFactory;
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Controller\ApivalkControllerFactory;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use Psr\Container\ContainerInterface;
 
 class ApivalkControllerFactoryTest extends TestCase
@@ -30,10 +30,10 @@ class ApivalkControllerFactoryTest extends TestCase
         
         // Use an anonymous class that exists
         $controllerClass = get_class(new class extends AbstractApivalkController {
-            public static function getRoute(): \apivalk\ApivalkPHP\Router\Route { return new \apivalk\ApivalkPHP\Router\Route('/', new \apivalk\ApivalkPHP\Http\Method\GetMethod()); }
+            public static function getRoute(): \apivalk\apivalk\Router\Route { return new \apivalk\apivalk\Router\Route('/', new \apivalk\apivalk\Http\Method\GetMethod()); }
             public static function getRequestClass(): string { return ''; }
             public static function getResponseClasses(): array { return []; }
-            public function __invoke(\apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface $request): \apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse { return $this->createMock(\apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse::class); }
+            public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return $this->createMock(\apivalk\apivalk\Http\Response\AbstractApivalkResponse::class); }
         });
 
         $result = $factory->create($controllerClass);

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Response;
+namespace apivalk\apivalk\Http\Response;
 
-use apivalk\ApivalkPHP\Http\Request\Paginator;
+use apivalk\apivalk\Http\Request\Paginator;
 
 class ResponsePagination
 {

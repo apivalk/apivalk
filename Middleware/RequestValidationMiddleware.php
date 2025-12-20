@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Middleware;
+namespace apivalk\apivalk\Middleware;
 
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ValidatorResult;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\BadValidationApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\ErrorObject;
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Http\Response\ErrorObject;
 
 class RequestValidationMiddleware implements MiddlewareInterface
 {

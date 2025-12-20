@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit;
+namespace apivalk\apivalk\Tests\PhpUnit;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkResponseDocumentation;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractResponseTest extends TestCase

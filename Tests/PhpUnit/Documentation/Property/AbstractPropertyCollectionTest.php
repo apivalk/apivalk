@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractPropertyCollection;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class AbstractPropertyCollectionTest extends TestCase
 {

@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Generator\PathsGenerator;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
+use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Http\Method\GetMethod;
 
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 
 class PathsTestController extends AbstractApivalkController {
     public static function getRoute(): Route { return new Route('/test', new GetMethod()); }
     public static function getRequestClass(): string { return PathsTestRequest::class; }
     public static function getResponseClasses(): array { return []; }
-    public function __invoke(ApivalkRequestInterface $request): \apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse { 
-        return new class extends \apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse {
-            public static function getDocumentation(): \apivalk\ApivalkPHP\Documentation\ApivalkResponseDocumentation { return new \apivalk\ApivalkPHP\Documentation\ApivalkResponseDocumentation(); }
+    public function __invoke(ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
+        return new class extends \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
+            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation { return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation(); }
             public static function getStatusCode(): int { return 200; }
             public function toArray(): array { return []; }
         };
@@ -29,14 +29,14 @@ class PathsTestController extends AbstractApivalkController {
 class PathsTestRequest implements ApivalkRequestInterface {
     public static function getDocumentation(): ApivalkRequestDocumentation { return new ApivalkRequestDocumentation(); }
     public function populate(Route $route): void {}
-    public function getMethod(): \apivalk\ApivalkPHP\Http\Method\MethodInterface { return new GetMethod(); }
-    public function header(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBagFactory::createHeaderBag(); }
-    public function query(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBagFactory::createQueryBag(self::getDocumentation()); }
-    public function body(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBagFactory::createBodyBag(self::getDocumentation()); }
-    public function path(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBagFactory::createPathBag(new Route('', new GetMethod()), self::getDocumentation()); }
-    public function file(): \apivalk\ApivalkPHP\Http\Request\File\FileBag { return \apivalk\ApivalkPHP\Http\Request\File\FileBagFactory::create(); }
-    public function getAuthIdentity(): ?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity { return null; }
-    public function setAuthIdentity(?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity $authIdentity): void {}
+    public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface { return new GetMethod(); }
+    public function header(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createHeaderBag(); }
+    public function query(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createQueryBag(self::getDocumentation()); }
+    public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createBodyBag(self::getDocumentation()); }
+    public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createPathBag(new Route('', new GetMethod()), self::getDocumentation()); }
+    public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return \apivalk\apivalk\Http\Request\File\FileBagFactory::create(); }
+    public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
+    public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
 }
 
 class PathsGeneratorTest extends TestCase

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property\Validator;
+namespace apivalk\apivalk\Documentation\Property\Validator;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
-use apivalk\ApivalkPHP\Documentation\Property\ArrayProperty;
-use apivalk\ApivalkPHP\Documentation\Property\BooleanProperty;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractObjectProperty;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 final class ValidatorFactory
 {

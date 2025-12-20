@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router\Cache;
+namespace apivalk\apivalk\Tests\PhpUnit\Router\Cache;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Router\Cache\RouterFilesystemCache;
-use apivalk\ApivalkPHP\Util\ClassLocator;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheCollection;
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Router\Cache\RouterFilesystemCache;
+use apivalk\apivalk\Util\ClassLocator;
+use apivalk\apivalk\Router\Cache\RouterCacheCollection;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Router\Route;
 
 class RouterFilesystemCacheTest extends TestCase
 {
@@ -70,16 +70,18 @@ class RouterFilesystemCacheTest extends TestCase
         $apiDir = $this->tempDir . DIRECTORY_SEPARATOR . 'Api';
         mkdir($apiDir);
         $controllerFile = $apiDir . DIRECTORY_SEPARATOR . 'CacheTestController.php';
-        file_put_contents($controllerFile, '<?php namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router\Cache\Api; class CacheTestController extends \apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController { 
-            public static function getRoute(): \apivalk\ApivalkPHP\Router\Route { return new \apivalk\ApivalkPHP\Router\Route("/dynamic", new \apivalk\ApivalkPHP\Http\Method\GetMethod()); }
+        file_put_contents($controllerFile,
+                          '<?php namespace apivalk\apivalk\Tests\PhpUnit\Router\Cache\Api; class CacheTestController extends \apivalk\apivalk\Http\Controller\AbstractApivalkController { 
+            public static function getRoute(): \apivalk\apivalk\Router\Route { return new \apivalk\apivalk\Router\Route("/dynamic", new \apivalk\apivalk\Http\Method\GetMethod()); }
             public static function getRequestClass(): string { return ""; }
             public static function getResponseClasses(): array { return []; }
-            public function __invoke(\apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface $request): \apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse { return $this->createMock(\apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse::class); }
-        }');
+            public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return $this->createMock(\apivalk\apivalk\Http\Response\AbstractApivalkResponse::class); }
+        }'
+        );
         
         require_once $controllerFile;
 
-        $locator = new ClassLocator($apiDir, 'apivalk\\ApivalkPHP\\Tests\\PhpUnit\\Router\\Cache\\Api');
+        $locator = new ClassLocator($apiDir, 'apivalk\\apivalk\\Tests\\PhpUnit\\Router\\Cache\\Api');
 
         $cache = new RouterFilesystemCache($this->tempDir, $locator);
         $collection = $cache->getRouterCacheCollection();

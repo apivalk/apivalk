@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Method;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Method;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Method\MethodFactory;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Http\Method\PostMethod;
-use apivalk\ApivalkPHP\Http\Method\DeleteMethod;
-use apivalk\ApivalkPHP\Http\Method\PatchMethod;
-use apivalk\ApivalkPHP\Http\Method\PutMethod;
+use apivalk\apivalk\Http\Method\MethodFactory;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Method\PostMethod;
+use apivalk\apivalk\Http\Method\DeleteMethod;
+use apivalk\apivalk\Http\Method\PatchMethod;
+use apivalk\apivalk\Http\Method\PutMethod;
 
 class MethodFactoryTest extends TestCase
 {

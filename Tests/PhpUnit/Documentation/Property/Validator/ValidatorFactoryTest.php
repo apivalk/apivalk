@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ValidatorFactory;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\StringValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\NumberValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\BooleanValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ArrayValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ObjectValidator;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
-use apivalk\ApivalkPHP\Documentation\Property\BooleanProperty;
-use apivalk\ApivalkPHP\Documentation\Property\ArrayProperty;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorFactory;
+use apivalk\apivalk\Documentation\Property\Validator\StringValidator;
+use apivalk\apivalk\Documentation\Property\Validator\NumberValidator;
+use apivalk\apivalk\Documentation\Property\Validator\BooleanValidator;
+use apivalk\apivalk\Documentation\Property\Validator\ArrayValidator;
+use apivalk\apivalk\Documentation\Property\Validator\ObjectValidator;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
 
 class ValidatorFactoryTest extends TestCase
 {

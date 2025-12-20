@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Response;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Response;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Response\ErrorApivalkObjectPropertyCollection;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Response\ErrorApivalkObjectPropertyCollection;
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
 
 class ErrorApivalkObjectPropertyCollectionTest extends TestCase
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Router\Cache;
+namespace apivalk\apivalk\Router\Cache;
 
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Router\Route;
 
 class RouterCacheCollection
 {

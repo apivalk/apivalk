@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Util;
+namespace apivalk\apivalk\Tests\PhpUnit\Util;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Util\ClassLocator;
+use apivalk\apivalk\Util\ClassLocator;
 
 class ClassLocatorTest extends TestCase
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\OperationObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\TagObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ParameterObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\RequestBodyObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ResponseObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecurityRequirementObject;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Http\Method\PostMethod;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ResponseObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Method\PostMethod;
 
 class OperationObjectTest extends TestCase
 {

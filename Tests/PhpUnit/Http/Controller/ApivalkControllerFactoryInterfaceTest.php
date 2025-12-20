@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Controller;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Controller;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Controller\ApivalkControllerFactoryInterface;
+use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
 
 class ApivalkControllerFactoryInterfaceTest extends TestCase
 {

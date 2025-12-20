@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Request;
+namespace apivalk\apivalk\Http\Request;
 
 class Paginator
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Request;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Request\AbstractApivalkRequest;
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Http\Method\MethodInterface;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\AbstractAuthIdentity;
 
 class AbstractApivalkRequestTest extends TestCase
 {
@@ -45,10 +45,10 @@ class AbstractApivalkRequestTest extends TestCase
         $request->populate($route);
 
         $this->assertSame($method, $request->getMethod());
-        $this->assertInstanceOf(\apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag::class, $request->header());
-        $this->assertInstanceOf(\apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag::class, $request->query());
-        $this->assertInstanceOf(\apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag::class, $request->body());
-        $this->assertInstanceOf(\apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag::class, $request->path());
-        $this->assertInstanceOf(\apivalk\ApivalkPHP\Http\Request\File\FileBag::class, $request->file());
+        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->header());
+        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->query());
+        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->body());
+        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->path());
+        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\File\FileBag::class, $request->file());
     }
 }

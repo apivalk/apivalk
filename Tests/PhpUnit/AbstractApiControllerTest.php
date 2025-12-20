@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit;
+namespace apivalk\apivalk\Tests\PhpUnit;
 
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\AbstractAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractApiControllerTest extends TestCase

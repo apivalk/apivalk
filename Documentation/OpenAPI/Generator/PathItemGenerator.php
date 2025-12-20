@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathItemObject;
-use apivalk\ApivalkPHP\Http\Method\DeleteMethod;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Http\Method\PatchMethod;
-use apivalk\ApivalkPHP\Http\Method\PostMethod;
-use apivalk\ApivalkPHP\Http\Method\PutMethod;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
+use apivalk\apivalk\Http\Method\DeleteMethod;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Method\PatchMethod;
+use apivalk\apivalk\Http\Method\PostMethod;
+use apivalk\apivalk\Http\Method\PutMethod;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 
 class PathItemGenerator
 {

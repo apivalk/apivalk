@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router;
+namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Router\Router;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheInterface;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheCollection;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheEntry;
-use apivalk\ApivalkPHP\Http\Controller\ApivalkControllerFactoryInterface;
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Middleware\MiddlewareStack;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\NotFoundApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\MethodNotAllowedApivalkResponse;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Router\Router;
+use apivalk\apivalk\Router\Cache\RouterCacheInterface;
+use apivalk\apivalk\Router\Cache\RouterCacheCollection;
+use apivalk\apivalk\Router\Cache\RouterCacheEntry;
+use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 
 class RouterTest extends TestCase
 {
@@ -71,18 +71,18 @@ class RouterTest extends TestCase
         $route = new Route('/test', new GetMethod());
         
         $request = new class implements ApivalkRequestInterface {
-            public static function getDocumentation(): \apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation {
-                return new \apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation();
+            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkRequestDocumentation {
+                return new \apivalk\apivalk\Documentation\ApivalkRequestDocumentation();
             }
             public function populate(Route $route): void {}
-            public function getMethod(): \apivalk\ApivalkPHP\Http\Method\MethodInterface { return new GetMethod(); }
-            public function header(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return new \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag(); }
-            public function query(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return new \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag(); }
-            public function body(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return new \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag(); }
-            public function path(): \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag { return new \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag(); }
-            public function file(): \apivalk\ApivalkPHP\Http\Request\File\FileBag { return new \apivalk\ApivalkPHP\Http\Request\File\FileBag(); }
-            public function getAuthIdentity(): ?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity { return null; }
-            public function setAuthIdentity(?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity $authIdentity): void {}
+            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface { return new GetMethod(); }
+            public function header(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
+            public function query(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
+            public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
+            public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
+            public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
+            public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
+            public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
         };
         $requestClass = get_class($request);
 

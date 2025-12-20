@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Method;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Method;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Method\DeleteMethod;
+use apivalk\apivalk\Http\Method\DeleteMethod;
 
 class DeleteMethodTest extends TestCase
 {

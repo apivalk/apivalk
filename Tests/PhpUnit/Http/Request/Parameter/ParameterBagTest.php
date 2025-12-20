@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Request\Parameter;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Parameter;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
-use apivalk\ApivalkPHP\Http\Request\Parameter\Parameter;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 class ParameterBagTest extends TestCase
 {

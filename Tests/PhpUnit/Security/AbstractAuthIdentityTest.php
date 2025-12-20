@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Security;
+namespace apivalk\apivalk\Tests\PhpUnit\Security;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AbstractAuthIdentity;
 
 class AbstractAuthIdentityTest extends TestCase
 {

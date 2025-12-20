@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecuritySchemeObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\OAuthFlowsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowsObject;
 
 class SecuritySchemeObjectTest extends TestCase
 {

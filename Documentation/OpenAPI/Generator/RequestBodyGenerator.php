@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\RequestBodyObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SchemaObject;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
+use apivalk\apivalk\Router\Route;
 
 class RequestBodyGenerator
 {

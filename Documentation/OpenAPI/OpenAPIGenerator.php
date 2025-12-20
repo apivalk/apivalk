@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI;
+namespace apivalk\apivalk\Documentation\OpenAPI;
 
-use apivalk\ApivalkPHP\Apivalk;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Generator\PathsGenerator;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ComponentsObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\InfoObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecurityRequirementObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecuritySchemeObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ServerObject;
+use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 
 class OpenAPIGenerator
 {

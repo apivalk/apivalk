@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
-use apivalk\ApivalkPHP\Http\Method\DeleteMethod;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Http\Method\MethodInterface;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Method\DeleteMethod;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 /**
  * Class OperationObject
  *
  * @see     https://swagger.io/specification/#operation-object
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class OperationObject implements ObjectInterface
 {

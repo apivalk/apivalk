@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router;
+namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Http\Method\GetMethod;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\TagObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
 
 class RouteTest extends TestCase
 {
