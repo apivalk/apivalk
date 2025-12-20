@@ -27,7 +27,7 @@ structure, automation, and clarity to your backend.
 
 ### 🚀 Fast Routing Engine
 
-Ultra-light, minimal and optimized routing layer with support for PSR-7/15 conventions and route caching.
+Ultra-light, minimal, and optimized routing layer inspired by PSR-7/15 conventions, with support for route caching.
 
 ### 🔒 Type-Safe Architecture
 
@@ -35,7 +35,7 @@ Strong typing for all requests and responses, strict DTOs, and predictable inter
 
 ### 🔄 Middleware System
 
-A modern PSR-15 compatible middleware pipeline for Auth, Rate Limiting, CORS, and more.
+A modern middleware pipeline for Auth, Rate Limiting, CORS, and more.
 
 ### 📝 API Documentation
 
@@ -59,7 +59,7 @@ While Apivalk is fully framework-agnostic, we offer dedicated integration bridge
 ### Installation
 
 ```bash
-composer require apivalk/apivalk-php
+composer require apivalk/apivalk
 ```
 
 ### Typical Structure
@@ -73,20 +73,25 @@ app/Http/Api/Response/Pet/CreatePetResponse.php
 ### Bootstrapping
 
 ```php
+use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Http\Renderer\RendererInterface;
+use Psr\Container\ContainerInterface;
+
 $apivalkConfiguration = new ApivalkConfiguration(
     $router, // AbstractRouter instance
-    $renderer, // Optional: apivalk\apivalk\Http\Renderer\RendererInterface
+    $renderer, // Optional: RendererInterface
     $exceptionHandler, // Optional: callable
-    $container // Optional: Psr\Container\ContainerInterface
+    $container // Optional: ContainerInterface
 );
 
 $apivalk = new Apivalk($apivalkConfiguration);
-$response = $apivalk->run($request);
+$response = $apivalk->run();
 
-// $response is a PSR ResponseInterface instance.
-// do whatever you want with it
-// if you want to fully use Apivalk you can use the renderer:
-// $apivalk->getRenderer()->render($response);
+// $response is an AbstractApivalkResponse instance.
+// If you want to output the response using the configured renderer:
+$apivalk->getRenderer()->render($response);
 ```
 
 ---
