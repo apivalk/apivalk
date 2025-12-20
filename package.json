@@ -1,0 +1,24 @@
+{
+  "name": "apivalk",
+  "version": "1.0.0",
+  "description": "A Lightweight, Framework-Agnostic REST API Ecosystem for PHP. Built for speed, precision, and type-safe development.",
+  "keywords": [
+    "openapi",
+    "rest",
+    "api",
+    "php",
+    "type-safe",
+    "psr-7",
+    "psr-15"
+  ],
+  "homepage": "https://apivalk.com",
+  "license": "MIT",
+  "author": "Dominic Poppe <dominic@dopo.dev>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apivalk/apivalk.git"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  }
+}
