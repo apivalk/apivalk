@@ -1,5 +1,11 @@
 name: Test
-on: [pull_request]
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - release
 
 jobs:
   test:
@@ -8,8 +14,8 @@ jobs:
 
     strategy:
       matrix:
-        php: ['7.2']
-        phpunit: ['7.5']
+        php: [ '7.2' ]
+        phpunit: [ '7.5' ]
 
     env:
       PHP_EXTENSIONS: 'json mbstring'
@@ -23,6 +29,8 @@ jobs:
         with:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-
 
       - name: Installing dependencies
         uses: php-actions/composer@v6
