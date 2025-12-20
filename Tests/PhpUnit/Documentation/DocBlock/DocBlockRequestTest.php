@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\DocBlock;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\DocBlock\DocBlockRequest;
-use apivalk\ApivalkPHP\Documentation\DocBlock\DocBlockShape;
+use apivalk\apivalk\Documentation\DocBlock\DocBlockRequest;
+use apivalk\apivalk\Documentation\DocBlock\DocBlockShape;
 
 class DocBlockRequestTest extends TestCase
 {
@@ -33,9 +33,9 @@ class DocBlockRequestTest extends TestCase
 
         $docBlock = $request->getRequestDocBlockOnly('App\\Api\\Shape');
 
-        $this->assertStringContainsString('@method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserQueryShape query()', $docBlock);
-        $this->assertStringContainsString('@method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserPathShape path()', $docBlock);
-        $this->assertStringContainsString('@method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserBodyShape body()', $docBlock);
+        $this->assertStringContainsString('@method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserQueryShape query()', $docBlock);
+        $this->assertStringContainsString('@method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserPathShape path()', $docBlock);
+        $this->assertStringContainsString('@method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserBodyShape body()', $docBlock);
     }
 
     public function testGetShapeNamespace(): void

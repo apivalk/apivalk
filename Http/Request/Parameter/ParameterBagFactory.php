@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Request\Parameter;
+namespace apivalk\apivalk\Http\Request\Parameter;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
-use apivalk\ApivalkPHP\Documentation\Property\ArrayProperty;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Router\Route;
 
 final class ParameterBagFactory
 {

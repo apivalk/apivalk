@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 /**
  * Class SingleSchemaObject used for operation parameters
  *
  * @see     https://swagger.io/specification/#schema-object - Based on Simple Model
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class SingleSchemaObject implements ObjectInterface
 {

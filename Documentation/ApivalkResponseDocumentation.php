@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation;
+namespace apivalk\apivalk\Documentation;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 class ApivalkResponseDocumentation
 {

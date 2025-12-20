@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property;
+namespace apivalk\apivalk\Documentation\Property;
 
 abstract class AbstractPropertyCollection implements \IteratorAggregate
 {

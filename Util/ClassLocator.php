@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Util;
+namespace apivalk\apivalk\Util;
 
 final class ClassLocator
 {

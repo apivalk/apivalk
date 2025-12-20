@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Security;
+namespace apivalk\apivalk\Security;
 
 abstract class AbstractAuthIdentity
 {

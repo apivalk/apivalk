@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 interface ObjectInterface
 {

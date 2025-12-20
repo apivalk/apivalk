@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Controller;
+namespace apivalk\apivalk\Http\Controller;
 
 use Psr\Container\ContainerInterface;
 

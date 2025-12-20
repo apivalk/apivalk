@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\MediaTypeObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\RequestBodyObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\MediaTypeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
 
 class RequestBodyObjectTest extends TestCase
 {

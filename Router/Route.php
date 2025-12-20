@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Router;
+namespace apivalk\apivalk\Router;
 
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SecurityRequirementObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\TagObject;
-use apivalk\ApivalkPHP\Http\Method\MethodFactory;
-use apivalk\ApivalkPHP\Http\Method\MethodInterface;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Http\Method\MethodFactory;
+use apivalk\apivalk\Http\Method\MethodInterface;
 
 class Route implements \JsonSerializable
 {

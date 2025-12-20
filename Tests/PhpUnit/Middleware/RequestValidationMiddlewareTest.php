@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Middleware;
+namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Middleware\RequestValidationMiddleware;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\BadValidationApivalkResponse;
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
-use apivalk\ApivalkPHP\Http\Request\Parameter\Parameter;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\AbstractValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Middleware\RequestValidationMiddleware;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
+use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 
 class RequestValidationMiddlewareTest extends TestCase
 {
@@ -36,8 +36,8 @@ class RequestValidationMiddlewareTest extends TestCase
             private static $d;
             public function __construct($d) { self::$d = $d; }
             public static function getDocumentation(): ApivalkRequestDocumentation { return self::$d; }
-            public function populate(\apivalk\ApivalkPHP\Router\Route $route): void {}
-            public function getMethod(): \apivalk\ApivalkPHP\Http\Method\MethodInterface { return $this->createMock(\apivalk\ApivalkPHP\Http\Method\MethodInterface::class); }
+            public function populate(\apivalk\apivalk\Router\Route $route): void {}
+            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface { return $this->createMock(\apivalk\apivalk\Http\Method\MethodInterface::class); }
             public function header(): ParameterBag { return new ParameterBag(); }
             public function query(): ParameterBag { 
                 $bag = new ParameterBag();
@@ -46,9 +46,9 @@ class RequestValidationMiddlewareTest extends TestCase
             }
             public function body(): ParameterBag { return new ParameterBag(); }
             public function path(): ParameterBag { return new ParameterBag(); }
-            public function file(): \apivalk\ApivalkPHP\Http\Request\File\FileBag { return new \apivalk\ApivalkPHP\Http\Request\File\FileBag(); }
-            public function getAuthIdentity(): ?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity { return null; }
-            public function setAuthIdentity(?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity $authIdentity): void {}
+            public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
+            public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
+            public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
         };
 
         $next = function ($req) {
@@ -81,8 +81,8 @@ class RequestValidationMiddlewareTest extends TestCase
             private static $d;
             public function __construct($d) { self::$d = $d; }
             public static function getDocumentation(): ApivalkRequestDocumentation { return self::$d; }
-            public function populate(\apivalk\ApivalkPHP\Router\Route $route): void {}
-            public function getMethod(): \apivalk\ApivalkPHP\Http\Method\MethodInterface { return $this->createMock(\apivalk\ApivalkPHP\Http\Method\MethodInterface::class); }
+            public function populate(\apivalk\apivalk\Router\Route $route): void {}
+            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface { return $this->createMock(\apivalk\apivalk\Http\Method\MethodInterface::class); }
             public function header(): ParameterBag { return new ParameterBag(); }
             public function query(): ParameterBag { return new ParameterBag(); }
             public function body(): ParameterBag { 
@@ -91,9 +91,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return $bag;
             }
             public function path(): ParameterBag { return new ParameterBag(); }
-            public function file(): \apivalk\ApivalkPHP\Http\Request\File\FileBag { return new \apivalk\ApivalkPHP\Http\Request\File\FileBag(); }
-            public function getAuthIdentity(): ?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity { return null; }
-            public function setAuthIdentity(?\apivalk\ApivalkPHP\Security\AbstractAuthIdentity $authIdentity): void {}
+            public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
+            public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
+            public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
         };
 
         $next = function ($req) {

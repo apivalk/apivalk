@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Response;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Response\MethodNotAllowedApivalkResponse;
+use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 
 class MethodNotAllowedApivalkResponseTest extends TestCase
 {

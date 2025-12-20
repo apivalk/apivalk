@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Middleware;
+namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Middleware\SanitizeMiddleware;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
-use apivalk\ApivalkPHP\Http\Request\Parameter\Parameter;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Middleware\SanitizeMiddleware;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 class SanitizeMiddlewareTest extends TestCase
 {

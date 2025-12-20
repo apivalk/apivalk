@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Renderer;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Renderer;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Renderer\RendererInterface;
+use apivalk\apivalk\Http\Renderer\RendererInterface;
 
 class RendererInterfaceTest extends TestCase
 {

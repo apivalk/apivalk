@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkResponseDocumentation;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ResponseObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SchemaObject;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ResponseObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
 
 class ResponseGenerator
 {

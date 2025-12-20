@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\OperationObject;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\BadValidationApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\MethodNotAllowedApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\NotFoundApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\TooManyRequestsApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\UnauthorizedApivalkResponse;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Http\Response\TooManyRequestsApivalkResponse;
+use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
+use apivalk\apivalk\Router\Route;
 
 class OperationGenerator
 {

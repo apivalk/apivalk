@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\DocBlock;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\DocBlock\DocBlockShape;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\DocBlock\DocBlockShape;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
 
 class DocBlockShapeTest extends TestCase
 {

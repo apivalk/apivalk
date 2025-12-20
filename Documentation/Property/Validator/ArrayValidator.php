@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property\Validator;
+namespace apivalk\apivalk\Documentation\Property\Validator;
 
 class ArrayValidator extends AbstractValidator
 {

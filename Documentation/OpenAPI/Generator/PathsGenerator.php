@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
 
 class PathsGenerator
 {

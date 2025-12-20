@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit;
+namespace apivalk\apivalk\Tests\PhpUnit;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 

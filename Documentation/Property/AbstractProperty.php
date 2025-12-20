@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property;
+namespace apivalk\apivalk\Documentation\Property;
 
-use apivalk\ApivalkPHP\Documentation\Property\Validator\AbstractValidator;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ValidatorFactory;
+use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorFactory;
 
 abstract class AbstractProperty
 {
@@ -26,7 +26,7 @@ abstract class AbstractProperty
     /**
      * Is the PHP type definition of the value. It is required for the documentation, validation, and type safe magical getter in request classes.
      *
-     * @see \apivalk\ApivalkPHP\Http\Request\AbstractApivalkRequest::populate
+     * @see \apivalk\apivalk\Http\Request\AbstractApivalkRequest::populate
      */
     abstract public function getPhpType(): string;
 

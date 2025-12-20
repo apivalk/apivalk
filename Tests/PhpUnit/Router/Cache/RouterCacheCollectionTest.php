@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router\Cache;
+namespace apivalk\apivalk\Tests\PhpUnit\Router\Cache;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheCollection;
-use apivalk\ApivalkPHP\Router\Route;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheEntry;
+use apivalk\apivalk\Router\Cache\RouterCacheCollection;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Cache\RouterCacheEntry;
 
 class RouterCacheCollectionTest extends TestCase
 {

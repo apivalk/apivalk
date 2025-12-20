@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\MediaTypeObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\SchemaObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\MediaTypeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
 
 class MediaTypeGenerator
 {

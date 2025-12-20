@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 /**
  * Class SecuritySchemeObject
@@ -10,7 +10,7 @@ namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
  * @see     https://swagger.io/specification/#security-scheme-object
  * @see     https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.4.md#security-scheme-object
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class SecuritySchemeObject implements ObjectInterface
 {

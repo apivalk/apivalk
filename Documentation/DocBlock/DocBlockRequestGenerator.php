@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\DocBlock;
+namespace apivalk\apivalk\Documentation\DocBlock;
 
-use apivalk\ApivalkPHP\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 
 final class DocBlockRequestGenerator
 {

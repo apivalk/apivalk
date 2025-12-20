@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 /**
  * Class SchemaObject
  *
  * @see     https://swagger.io/specification/#schema-object - Based on Simple Model
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class SchemaObject implements ObjectInterface
 {

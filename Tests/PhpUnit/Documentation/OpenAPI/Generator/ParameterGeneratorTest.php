@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Generator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Generator\ParameterGenerator;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\OpenAPI\Generator\ParameterGenerator;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class ParameterGeneratorTest extends TestCase
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkResponseDocumentation;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use PHPUnit\Framework\TestCase;
 
 class ApivalkResponseDocumentationTest extends TestCase

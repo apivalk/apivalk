@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Request;
+namespace apivalk\apivalk\Http\Request;
 
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Http\Method\MethodInterface;
-use apivalk\ApivalkPHP\Http\Request\File\FileBag;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
-use apivalk\ApivalkPHP\Security\AbstractAuthIdentity;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Router\Route;
 
 interface ApivalkRequestInterface
 {

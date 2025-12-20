@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property\Validator;
+namespace apivalk\apivalk\Documentation\Property\Validator;
 
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
 
 class NumberValidator extends AbstractValidator
 {

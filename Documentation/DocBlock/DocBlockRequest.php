@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\DocBlock;
+namespace apivalk\apivalk\Documentation\DocBlock;
 
 class DocBlockRequest
 {
@@ -42,9 +42,9 @@ class DocBlockRequest
     {
         $string = <<<'PHP'
 /**
- * @method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\{{QUERY_SHAPE_CLASS}} query()
- * @method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\{{PATH_SHAPE_CLASS}} path()
- * @method \apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag|\{{BODY_SHAPE_CLASS}} body()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{QUERY_SHAPE_CLASS}} query()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{PATH_SHAPE_CLASS}} path()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{BODY_SHAPE_CLASS}} body()
  */
 PHP;
 

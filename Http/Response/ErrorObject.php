@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Response;
+namespace apivalk\apivalk\Http\Response;
 
 class ErrorObject
 {

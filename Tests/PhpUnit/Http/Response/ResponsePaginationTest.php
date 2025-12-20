@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Response;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Response\ResponsePagination;
-use apivalk\ApivalkPHP\Http\Request\Paginator;
+use apivalk\apivalk\Http\Response\ResponsePagination;
+use apivalk\apivalk\Http\Request\Paginator;
 
 class ResponsePaginationTest extends TestCase
 {

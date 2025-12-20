@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI;
+namespace apivalk\apivalk\Documentation\OpenAPI;
 
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ComponentsObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\InfoObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathItemObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathsObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ServerObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 
 /**
  * Class OpenAPI
  *
  * @see     https://swagger.io/specification/#openapi-object
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI
+ * @package apivalk\apivalk\Documentation\OpenAPI
  */
 class OpenAPI
 {

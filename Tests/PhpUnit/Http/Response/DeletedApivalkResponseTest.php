@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Response;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Response\DeletedApivalkResponse;
+use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
 
 class DeletedApivalkResponseTest extends TestCase
 {

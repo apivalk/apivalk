@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Renderer;
+namespace apivalk\apivalk\Http\Renderer;
 
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 final class JsonRenderer implements RendererInterface
 {

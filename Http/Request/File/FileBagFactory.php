@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Http\Request\File;
+namespace apivalk\apivalk\Http\Request\File;
 
 final class FileBagFactory
 {

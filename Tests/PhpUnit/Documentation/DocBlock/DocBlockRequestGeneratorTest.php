@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\DocBlock;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\DocBlock\DocBlockRequestGenerator;
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Http\Request\AbstractApivalkRequest;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\DocBlock\DocBlockRequestGenerator;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
 
 class TestRequest extends AbstractApivalkRequest {
     public static function getDocumentation(): ApivalkRequestDocumentation {

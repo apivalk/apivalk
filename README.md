@@ -75,7 +75,7 @@ app/Http/Api/Response/Pet/CreatePetResponse.php
 ```php
 $apivalkConfiguration = new ApivalkConfiguration(
     $router, // AbstractRouter instance
-    $renderer, // Optional: apivalk\ApivalkPHP\Http\Renderer\RendererInterface
+    $renderer, // Optional: apivalk\apivalk\Http\Renderer\RendererInterface
     $exceptionHandler, // Optional: callable
     $container // Optional: Psr\Container\ContainerInterface
 );

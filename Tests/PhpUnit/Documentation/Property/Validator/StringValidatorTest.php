@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\StringValidator;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\Validator\StringValidator;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class StringValidatorTest extends TestCase
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\OpenAPI;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\InfoObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathsObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\PathItemObject;
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPI;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
 
 class OpenAPITest extends TestCase
 {

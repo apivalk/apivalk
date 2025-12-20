@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Router;
+namespace apivalk\apivalk\Router;
 
-use apivalk\ApivalkPHP\Http\Controller\AbstractApivalkController;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\MethodNotAllowedApivalkResponse;
-use apivalk\ApivalkPHP\Http\Response\NotFoundApivalkResponse;
-use apivalk\ApivalkPHP\Middleware\MiddlewareStack;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheEntry;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Router\Cache\RouterCacheEntry;
 
 class Router extends AbstractRouter
 {

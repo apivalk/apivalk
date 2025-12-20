@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 /**
  * Class ParameterObject
  *
  * @see     https://swagger.io/specification/#parameter-object
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class ParameterObject implements ObjectInterface
 {

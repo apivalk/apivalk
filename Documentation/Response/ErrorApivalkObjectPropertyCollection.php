@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Response;
+namespace apivalk\apivalk\Documentation\Response;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractPropertyCollection;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class ErrorApivalkObjectPropertyCollection extends AbstractPropertyCollection
 {

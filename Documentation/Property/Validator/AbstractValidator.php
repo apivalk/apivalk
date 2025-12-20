@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\Property\Validator;
+namespace apivalk\apivalk\Documentation\Property\Validator;
 
-use apivalk\ApivalkPHP\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 abstract class AbstractValidator
 {

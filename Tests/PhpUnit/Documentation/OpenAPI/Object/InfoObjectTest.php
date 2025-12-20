@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\ContactObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\LicenseObject;
-use apivalk\ApivalkPHP\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ContactObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\LicenseObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 
 class InfoObjectTest extends TestCase
 {

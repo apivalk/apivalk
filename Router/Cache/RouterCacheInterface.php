@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Router\Cache;
+namespace apivalk\apivalk\Router\Cache;
 
 interface RouterCacheInterface
 {

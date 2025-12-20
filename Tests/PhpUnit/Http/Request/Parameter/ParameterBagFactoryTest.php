@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Request\Parameter;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Parameter;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBagFactory;
-use apivalk\ApivalkPHP\Documentation\ApivalkRequestDocumentation;
-use apivalk\ApivalkPHP\Documentation\Property\StringProperty;
-use apivalk\ApivalkPHP\Documentation\Property\NumberProperty;
-use apivalk\ApivalkPHP\Router\Route;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Router\Route;
 
 class ParameterBagFactoryTest extends TestCase
 {
@@ -92,7 +92,7 @@ class ParameterBagFactoryTest extends TestCase
         $prop = new NumberProperty('test', '', NumberProperty::FORMAT_INT32);
         $this->assertEquals(123, ParameterBagFactory::typeCastValueByProperty('123', $prop));
 
-        $prop = new \apivalk\ApivalkPHP\Documentation\Property\BooleanProperty('test', '', false);
+        $prop = new \apivalk\apivalk\Documentation\Property\BooleanProperty('test', '', false);
         $this->assertTrue(ParameterBagFactory::typeCastValueByProperty('1', $prop));
         
         $prop = new StringProperty('test');

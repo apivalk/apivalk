@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 
 class ValidatorResultTest extends TestCase
 {

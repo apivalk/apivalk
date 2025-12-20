@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Router;
+namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Router\AbstractRouter;
-use apivalk\ApivalkPHP\Router\Cache\RouterCacheInterface;
-use apivalk\ApivalkPHP\Http\Controller\ApivalkControllerFactoryInterface;
-use apivalk\ApivalkPHP\Middleware\MiddlewareStack;
-use apivalk\ApivalkPHP\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Router\Cache\RouterCacheInterface;
+use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
+use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 class AbstractRouterTest extends TestCase
 {

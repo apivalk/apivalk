@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Documentation\OpenAPI\Object;
+namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 /**
  * Class MediaTypeObject
  *
  * @see     https://swagger.io/specification/#media-type-object
  *
- * @package apivalk\ApivalkPHP\Documentation\OpenAPI\Object
+ * @package apivalk\apivalk\Documentation\OpenAPI\Object
  */
 class MediaTypeObject implements ObjectInterface
 {

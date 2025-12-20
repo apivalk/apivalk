@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Http\Request;
+namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Http\Request\Paginator;
-use apivalk\ApivalkPHP\Http\Request\ApivalkRequestInterface;
-use apivalk\ApivalkPHP\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\Paginator;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 
 class PaginatorTest extends TestCase
 {

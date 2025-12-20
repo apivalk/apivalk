@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\ApivalkPHP\Tests\PhpUnit\Documentation\Property\Validator;
+namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\ApivalkPHP\Documentation\Property\Validator\ObjectValidator;
-use apivalk\ApivalkPHP\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Documentation\Property\Validator\ObjectValidator;
+use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
 
 class ObjectValidatorTest extends TestCase
 {
