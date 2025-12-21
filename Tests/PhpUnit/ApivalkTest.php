@@ -12,6 +12,7 @@ use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 class ApivalkTest extends TestCase
 {
@@ -20,13 +21,15 @@ class ApivalkTest extends TestCase
         $router = $this->createMock(AbstractRouter::class);
         $renderer = $this->createMock(RendererInterface::class);
         $container = $this->createMock(ContainerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
         
-        $config = new ApivalkConfiguration($router, $renderer, null, $container);
+        $config = new ApivalkConfiguration($router, $renderer, null, $container, $logger);
         $apivalk = new Apivalk($config);
 
         $this->assertSame($router, $apivalk->getRouter());
         $this->assertSame($renderer, $apivalk->getRenderer());
         $this->assertSame($container, $apivalk->getContainer());
+        $this->assertSame($logger, $apivalk->getLogger());
         $this->assertInstanceOf(MiddlewareStack::class, $apivalk->getMiddlewareStack());
     }
 

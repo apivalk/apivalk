@@ -9,6 +9,7 @@ use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Router\AbstractRouter;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 class Apivalk
 {
@@ -20,6 +21,8 @@ class Apivalk
     private $router;
     /** @var ContainerInterface|null */
     private $container;
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(ApivalkConfiguration $apivalkConfiguration)
     {
@@ -27,6 +30,7 @@ class Apivalk
         $this->renderer = $apivalkConfiguration->getRenderer();
         $this->router = $apivalkConfiguration->getRouter();
         $this->container = $apivalkConfiguration->getContainer();
+        $this->logger = $apivalkConfiguration->getLogger();
 
         if ($apivalkConfiguration->getExceptionHandler() !== null) {
             set_exception_handler($apivalkConfiguration->getExceptionHandler());
@@ -56,5 +60,10 @@ class Apivalk
     public function getContainer(): ?ContainerInterface
     {
         return $this->container;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 }

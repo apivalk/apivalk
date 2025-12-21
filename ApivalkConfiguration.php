@@ -9,6 +9,8 @@ use apivalk\apivalk\Http\Renderer\JsonRenderer;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Router\AbstractRouter;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 //TODO: add optional "grantedscopeinterface" object
 //TODO: add middleware which checks if current route scope/scopes are granted in the interface
@@ -24,18 +26,22 @@ class ApivalkConfiguration
     private $exceptionHandler;
     /** @var ContainerInterface|null */
     private $container;
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(
         AbstractRouter $router,
         ?RendererInterface $renderer = null,
         ?callable $exceptionHandler = null,
-        ?ContainerInterface $container = null
+        ?ContainerInterface $container = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->router = $router;
         $this->middlewareStack = new MiddlewareStack();
         $this->renderer = $renderer ?? new JsonRenderer();
         $this->exceptionHandler = $exceptionHandler;
         $this->container = $container;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function getMiddlewareStack(): MiddlewareStack
@@ -61,5 +67,10 @@ class ApivalkConfiguration
     public function getContainer(): ?ContainerInterface
     {
         return $this->container;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 }
