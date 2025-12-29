@@ -1,0 +1,72 @@
+---
+title: "Overview"
+description: "The HTTP layer in Apivalk provides a robust, type-safe, and structured way to handle the web request/response cycle. It bridges the gap between raw PHP superglobals and your business logic."
+---
+
+## Core Components
+
+The HTTP layer is organized into several key modules, each handling a specific part of the lifecycle:
+
+### 1. Controllers
+
+Controllers are the entry points for your business logic. Each controller typically handles a single route and method.
+
+- **Base Class**: `AbstractApivalkController`
+- **Responsibility**: Receive a typed Request and return a typed Response.
+- **Learn more**: [Controllers Documentation](/http/controller)
+
+### 2. Requests
+
+Requests in Apivalk are more than just wrappers around `$_GET` and `$_POST`. They are strongly typed objects that automatically populate and validate themselves based on your documentation.
+
+- **Base Class**: `AbstractApivalkRequest`
+- **Data Storage**: Data is organized into "Bags" (Query, Body, Path, Header, File).
+- **Learn more**: [Requests Documentation](/http/request)
+
+### 3. Responses
+
+Apivalk encourages the use of semantic response objects rather than raw arrays or strings. This ensures consistency across your API.
+
+- **Base Class**: `AbstractApivalkResponse`
+- **Pre-defined Types**: `BadRequestApivalkResponse`, `NotFoundApivalkResponse`, `UnauthorizedApivalkResponse`, etc.
+- **Learn more**: [Responses Documentation](/http/response)
+
+### 4. HTTP Methods
+
+HTTP verbs are represented as objects implementing `MethodInterface`. This allows the framework to handle routing and method validation cleanly.
+
+- **Implementations**: `GetMethod`, `PostMethod`, `PutMethod`, `DeleteMethod`, `PatchMethod`.
+- **Factory**: `MethodFactory` is used to instantiate these from strings.
+
+### 5. Renderers
+
+Renderers are responsible for taking an `AbstractApivalkResponse` and sending the appropriate headers and body to the client.
+
+- **Interface**: `RendererInterface`
+- **Default**: `JsonRenderer`, which automatically handles JSON encoding and `Content-Type: application/json` headers.
+
+## The HTTP Workflow
+
+1. **Routing**: The `Router` matches the incoming request URI and method to a specific Controller.
+2. **Request Preparation**: The framework instantiates the controller and its associated `AbstractApivalkRequest`.
+3. **Population & Validation**: The Request object is populated from superglobals. `RequestValidationMiddleware` then ensures the data matches the defined schema.
+4. **Execution**: The Controller's `__invoke()` method is called with the populated Request.
+5. **Return**: The Controller returns an `AbstractApivalkResponse`.
+6. **Rendering**: The `Renderer` (e.g., `JsonRenderer`) converts the Response object into the final HTTP output.
+
+## Specialized Helpers
+
+### Pagination
+
+For APIs returning lists of data, Apivalk provides dedicated tools to handle offset-based pagination consistently.
+
+- **Request side**: `Paginator` helper.
+- **Response side**: `ResponsePagination` object.
+- **Learn more**: [Pagination Documentation](/http/pagination)
+
+## Why use this structure?
+
+- **Predictability**: Every endpoint follows the same pattern, making the codebase easier to navigate.
+- **Type Safety**: You never have to wonder if a variable is a string or an integer; the framework guarantees it before your code runs.
+- **Zero Boilerplate**: Automatic population and validation mean you focus only on business logic.
+- **Documentation Synergy**: Because the HTTP layer is driven by the same definitions used for OpenAPI generation, your implementation and documentation are always in sync.

@@ -1,0 +1,57 @@
+---
+title: "Response"
+description: "The `ApivalkResponseDocumentation` class defines the structure of the data returned by an API endpoint. It is used within your controller's `getResponseDocumentation()` method."
+---
+
+## Purpose
+
+It provides a formal definition of the successful response (HTTP 200/201), which is used to generate the OpenAPI specification. It ensures that the consumer of your API knows exactly what fields to expect in the JSON response.
+
+## Key Features
+
+### Property Definition
+
+You add properties to the response using instances of `AbstractProperty` (e.g., `StringProperty`, `NumberProperty`, or reusable response objects).
+
+```php
+$doc->addProperty(new StringProperty('id'));
+$doc->addProperty(new StringProperty('name'));
+```
+
+### Response Description
+
+You can set a human-readable description for the response, which will appear in the Swagger UI.
+
+```php
+$doc->setDescription('Returns the profile of the authenticated user');
+```
+
+### Pagination Support
+
+If your endpoint returns a list of items and uses the Apivalk pagination system, you can enable the pagination envelope.
+
+```php
+$doc->setHasResponsePagination(true);
+```
+
+When this is set to `true`, the `OpenAPIGenerator` will wrap your defined properties in a standard `data` array and include metadata fields like `total`, `page`, `limit`, and `pages`.
+
+## Full Example
+
+```php
+public static function getResponseDocumentation(): ApivalkResponseDocumentation
+{
+    $doc = new ApivalkResponseDocumentation();
+    $doc->setDescription('Successfully retrieved the list of posts');
+    
+    // Add properties that will be inside each item of the 'data' array 
+    // if pagination is enabled, or in the root object if not.
+    $doc->addProperty(new StringProperty('title', 'The post title'));
+    $doc->addProperty(new StringProperty('content', 'The post body'));
+    $doc->addProperty(new StringProperty('created_at', 'ISO 8601 date'));
+    
+    $doc->setHasResponsePagination(true);
+    
+    return $doc;
+}
+```

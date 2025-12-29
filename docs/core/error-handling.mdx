@@ -1,0 +1,86 @@
+---
+title: "Error Handling"
+description: "Apivalk provides a centralized mechanism to handle unhandled exceptions, ensuring that your API always returns a predictable, structured response even when unexpected errors occur."
+---
+
+## The Exception Handling Flow
+
+1. **Occurrence**: An exception or error is thrown during the request lifecycle (routing, middleware, or controller).
+2. **Catch**: If the exception is not caught by your code, it is intercepted by the global exception handler registered during bootstrapping.
+3. **Response**: The exception handler generates an `InternalServerErrorApivalkResponse` (HTTP 500) and renders it using the `JsonRenderer`.
+
+## Built-in Exception Handler
+
+Apivalk includes a standard `ApivalkExceptionHandler` class that provides a safe fallback for all unhandled errors.
+
+### `ApivalkExceptionHandler::handle(\Throwable $t)`
+
+This static method is designed to be used with PHP's `set_exception_handler`. It performs the following actions:
+
+1. Creates a new instance of `InternalServerErrorApivalkResponse`.
+2. Uses the `JsonRenderer` to output the response directly to the client.
+
+## Configuring the Exception Handler
+
+By default, Apivalk does not register an exception handler unless you provide one in the `ApivalkConfiguration`.
+
+### Using the Built-in Handler
+
+To use the built-in handler, pass it as a callable to the configuration:
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\ApivalkExceptionHandler;
+
+$config = new ApivalkConfiguration(
+    $router,
+    null, // default renderer
+    [ApivalkExceptionHandler::class, 'handle']
+);
+```
+
+### Custom Exception Handling
+
+You can provide any `callable` as an exception handler. This is useful for adding logging, Sentry/Flare integration, or environment-specific error details.
+
+```php
+$config = new ApivalkConfiguration(
+    $router,
+    null,
+    function (\Throwable $e) {
+        // Log the error
+        error_log($e->getMessage());
+
+        // Return a custom response
+        $response = new InternalServerErrorApivalkResponse();
+        
+        // In development, you might want to show the message
+        if (getenv('APP_ENV') === 'development') {
+            $response->setErrorMessage($e->getMessage());
+            $response->setContext(['trace' => $e->getTraceAsString()]);
+        }
+
+        (new JsonRenderer())->render($response);
+    }
+);
+```
+
+## InternalServerErrorApivalkResponse
+
+This specialized response object is used for 500 errors. It ensures that even errors follow the documented API structure.
+
+* **Status Code**: 500 Internal Server Error.
+* **Default Message**: "We've run into an unknown error, please try again later."
+* **Structure**:
+  ```json
+  {
+      "error": "Message here",
+      "context": { "additional": "info" }
+  }
+  ```
+
+## Best Practices
+
+* **Always Register a Handler**: In production, always register an exception handler to prevent leaking sensitive server information via PHP's default error output.
+* **Contextual Logging**: Use a custom handler to log the full stack trace of exceptions to your logging service before rendering the generic error response to the user.
+* **Graceful Degradation**: Ensure your exception handler itself is extremely robust and does not throw further exceptions.

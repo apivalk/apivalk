@@ -1,0 +1,105 @@
+---
+title: "Structure"
+description: "Apivalk highly focuses SRP and therefore is also in generla designed to be like that. Controllers are invokable, you have a sepearte request and response"
+---
+
+## Structure and Usage in your projects
+
+- **SRP (Single Responsibility Principle)**: Each controller should handle exactly one route and one HTTP method.
+- **Immutable-like Responses**: Response objects are designed to be built and returned, rather than modified in place across many layers.
+- **Container Integration**: Apivalk supports PSR-11 containers, allowing for easy Dependency Injection in your controllers.
+- **Testing**: The framework is built with testability in mind, utilizing interfaces and factories that are easily mockable.
+
+...
+
+So for example, lets say our example a car store API.
+
+/yourfolder/Api/v1/Car/Controller/CreateController.php
+
+/yourfolder/Api/v1/Car/Request/CreateCarRequest.php
+
+/yourfolder/Api/v1/Car/Response/CreateCarResponse.php
+
+## Structure inside the Framework
+
+### 1. Core Philosophy
+
+Apivalk is built on several key architectural pillars designed to minimize boilerplate and maximize reliability.
+
+See also: [Request Lifecycle](/concepts/request-lifecycle)
+
+#### Single Source of Truth (SSOT)
+
+The defining feature of Apivalk is that **documentation is code**. Instead of writing separate documentation files or annotations, you define your API's shape using PHP classes (`AbstractProperty`). This single definition drives:
+
+- **Input Population**: Automatic extraction and type-casting of request data.
+- **Validation**: Strict enforcement of data types, ranges, and patterns.
+- **Documentation Generation**: Automatic creation of OpenAPI (Swagger) specifications and PHP DocBlocks for IDE support.
+
+#### Type Safety
+
+Even in PHP 7.2, Apivalk enforces strict type-safety through its Property system. Every incoming piece of data is validated against a schema before it ever reaches your controller.
+
+#### Automated Discovery
+
+Apivalk eliminates manual route registration. By using the `ClassLocator`, the framework discovers your controllers, reads their route metadata, and builds a high-performance routing cache automatically.
+
+### 2. Project Structure
+
+The project is organized into logical modules, each with a clear responsibility:
+
+#### `Documentation/`
+
+The heart of the framework. It contains the Property and Validator system.
+
+- `Property/`: Definitions for String, Number, Boolean, Array, and Object properties.
+- `Validator/`: Logic to validate raw data against Property definitions.
+- `OpenAPI/`: Generators that transform Property schemas into OpenAPI 3.0 JSON.
+- `DocBlock/`: Generators that create PHP DocBlocks for type-hinting Request objects.
+
+#### `Http/`
+
+The standard web layer.
+
+- `Request/`: Abstractions for HTTP requests, divided into "Bags" (Header, Query, Path, Body, File).
+- `Response/`: A suite of pre-defined response types (200, 400, 404, 500, etc.) ensuring consistent API output.
+- `Controller/`: Base classes for your business logic.
+- `Method/`: Typed representations of HTTP verbs.
+- `Renderer/`: Handles the final conversion of Response objects to the output stream (defaulting to JSON).
+
+#### `Router/`
+
+Handles URI-to-Controller mapping.
+
+- Supports regex-based path parameters.
+- Features a `FilesystemCache` to avoid scanning classes on every request in production.
+
+#### `Middleware/`
+
+An "onion-style" pipeline where each middleware can inspect/modify the Request before passing it to the next layer or returning a Response early.
+
+#### `Security/`
+
+Provides the `AbstractAuthIdentity` abstraction to integrate your authentication logic into the Request object seamlessly.
+
+#### `Util/`
+
+Contains the `ClassLocator`, which is used for scanning namespaces and finding framework-compliant classes.
+
+### 3. The Property & Validator System
+
+The Property system is the engine that powers Apivalk.
+
+1. **Definition**: You define a property (e.g., `StringProperty`) and configure its constraints (minLength, pattern, etc.).
+2. **Factory**: `ValidatorFactory` creates the appropriate validator for that property.
+3. **Validation**: The validator returns a `ValidatorResult` indicating success or specific error messages.
+
+This system ensures that when you access `$request->body()->get('email')`, you are guaranteed that the data exists (if required) and matches your constraints.
+
+### 4. Automation & Discovery
+
+Apivalk is designed for developer productivity through automation:
+
+1. **Route Discovery**: `RouterFilesystemCache` uses `ClassLocator` to find all classes extending `AbstractApivalkController`. It calls `getRoute()` on each to build the routing table.
+2. **Request Population**: `AbstractApivalkRequest` automatically populates itself using metadata from `getDocumentation()`.
+3. **Request Validation**: `RequestValidationMiddleware` automatically validates the populated request against the same documentation before the controller is invoked.

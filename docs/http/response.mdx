@@ -1,0 +1,79 @@
+---
+title: "Response"
+description: "Apivalk uses typed response objects to ensure consistent API output across your entire application."
+---
+
+## Creating a Response
+
+Every response class must extend `AbstractApivalkResponse` and implement:
+
+* `getStatusCode()`: Returns the HTTP status code (e.g., 200, 201, 404).
+* `getDocumentation()`: Defines the schema for OpenAPI generation.
+* `toArray()`: Returns the data to be rendered (usually as JSON).
+
+### Example
+
+```php
+namespace App\Http\Response\Pet;
+
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+
+class GetPetResponse extends AbstractApivalkResponse
+{
+    private $pet;
+
+    public function __construct(array $pet)
+    {
+        $this->pet = $pet;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->addProperty(new StringProperty('name', 'Name of the pet'));
+        // ... add more properties
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->pet['id'],
+            'name' => $this->pet['name'],
+        ];
+    }
+}
+```
+
+## Built-in Error Responses
+
+Apivalk provides several pre-defined error responses for common scenarios:
+
+* `BadRequestApivalkResponse` (400)
+* `UnauthorizedApivalkResponse` (401)
+* `NotFoundApivalkResponse` (404)
+* `MethodNotAllowedApivalkResponse` (405)
+* `TooManyRequestsApivalkResponse` (429)
+* `InternalServerErrorApivalkResponse` (500)
+* `BadValidationApivalkResponse` (422) - Used automatically by the `RequestValidationMiddleware`.
+
+## Headers
+
+You can add custom headers to any response object:
+
+```php
+$response->setHeaders([
+    'X-Custom-Header' => 'Value'
+]);
+```
+
+## Rendering
+
+The `JsonRenderer` is the default renderer. It takes the array from `toArray()` and converts it to a JSON string, handling headers and status codes automatically.

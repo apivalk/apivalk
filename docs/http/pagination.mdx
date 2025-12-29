@@ -1,0 +1,67 @@
+---
+title: "Pagination"
+description: "Apivalk provides built-in support for page-based pagination. It consists of a `Paginator` for the request side and `ResponsePagination` for the response side."
+---
+
+## Request Side: The Paginator
+
+The `Paginator` helper calculates offsets based on the `page` query parameter (defaulting to 1).
+
+### Usage in Controller
+
+```php
+use apivalk\apivalk\Http\Request\Paginator;
+
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $pageSize = 20;
+    $totalEntries = $this->petRepository->count();
+    
+    // 1. Create Paginator
+    $paginator = new Paginator($request, $pageSize, $totalEntries);
+    
+    // 2. Use Paginator to fetch data
+    $pets = $this->petRepository->findAll(
+        $paginator->getOffset(),
+        $paginator->getPageSize()
+    );
+    
+    // 3. Create Response
+    $response = new GetPetsResponse($pets);
+    
+    // 4. Attach pagination metadata to the response
+    $response->addPagination(ResponsePagination::createByPaginator($paginator));
+    
+    return $response;
+}
+```
+
+## Response Side: ResponsePagination
+
+The `ResponsePagination` object holds the metadata that will be rendered in the final API response.
+
+### JSON Output Example
+
+When a response has pagination attached, the `JsonRenderer` will include a `pagination` key in the output:
+
+```json
+{
+    "data": [...],
+    "pagination": {
+        "page": 1,
+        "total_pages": 5,
+        "page_size": 20
+    }
+}
+```
+
+## Customizing Pagination
+
+If you don't want to use the `Paginator` helper, you can create `ResponsePagination` manually:
+
+```php
+use apivalk\apivalk\Http\Response\ResponsePagination;
+
+$pagination = new ResponsePagination($currentPage, $totalPages, $pageSize);
+$response->addPagination($pagination);
+```

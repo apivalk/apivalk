@@ -1,0 +1,66 @@
+---
+title: "OpenAPI Generator"
+description: "The `OpenAPIGenerator` is the component responsible for converting your code-based documentation into a standardized OpenAPI 3.0 (Swagger) specification."
+---
+
+## How it Works
+
+The generator leverages the existing framework infrastructure to discover and process your API metadata:
+
+1. **Route Discovery**: It uses the `Router` and its `RouterCache` to find all registered routes and their corresponding controller classes.
+2. **Metadata Extraction**: For each discovered route, it calls:
+   - `AbstractApivalkController::getRequestDocumentation()`
+   - `AbstractApivalkController::getResponseDocumentation()`
+3. **Object Mapping**: It maps the Apivalk `Property` system to OpenAPI objects (Schemas, Parameters, RequestBodies, Responses).
+4. **Serialization**: It assembles these objects into a final `OpenAPI` object and serializes it to JSON.
+
+## Core Logic
+
+### The `OpenAPI` Object
+
+The `OpenAPI` class represents the root of the specification. It contains sub-objects for:
+
+- `InfoObject`: API title, version, description.
+- `ServerObject`: Base URLs for your API.
+- `PathsObject`: Map of endpoints and their methods.
+- `ComponentsObject`: Reusable schemas and security schemes.
+
+### The Generation Process
+
+The `OpenAPIGenerator` coordinates several specialized generators:
+
+- `PathsGenerator`: Processes the list of routes.
+- `PathItemGenerator`: Handles a single URL (which may have multiple HTTP methods).
+- `OperationGenerator`: Handles a single HTTP method (GET, POST, etc.) on a path.
+- `ParameterGenerator`: Converts query and path properties to OpenAPI parameters.
+- `RequestBodyGenerator`: Converts body properties to a JSON request body schema.
+- `ResponseGenerator`: Converts response documentation to OpenAPI response schemas.
+
+## Usage Example
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+
+// 1. Define API Metadata
+$info = new InfoObject('My API', '1.0.0');
+$info->setDescription('Welcome to my awesome API');
+
+// 2. Instantiate the Generator
+$generator = new OpenAPIGenerator($apivalk, $info);
+
+// 3. Generate the JSON string
+$json = $generator->generate('json');
+
+// 4. Output or save to file
+header('Content-Type: application/json');
+echo $json;
+```
+
+## Security Schemes
+
+You can also define security requirements (like Bearer Auth) by adding a `SecuritySchemeObject` to the `ComponentsObject` passed to the generator's constructor.
+
+## Automated Pagination Envelope
+
+If a response documentation has `setHasResponsePagination(true)`, the generator automatically wraps the properties in a standard pagination envelope containing `data`, `total`, `page`, `limit`, etc.

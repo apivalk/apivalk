@@ -1,0 +1,103 @@
+---
+title: "Customization"
+description: "Apivalk is designed with a \"Modular by Design\" philosophy. Almost every core component of the framework can be replaced, extended, or reconfigured to suit your project's specific needs."
+---
+
+Whether you need to change how routes are cached, how responses are rendered, or how controllers are instantiated, Apivalk provides the interfaces and abstract classes to make it possible.
+
+## 🛠️ Core Component Customization
+
+The `ApivalkConfiguration` object is the central point for customizing the framework's behavior.
+
+### Custom Renderer
+
+By default, Apivalk uses the `JsonRenderer`. If you need to support other formats like XML, YAML, or even HTML, you can implement the `RendererInterface`.
+
+```php
+use apivalk\apivalk\Http\Renderer\RendererInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class XmlRenderer implements RendererInterface
+{
+    public function render(AbstractApivalkResponse $response): void
+    {
+        header('Content-Type: application/xml');
+        // Convert response array to XML and echo it
+    }
+}
+
+// In your bootstrap:
+$config = new ApivalkConfiguration($router, new XmlRenderer());
+```
+
+### Custom Router
+
+If the built-in `Router` doesn't meet your needs (e.g., you want to use a different matching algorithm), you can extend `AbstractRouter` and provide your own implementation of the `dispatch()` method.
+
+### Custom Exception Handling
+
+You can replace the default global exception handler by passing a `callable` to the configuration. This is useful for integrating with logging services like Sentry or Bugsnag.
+
+```php
+$exceptionHandler = function (\Throwable $e) {
+    // Log to external service
+    // Return a custom error response
+};
+
+$config = new ApivalkConfiguration($router, null, $exceptionHandler);
+```
+
+## 💾 Discovery & Optimization
+
+### Custom Router Cache
+
+Apivalk ships with `RouterFilesystemCache`, which scans for controllers and saves the route map to a JSON file. For high-scale environments, you might want to store this in memory.
+
+By implementing `RouterCacheInterface`, you can create a cache provider for:
+
+- **Redis / Memcached**
+- **Database**
+- **Swoole / RoadRunner shared memory**
+
+## 🔌 Inversion of Control (DI)
+
+### PSR-11 Container Integration
+
+Apivalk is fully compatible with PSR-11. You can pass any compliant container (PHP-DI, Symfony, Laravel) to the configuration.
+
+### Custom Controller Factory
+
+The `ApivalkControllerFactory` is responsible for instantiating controllers. By implementing `ApivalkControllerFactoryInterface`, you can customize this process—for example, to inject dependencies from your container into controller constructors.
+
+## 🌐 HTTP Layer Customization
+
+### Base Request & Response
+
+While Apivalk provides `AbstractApivalkRequest` and `AbstractApivalkResponse`, you are not locked into them.
+
+- **Requests**: Any class implementing `ApivalkRequestInterface` can be used. This allows you to completely change how request data is populated and validated.
+- **Responses**: You can create specialized response types by extending `AbstractApivalkResponse` to handle specific status codes or header sets.
+
+### Middleware Pipeline
+
+The `MiddlewareStack` is fully customizable. You can:
+
+1. **Add** your own business logic middlewares.
+2. **Remove** default middlewares (like `SanitizeMiddleware`) if they don't fit your use case.
+3. **Reorder** middlewares to change the execution sequence.
+
+```php
+$apivalk = new Apivalk($config);
+$stack = $apivalk->getMiddlewareStack();
+
+// Add a custom Auth middleware at the beginning
+$stack->push(new MyAuthMiddleware());
+```
+
+## 🚀 Why Customize?
+
+This level of flexibility allows Apivalk to be:
+
+- **Framework Agnostic**: Easily embedded into Laravel, Symfony, or Slim.
+- **Microservice Ready**: Stripped down to the bare essentials for maximum performance.
+- **Developer Centric**: Adapted to the existing coding standards and tools of your team.

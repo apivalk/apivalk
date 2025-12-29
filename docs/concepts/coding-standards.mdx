@@ -1,0 +1,41 @@
+---
+title: "Coding Standards"
+description: "Apivalk follows modern PHP standards and clean code principles to ensure the framework remains lightweight, predictable, and easy to extend"
+---
+
+## Language Level
+
+* **PHP 7.2+**: We maintain compatibility with PHP 7.2 while using modern features where possible (like `declare(strict_types=1)` and return type hints).
+
+## PHP Standards Recommendations (PSR)
+
+* **PSR-1 & PSR-12**: We follow the basic and extended coding style guides.
+* **PSR-4**: Autoloading is handled via PSR-4 namespaces.
+* **PSR-11**: Container integration is based on the standard container interface.
+* **PSR-7/15 (Inspired)**: While we use custom, optimized HTTP interfaces for performance and type-safety, our design is heavily inspired by these standards.
+
+## Core Principles
+
+### Single Source of Truth (SSOT)
+
+Documentation is code. Instead of separate Swagger files or messy annotations, the API structure is defined using PHP classes (`AbstractProperty`). This single definition drives validation, population, and documentation generation.
+
+### Single Responsibility Principle (SRP)
+
+* **Controllers**: Each controller should handle exactly one route and one HTTP method.
+* **Requests**: Each request class defines the schema for exactly one endpoint.
+* **Validators**: Each validator handles exactly one property type.
+
+### Type Safety
+
+Even in older PHP versions, Apivalk enforces strict typing. Data is validated and cast to the correct type before it reaches your business logic.
+
+### Immutability
+
+Response objects are designed to be built and returned. While not strictly immutable, we discourage modifying response state across many layers to avoid side effects.
+
+## Clean Code Practices
+
+* **Descriptive Naming**: Classes and methods are named clearly based on their intent (e.g., `GetPetController`, `StringProperty`).
+* **Minimal Boilerplate**: We use automated discovery (via `ClassLocator`) to eliminate manual route registration.
+* **Fail Fast**: Input is validated at the middleware level, before it ever reaches the controller.
