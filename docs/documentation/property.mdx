@@ -1,0 +1,60 @@
+---
+title: "Property"
+description: "The Property System is the core metadata engine of Apivalk. It defines how data is structured, validated, and documented. Every property in your `getRequestDocumentation()` or `getResponseDocumentation()` is an instance of a class extending `AbstractProperty`."
+---
+
+## Property Types
+
+Apivalk provides several built-in property classes:
+
+| Class                    | Description              | PHP Type         | OpenAPI Type          |
+| :----------------------- | :----------------------- | :--------------- | :-------------------- |
+| `StringProperty`         | Textual data             | `string`         | `string`              |
+| `NumberProperty`         | Numeric data (int/float) | `int` or `float` | `number` or `integer` |
+| `BooleanProperty`        | True/False values        | `bool`           | `boolean`             |
+| `ArrayProperty`          | List of items            | `array`          | `array`               |
+| `AbstractObjectProperty` | Nested object structure  | `array`          | `object`              |
+
+## Base Configuration
+
+All properties share a common set of configuration methods:
+
+* `setIsRequired(bool $required)`: Whether the property must be present.
+* `setExample(string $example)`: A sample value for OpenAPI documentation.
+* `addValidator(AbstractValidator $validator)`: Add custom validation logic.
+
+## Specific Features
+
+### `StringProperty`
+
+* `setMinLength(int)` / `setMaxLength(int)`
+* `setPattern(string)`: Regex validation.
+* `setEnum(array)`: List of allowed values.
+* `setFormat(string)`: e.g., `date`, `date-time`, `email`, `uuid`, `byte` (base64).
+
+### `NumberProperty`
+
+* `setMinimum(float)` / `setMaximum(float)`
+* `setExclusiveMinimum(bool)` / `setExclusiveMaximum(bool)`
+* `setFormat(string)`: e.g., `int32`, `int64`, `float`, `double`.
+
+### `ArrayProperty`
+
+* `setItemProperty(AbstractProperty)`: Defines the type of items within the array.
+
+### `AbstractObjectProperty`
+
+* Used to define nested schemas. You extend this class and implement the `getPropertyCollection()` method to define the nested properties.
+
+## Validation Integration
+
+When a property is instantiated, it automatically creates a corresponding validator via the `ValidatorFactory`. This validator is used by the `RequestValidationMiddleware` to ensure incoming data matches your definitions.
+
+```php
+// Example: A required, 5-10 char long string matching a pattern
+$prop = new StringProperty('username', 'The login name');
+$prop->setIsRequired(true)
+     ->setMinLength(5)
+     ->setMaxLength(10)
+     ->setPattern('/^[a-z0-9]+$/');
+```

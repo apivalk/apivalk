@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router;
 
+use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
-use apivalk\apivalk\Router\Cache\RouterCacheEntry;
 
 class Router extends AbstractRouter
 {
     private function getServerRequestMethod(): string
     {
-        return $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        return $_SERVER['REQUEST_METHOD'] ?? MethodInterface::METHOD_GET;
     }
 
     private function getServerRequestUrlPath(): string
@@ -29,52 +30,117 @@ class Router extends AbstractRouter
         $requestMethod = $this->getServerRequestMethod();
         $requestUrlPath = $this->getServerRequestUrlPath();
 
-        $routeCacheEntries = $this->findMatchingRouteCacheEntries($requestUrlPath);
-        if (\count($routeCacheEntries) === 0) {
+        $routeIndexCache = $this->getRouteIndexCache();
+        if ($routeIndexCache === null) {
             return new NotFoundApivalkResponse();
         }
 
-        if (!\array_key_exists($requestMethod, $routeCacheEntries)) {
+        $matchingRoutes = $this->getMatchingRoutes($routeIndexCache, $requestUrlPath);
+        if (\count($matchingRoutes) === 0) {
+            return new NotFoundApivalkResponse();
+        }
+
+        if (!isset($matchingRoutes[$requestMethod])) {
             return new MethodNotAllowedApivalkResponse();
         }
 
-        $request = $this->buildRequestByRouteCacheEntry($routeCacheEntries[$requestMethod]);
-        $controller = $this->buildControllerByRouteCacheEntry($routeCacheEntries[$requestMethod]);
+        $request = $this->buildRequestByRoute(
+            $matchingRoutes[$requestMethod]['controllerClass'],
+            $matchingRoutes[$requestMethod]['route']
+        );
+
+        $controller = $this->buildControllerByClass($matchingRoutes[$requestMethod]['controllerClass']);
 
         return $middlewareStack->handle($request, $controller);
     }
 
-    private function buildControllerByRouteCacheEntry(RouterCacheEntry $routerCacheEntry): AbstractApivalkController
+    /** @return array<int, array{regex: string, method: string, key: string, controllerClass: string}>|null */
+    private function getRouteIndexCache(): ?array
     {
-        $controllerClass = $routerCacheEntry->getControllerClass();
+        $indexCacheItem = $this->getCache()->get(self::CACHE_INDEX_KEY);
+        if (!$indexCacheItem instanceof CacheItem) {
+            return null;
+        }
 
+        $indexCache = json_decode($indexCacheItem->getValue(), true);
+        if (!\is_array($indexCache)) {
+            return null;
+        }
+
+        return $indexCache;
+    }
+
+    /**
+     * @param class-string<AbstractApivalkController> $controllerClass
+     */
+    private function buildControllerByClass(string $controllerClass): AbstractApivalkController
+    {
         return $this->getControllerFactory()->create($controllerClass);
     }
 
-    private function buildRequestByRouteCacheEntry(RouterCacheEntry $routerCacheEntry): ApivalkRequestInterface
+    /**
+     * @param class-string<AbstractApivalkController> $controllerClass
+     */
+    private function buildRequestByRoute(string $controllerClass, Route $route): ApivalkRequestInterface
     {
-        /** @var class-string<AbstractApivalkController> $controllerClass */
-        $controllerClass = $routerCacheEntry->getControllerClass();
         /** @var class-string<ApivalkRequestInterface> $requestClass */
         $requestClass = $controllerClass::getRequestClass();
 
         $request = new $requestClass();
-        $request->populate($routerCacheEntry->getRoute());
+        $request->populate($route);
 
         return $request;
     }
 
     /**
-     * @return array<string, RouterCacheEntry> An array containing the matching routes. Key is the method name.
+     * @param array<int, array{regex: string, method: string, key: string, controllerClass: class-string<AbstractApivalkController>}> $indexCache
+     *
+     * @return array<string, array{route: Route, controllerClass: class-string<AbstractApivalkController>}>
      */
-    private function findMatchingRouteCacheEntries(string $requestUrlPath): array
+    private function getMatchingRoutes(array $indexCache, string $requestUrlPath): array
     {
+        $matchingRoutes = [];
+
+        foreach ($indexCache as $indexEntry) {
+            if (preg_match($indexEntry['regex'], $requestUrlPath)) {
+                $routeCacheItem = $this->getCache()->get($indexEntry['key']);
+                if (!$routeCacheItem instanceof CacheItem) {
+                    continue;
+                }
+
+                $route = Route::byJson($routeCacheItem->getValue());
+                $matchingRoutes[$route->getMethod()->getName()] = [
+                    'route' => $route,
+                    'controllerClass' => $indexEntry['controllerClass'],
+                ];
+            }
+        }
+
+        return $matchingRoutes;
+    }
+
+    /**
+     * @return array<int, array{route: Route, controllerClass: string}>
+     */
+    public function getRoutes(): array
+    {
+        $routeIndexCache = $this->getRouteIndexCache();
+        if ($routeIndexCache === null) {
+            return [];
+        }
+
         $routes = [];
 
-        foreach ($this->getRouterCache()->getRouterCacheCollection()->getRouteCacheEntries() as $routeCacheEntry) {
-            if (preg_match($routeCacheEntry->getRegex(), $requestUrlPath)) {
-                $routes[$routeCacheEntry->getRoute()->getMethod()->getName()] = $routeCacheEntry;
+        foreach ($routeIndexCache as $indexEntry) {
+            $routeCacheItem = $this->getCache()->get($indexEntry['key']);
+            if (!$routeCacheItem instanceof CacheItem) {
+                continue;
             }
+
+            $routes[] = [
+                'route' => Route::byJson($routeCacheItem->getValue()),
+                'controllerClass' => $indexEntry['controllerClass']
+            ];
         }
 
         return $routes;

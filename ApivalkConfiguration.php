@@ -8,6 +8,7 @@ use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Renderer\JsonRenderer;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Util\ClassLocator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;

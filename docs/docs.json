@@ -1,0 +1,155 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Apivalk",
+
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#6366F1",
+    "dark": "#6366F1"
+  },
+
+  "fonts": {
+    "family": "Inter"
+  },
+
+  "background": {
+    "decoration": "gradient"
+  },
+
+  "favicon": "/img/logo.svg",
+
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "configuration",
+              "contributing",
+              "deprecating-upgrade",
+              "installation",
+              "support-policy-release-cycle"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/coding-standards",
+              "concepts/request-lifecycle",
+              "concepts/structure"
+            ]
+          },
+          {
+            "group": "HTTP",
+            "pages": [
+              "http/controller",
+              "http/index",
+              "http/request",
+              "http/response"
+            ]
+          },
+          {
+            "group": "Routing",
+            "pages": [
+              "routing/index",
+              "routing/route",
+              "routing/router"
+            ]
+          },
+          {
+            "group": "Cache",
+            "pages": [
+              "cache/index",
+              "cache/filesystem-cache"
+            ]
+          },
+          {
+            "group": "Middleware",
+            "pages": [
+              "middleware/index",
+              "middleware/request-validation",
+              "middleware/sanitize"
+            ]
+          },
+          {
+            "group": "Documentation (OpenAPI)",
+            "pages": [
+              "documentation/index",
+              "documentation/docblock-generator",
+              "documentation/openapi-generator",
+              "documentation/property",
+              "documentation/property-collection",
+              "documentation/request",
+              "documentation/response",
+              "documentation/response-objects"
+            ]
+          },
+          {
+            "group": "Core System",
+            "pages": [
+              "core/error-handling",
+              "core/events",
+              "util"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": []
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "customization/customization"
+            ]
+          }
+        ]
+      }
+    ],
+
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Releases",
+          "href": "https://github.com/apivalk/apivalk/releases",
+          "icon": "newspaper"
+        }
+      ]
+    }
+  },
+
+  "logo": {
+    "light": "/img/logo.svg",
+    "dark": "/img/logo.svg"
+  },
+
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Main page",
+      "href": "https://apivalk.com"
+    }
+  },
+
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+
+  "footer": {
+    "socials": {
+      "github": "https://github.com/apivalk"
+    }
+  }
+}

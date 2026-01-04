@@ -1,0 +1,91 @@
+---
+title: "Request"
+description: "Requests in Apivalk are strongly typed and self-validating. By defining a request class, you define the \"shape\" of the data your endpoint expects."
+---
+
+## Creating a Request
+
+Every request class must extend `AbstractApivalkRequest` and implement the `getDocumentation()` method.
+
+### Example
+
+```php
+namespace App\Http\Request\Pet;
+
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+
+class CreatePetRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+        
+        // Body parameters
+        $doc->addProperty(
+            (new StringProperty('name', 'Pet name'))->setRequired(true)
+        );
+        $doc->addProperty(
+            new StringProperty('type', 'Species of the pet')
+        );
+        
+        // Path parameters (matched from route like /pet/{id})
+        $doc->addPathProperty(
+            new NumberProperty('id', 'Internal ID')
+        );
+
+        return $doc;
+    }
+}
+```
+
+## Accessing Data
+
+Data is organized into "Bags". The framework automatically populates these bags and casts the values to the types defined in your documentation.
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    // Access body parameters (returns the value directly via magic getter)
+    $name = $request->body()->name;
+    
+    // Access query parameters
+    $page = $request->query()->page ?? 1;
+    
+    // Access path parameters (/user/{id})
+    $userId = $request->path()->id;
+    
+    // Access headers
+    $token = $request->header()->Authorization;
+    
+    // Access uploaded files (returns File object)
+    $image = $request->file()->get('avatar');
+}
+```
+
+### Magic Getters
+
+`ParameterBag` supports magic getters for cleaner code:
+
+```php
+$name = $request->body()->name;
+$userId = $request->path()->id;
+```
+
+## Validation
+
+Validation happens automatically if you use the `RequestValidationMiddleware`. If the incoming data does not match your `getDocumentation()` definition, the framework will immediately return a `422 Unprocessable Entity` response with detailed error messages.
+
+## Authentication Identity
+
+You can attach an authentication identity to the request:
+
+```php
+$user = $this->authService->authenticate($request);
+$request->setAuthIdentity($user);
+
+// Later in controller or middleware
+$currentUser = $request->getAuthIdentity();
+```

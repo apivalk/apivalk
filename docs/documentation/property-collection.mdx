@@ -1,0 +1,88 @@
+---
+title: "Property Collection"
+description: "Property Collections in Apivalk are used to group multiple properties together. They serve as the backbone for `AbstractObjectProperty` and are essential for maintaining reusable data structures and managing different data \"views\" (modes)."
+---
+
+## The Concept
+
+A `PropertyCollection` is an iterable container for `AbstractProperty` instances. Instead of defining properties directly inside an object or a request, you group them into a collection. This promotes the Single Responsibility Principle (SRP) and allows you to reuse the same set of properties across different parts of your API.
+
+## Modes
+
+One of the most powerful features of property collections is the concept of **Modes**. Often, the data you send to an API (CREATE/EDIT) is slightly different from the data you receive (VIEW).
+
+For example, a `User` object might:
+
+* **VIEW**: Include `id`, `email`, `createdAt`, and `updatedAt`.
+* **CREATE**: Include `email` and `password`, but NOT `id` or timestamps.
+* **EDIT**: Include `email`, but NOT `password` or `id`.
+
+By passing a `mode` to the collection's constructor, you can conditionally add properties.
+
+### Built-in Mode Constants
+
+The `AbstractPropertyCollection` class provides the following constants:
+
+* `MODE_VIEW`: Used for data returned in responses.
+* `MODE_CREATE`: Used for data sent when creating a resource.
+* `MODE_EDIT`: Used for data sent when updating a resource.
+* `MODE_DELETE`: Used for data related to deletion (rarely used for properties).
+
+## Implementing a Property Collection
+
+To create a collection, extend `AbstractPropertyCollection` and implement the `__construct` method.
+
+```php
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+
+class UserPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
+        // ID is usually only in VIEW mode
+        if ($mode === self::MODE_VIEW) {
+            $this->addProperty(new StringProperty('id', 'User UUID'));
+        }
+
+        $this->addProperty(new StringProperty('email', 'User email address'));
+
+        // Password is only for creation
+        if ($mode === self::MODE_CREATE) {
+            $this->addProperty(new StringProperty('password', 'User password'));
+        }
+    }
+}
+```
+
+## Usage in Objects
+
+Property collections are primarily used within `AbstractObjectProperty`.
+
+```php
+use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
+
+class UserObject extends AbstractObjectProperty
+{
+    private $mode;
+
+    public function __construct(string $mode = self::MODE_VIEW)
+    {
+        parent::__construct('user', 'User object');
+        $this->mode = $mode;
+    }
+
+    public function getPropertyCollection(): AbstractPropertyCollection
+    {
+        return new UserPropertyCollection($this->mode);
+    }
+}
+```
+
+## Benefits
+
+1. **Reusability**: Define your domain properties once and reuse them in requests and responses.
+2. **Consistency**: Ensures that a "User" has the same fields across all endpoints.
+3. **Context-Awareness**: Easily handle differences between input and output data using modes.
+4. **OpenAPI Integration**: Apivalk automatically converts these collections into OpenAPI schemas, respecting the conditional logic based on modes.

@@ -1,0 +1,46 @@
+---
+title: "Router"
+description: "The `Router` is the primary dispatcher of the Apivalk framework. It is responsible for intercepting the incoming HTTP request and routing it to the correct controller."
+---
+
+## Dispatch Process
+
+When the `dispatch()` method is called, the router performs the following steps:
+
+1. **Extract Request Information**: It captures the HTTP method (from `$_SERVER['REQUEST_METHOD']`) and the URL path (from `$_SERVER['REQUEST_URI']`).
+2. **Find Matching Routes**: It queries its associated `CacheInterface` to find all route definitions that match the current URL path using pre-compiled regular expressions.
+3. **Validate Method**:
+   * If no routes match the path at all, a `NotFoundApivalkResponse` (404) is returned.
+   * If a path matches but the requested HTTP method is not supported for that path, a `MethodNotAllowedApivalkResponse` (405) is returned.
+4. **Prepare Request and Controller**:
+   * It identifies the `AbstractApivalkController` class associated with the matching route.
+   * It identifies the corresponding `ApivalkRequestInterface` class.
+   * It instantiates both, populating the request object with data from the route (including extracted path parameters).
+5. **Execute Middleware Pipeline**: It hands off the request and controller instance to the `MiddlewareStack` for processing and final execution.
+
+## AbstractRouter
+
+The `AbstractRouter` provides the base functionality and dependency management for the router. It handles:
+
+* **Controller Factory**: Manages the `ApivalkControllerFactoryInterface` used to instantiate controllers.
+* **Router Cache**: Manages the `CacheInterface` used to retrieve route definitions.
+* **Class Locator**: Manages the `ClassLocator` used for automated route discovery.
+---
+## Initialization
+
+The router is typically initialized during the bootstrapping phase of the application:
+
+```php
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Router\Router;
+use apivalk\apivalk\Util\ClassLocator;
+
+// Set up the locator and cache
+$locator = new ClassLocator(__DIR__ . '/Controllers', 'App\\Controllers');
+$cache = new FilesystemCache(__DIR__ . '/cache');
+
+// Create the router
+$router = new Router($locator, $cache);
+```
+
+By separating the matching logic from the route discovery (handled by the cache), the `Router` remains fast and focused on its single responsibility: dispatching requests.

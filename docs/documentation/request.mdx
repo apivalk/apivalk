@@ -1,0 +1,70 @@
+---
+title: "Request"
+description: "The `ApivalkRequestDocumentation` class is the primary container for defining the input contract of an API endpoint. It is used within your controller's `getRequestDocumentation()` method."
+---
+
+## Purpose
+
+It allows you to specify exactly what data your endpoint expects, where it should be located (Body, Query, or Path), and what validation rules apply to it. This information is then used by the framework for:
+
+1. **Automatic Validation**: via `RequestValidationMiddleware`.
+2. **IDE Autocompletion**: via `DocBlockGenerator`.
+3. **OpenAPI Export**: via `OpenAPIGenerator`.
+
+## Structure
+
+The class separates properties into three distinct bags:
+
+### 1. Body Properties
+
+Used for data sent in the request body (JSON, XML, or Form Data).
+
+```php
+$doc->addBodyProperty(new StringProperty('username'));
+```
+
+### 2. Query Properties
+
+Used for data sent in the URL query string (e.g., `?search=term`).
+
+```php
+$doc->addQueryProperty(new StringProperty('search'));
+```
+
+### 3. Path Properties
+
+Used for data embedded in the URL path (e.g., `/users/{id}`).
+
+```php
+$doc->addPathProperty(new NumberProperty('id'));
+```
+
+## Helper Methods
+
+### `addPaginationQueryProperties()`
+
+A convenience method that adds a non-required, integer `page` query parameter to the documentation. This is commonly used in combination with the `Paginator` utility.
+
+```php
+public static function getRequestDocumentation(): ApivalkRequestDocumentation
+{
+    $doc = new ApivalkRequestDocumentation();
+    $doc->addPaginationQueryProperties();
+    return $doc;
+}
+```
+
+## Full Example
+
+```php
+public static function getRequestDocumentation(): ApivalkRequestDocumentation
+{
+    $doc = new ApivalkRequestDocumentation();
+    
+    $doc->addPathProperty(new StringProperty('slug', 'Post slug'));
+    $doc->addQueryProperty(new BooleanProperty('include_comments', 'Whether to include comments'));
+    $doc->addBodyProperty(new StringProperty('title', 'Updated title'));
+    
+    return $doc;
+}
+```

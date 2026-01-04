@@ -1,0 +1,51 @@
+---
+title: "Sanitize"
+description: "The `SanitizeMiddleware` is a security-focused component designed to protect your application from Cross-Site Scripting (XSS) and other injection-style attacks by automatically escaping HTML characters in request parameters."
+---
+
+## How it Works
+
+The middleware iterates through all parameters in the Body, Query, and Path bags of the incoming request. For every parameter that contains a string value, it applies the following transformation:
+
+```php
+htmlspecialchars(
+    $value,
+    ENT_QUOTES | ENT_SUBSTITUTE,
+    'UTF-8'
+)
+```
+
+### Transformations Applied:
+
+* `&` (ampersand) becomes `&amp;`
+* `"` (double quote) becomes `&quot;`
+* `'` (single quote) becomes `&#039;`
+* `<` (less than) becomes `&lt;`
+* `>` (greater than) becomes `&gt;`
+
+## Scope
+
+The middleware automatically sanitizes:
+
+* **Body Parameters**: All fields sent in the request body (JSON or POST data).
+* **Query Parameters**: All values sent in the URL query string.
+* **Path Parameters**: All dynamic segments of the matched route.
+
+It **skips** non-string values (like integers or booleans) and file uploads.
+
+## Usage
+
+It is recommended to place the `SanitizeMiddleware` early in your middleware stack so that all subsequent middlewares and controllers work with sanitized data.
+
+```php
+use apivalk\apivalk\Middleware\SanitizeMiddleware;
+
+$configuration->addMiddleware(new SanitizeMiddleware());
+```
+
+## Considerations
+
+While sanitizing input is a good first line of defense, remember that:
+
+1. **Context Matters**: Sometimes you might need raw HTML (e.g., in a CMS). In such cases, you might want to skip this middleware or implement a more granular approach.
+2. **Double Escaping**: If your template engine (like Twig or Blade) also escapes data, you might end up with double-escaped characters in your UI. Ensure your architecture handles this consistently.

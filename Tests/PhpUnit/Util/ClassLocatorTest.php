@@ -56,7 +56,7 @@ class ClassLocatorTest extends TestCase
         eval('namespace ApivalkTest\Sub; class Class2 {}');
 
         $locator = new ClassLocator($this->tempDir, 'ApivalkTest');
-        $classes = $locator->findClasses();
+        $classes = $locator->find();
         
         $this->assertCount(2, $classes);
         

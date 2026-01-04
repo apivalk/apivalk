@@ -8,8 +8,6 @@ use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 
 class OpenAPIGenerator
@@ -63,13 +61,11 @@ class OpenAPIGenerator
     private function generatePaths(): void
     {
         $pathsGenerator = new PathsGenerator();
-        $routerCacheCollection = $this->apivalk->getRouter()->getRouterCache()->getRouterCacheCollection();
         $routeMapping = [];
 
-        foreach ($routerCacheCollection->getRouteCacheEntries() as $routeCacheEntry) {
-            $curRoute = $routeCacheEntry->getRoute();
-            $routeMapping[$curRoute->getUrl()][] =
-                ['route' => $curRoute, 'controllerClass' => $routeCacheEntry->getControllerClass()];
+        foreach ($this->apivalk->getRouter()->getRoutes() as $route) {
+            $routeMapping[$route['route']->getUrl()][] =
+                ['route' => $route['route'], 'controllerClass' => $route['controllerClass']];
         }
 
         foreach ($routeMapping as $url => $routes) {

@@ -2,3 +2,9 @@ vendor
 .idea
 .phpunit.result.cache
 composer.lock
+
+.lando/
+.lando.local.yml
+docker-compose.yml
+docker-compose.override.yml
+.lando.yml

@@ -49,6 +49,6 @@ class ResponseObjectTest extends TestCase
         $result = $response->toArray();
 
         $this->assertArrayHasKey(204, $result);
-        $this->assertEquals('', $result[204]['description']);
+        $this->assertArrayNotHasKey('description', $result[204]);
     }
 }

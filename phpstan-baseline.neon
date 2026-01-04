@@ -1,0 +1,526 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\ApivalkRequestDocumentation\\:\\:getBodyProperties\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/ApivalkRequestDocumentation.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\ApivalkRequestDocumentation\\:\\:getPathProperties\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/ApivalkRequestDocumentation.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\ApivalkRequestDocumentation\\:\\:getQueryProperties\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/ApivalkRequestDocumentation.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\ApivalkResponseDocumentation\\:\\:getProperties\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/ApivalkResponseDocumentation.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\DocBlock\\\\DocBlockRequest\\:\\:getShapeFilenames\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/DocBlock/DocBlockRequest.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Generator\\\\OperationGenerator\\:\\:generate\\(\\) has parameter \\$responseClasses with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Generator/OperationGenerator.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getHeaders\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getParameters\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getPathItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getRequestBodies\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getResponses\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getSchemas\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getSecuritySchemes\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setHeaders\\(\\) has parameter \\$headers with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setParameters\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setPathItems\\(\\) has parameter \\$pathItems with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setRequestBodies\\(\\) has parameter \\$requestBodies with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setResponses\\(\\) has parameter \\$responses with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setSchemas\\(\\) has parameter \\$schemas with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:setSecuritySchemes\\(\\) has parameter \\$securitySchemes with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ComponentsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ContactObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ContactObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\HeaderObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/HeaderObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\InfoObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/InfoObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\LicenseObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/LicenseObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\MediaTypeObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/MediaTypeObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OAuthFlowObject\\:\\:__construct\\(\\) has parameter \\$scopes with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OAuthFlowObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OAuthFlowObject\\:\\:getScopes\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OAuthFlowObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OAuthFlowObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OAuthFlowObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OAuthFlowsObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OAuthFlowsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ObjectInterface\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ObjectInterface.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$responses with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$security with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$tags with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getParameters\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getResponses\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getSecurity\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/OperationObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ParameterObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ParameterObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\PathItemObject\\:\\:__construct\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/PathItemObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\PathItemObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/PathItemObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\PathsObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/PathsObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\RequestBodyObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/RequestBodyObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ResponseObject\\:\\:__construct\\(\\) has parameter \\$headers with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ResponseObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ResponseObject\\:\\:getHeaders\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ResponseObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ResponseObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ResponseObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SchemaObject\\:\\:__construct\\(\\) has parameter \\$properties with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SchemaObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SchemaObject\\:\\:getProperties\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SchemaObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SchemaObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SchemaObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:__construct\\(\\) has parameter \\$scopes with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:getScopes\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecuritySchemeObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SecuritySchemeObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ServerObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/ServerObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SingleSchemaObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/SingleSchemaObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\TagObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/OpenAPI/Object/TagObject.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractObjectProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/AbstractObjectProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/AbstractProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractProperty\\:\\:getValidators\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/AbstractProperty.php
+
+		-
+			message: "#^Class apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractPropertyCollection implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: Documentation/Property/AbstractPropertyCollection.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\ArrayProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/ArrayProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\BooleanProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/BooleanProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\NumberProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/NumberProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/StringProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:getEnums\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/StringProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:setEnums\\(\\) has parameter \\$enums with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/StringProperty.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:\\$enums type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/StringProperty.php
+
+		-
+			message: "#^Call to function is_array\\(\\) with bool\\|float\\|int\\|string will always evaluate to false\\.$#"
+			count: 1
+			path: Documentation/Property/Validator/ArrayValidator.php
+
+		-
+			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ErrorApivalkObjectPropertyCollection has an unused parameter \\$mode\\.$#"
+			count: 1
+			path: Documentation/Response/ErrorApivalkObjectPropertyCollection.php
+
+		-
+			message: "#^Class apivalk\\\\apivalk\\\\Http\\\\Request\\\\File\\\\FileBag implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: Http/Request/File/FileBag.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\File\\\\FileBagFactory\\:\\:normalizeUploadedFiles\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Request/File/FileBagFactory.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\File\\\\FileBagFactory\\:\\:normalizeUploadedFiles\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Request/File/FileBagFactory.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\Parameter\\:\\:__construct\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: Http/Request/Parameter/Parameter.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\Parameter\\:\\:getValue\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: Http/Request/Parameter/Parameter.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\Parameter\\:\\:setValue\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: Http/Request/Parameter/Parameter.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\Parameter\\:\\:\\$value type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Request/Parameter/Parameter.php
+
+		-
+			message: "#^Class apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\ParameterBag implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: Http/Request/Parameter/ParameterBag.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\ParameterBag\\:\\:__get\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Request/Parameter/ParameterBag.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\ParameterBagFactory\\:\\:typeCastValueByProperty\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: Http/Request/Parameter/ParameterBagFactory.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Request\\\\Parameter\\\\ParameterBagFactory\\:\\:typeCastValueByProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Request/Parameter/ParameterBagFactory.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between string and null will always evaluate to false\\.$#"
+			count: 1
+			path: Http/Request/Parameter/ParameterBagFactory.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\AbstractApivalkResponse\\:\\:getHeaders\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/AbstractApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\AbstractApivalkResponse\\:\\:setHeaders\\(\\) has parameter \\$headers with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/AbstractApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\AbstractApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/AbstractApivalkResponse.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Http\\\\Response\\\\AbstractApivalkResponse\\:\\:\\$headers type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/AbstractApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\BadRequestApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/BadRequestApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\BadValidationApivalkResponse\\:\\:__construct\\(\\) has parameter \\$errors with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/BadValidationApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\BadValidationApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/BadValidationApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\DeletedApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/DeletedApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\InternalServerErrorApivalkResponse\\:\\:setContext\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/InternalServerErrorApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\InternalServerErrorApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/InternalServerErrorApivalkResponse.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Http\\\\Response\\\\InternalServerErrorApivalkResponse\\:\\:\\$context type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/InternalServerErrorApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\MethodNotAllowedApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/MethodNotAllowedApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\NotFoundApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/NotFoundApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\ResponsePagination\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/ResponsePagination.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\TooManyRequestsApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/TooManyRequestsApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\UnauthorizedApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/UnauthorizedApivalkResponse.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Middleware\\\\RequestValidationMiddleware\\:\\:validateProperties\\(\\) has parameter \\$properties with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Middleware/RequestValidationMiddleware.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getSecurityRequirements\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Router/Route.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Router/Route.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Router/Route.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$namespace has no type specified\\.$#"
+			count: 1
+			path: Util/ClassLocator.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$path has no type specified\\.$#"
+			count: 1
+			path: Util/ClassLocator.php

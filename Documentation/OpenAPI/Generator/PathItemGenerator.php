@@ -12,11 +12,12 @@ use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Router\Route;
 
 class PathItemGenerator
 {
     /**
-     * @param array<string, array> $routes All routes with controller class name that have the same URL pattern but different methods. Example: ['controllerClass' => 'CreateController', 'route' => $createControllerRoute]
+     * @param array<int, array{controllerClass: string, route: Route}> $routes All routes with controller class name that have the same URL pattern but different methods. Example: ['controllerClass' => 'CreateController', 'route' => $createControllerRoute]
      *
      * @return PathItemObject
      */

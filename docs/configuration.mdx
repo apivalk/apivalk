@@ -1,0 +1,79 @@
+---
+title: "Configuration"
+description: "Apivalk is configured via the `ApivalkConfiguration` class. This class holds the router, renderer, exception handler, and the optional PSR-11 container."
+---
+
+## Basic Setup
+
+To bootstrap Apivalk, you need to create an instance of `ApivalkConfiguration` and pass it to the `Apivalk` core class.
+
+```php
+use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Router\Router;
+use apivalk\apivalk\Util\ClassLocator;
+
+// 1. Setup Router with auto-discovery
+$classLocator = new ClassLocator(__DIR__ . '/src/Http/Controller', 'App\\Http\\Controller');
+$routerCache = new FilesystemCache(__DIR__ . '/cache');
+$router = new Router($classLocator, $routerCache);
+
+// 2. Create Base Configuration
+$configuration = new ApivalkConfiguration($router, null, [ApivalkExceptionHandler::class, 'handle']);
+
+// 3. Add Middlewares
+$configuration->addMiddleware(new SanitizeMiddleware());
+$configuration->addMiddleware(new RequestValidationMiddleware());
+
+// 4. Run the App
+$apivalk = new Apivalk($configuration);
+$response = $apivalk->run();
+
+// 5. Render response
+$apivalk->getRenderer()->render($response);
+```
+
+## Dependency Injection (PSR-11 Container)
+
+Apivalk supports any PSR-11 compliant container (like PHP-DI, Symfony DI, etc.). This allows you to inject dependencies into your controllers.
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use App\ContainerFactory; // Your own factory
+
+$container = ContainerFactory::create();
+$config = new ApivalkConfiguration(
+    $router,
+    null, // default renderer (JsonRenderer)
+    null, // default exception handler
+    $container
+);
+```
+
+When a container is provided, Apivalk will use it to instantiate your controllers. If no container is provided, it will simply use `new $controllerClass()`.
+
+## Middleware Stack
+
+You can register global middlewares via the configuration.
+
+```php
+$config->getMiddlewareStack()->add(new MyAuthMiddleware());
+```
+
+## Exception Handling
+
+You can provide a custom exception handler callable to format error responses.
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\ApivalkExceptionHandler;
+
+$config = new ApivalkConfiguration(
+    $router,
+    null,
+    [ApivalkExceptionHandler::class, 'handle']
+);
+```
+
+For more details, see the [Exception Handling documentation](/core/error-handling).

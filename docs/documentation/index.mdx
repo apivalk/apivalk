@@ -1,0 +1,31 @@
+---
+title: "Overview"
+description: "Apivalk is built on the philosophy of **Documentation-Driven Development**. This means that your API's documentation is not an afterthought, but the core engine that drives the framework."
+---
+
+## Core Principle: Single Source of Truth (SSOT)
+
+In Apivalk, your PHP code is the single source of truth. By defining the structure and validation rules of your requests and responses once, you gain:
+
+1. **Automated Validation**: Requests are validated against the documentation before reaching your controller.
+2. **Type Safety**: Input data is automatically cast to the correct PHP types.
+3. **IDE Support**: DocBlocks are generated to provide autocompletion for request parameters.
+4. **OpenAPI Specification**: A full OpenAPI 3.0 (Swagger) JSON is generated automatically.
+5. **Reusable Components**: Standard response objects can be reused across multiple endpoints.
+
+## The Documentation Flow
+
+1. **Define**: You implement `getRequestDocumentation()` and `getResponseDocumentation()` in your controllers using the **Property System**.
+2. **Generate DocBlocks**: Use the `DocBlockGenerator` to create "Shape" classes and update your request classes with `@property` tags.
+3. **Run & Validate**: The `RequestValidationMiddleware` uses your definitions to validate incoming data.
+4. **Export**: The `OpenAPIGenerator` crawls your routes and documentation to produce a Swagger file.
+
+## Key Subsystems
+
+- [**Request Documentation**](/documentation/request): Defining endpoint input contracts.
+- [**Response Documentation**](/documentation/response): Defining endpoint output contracts.
+- [**Property Collections**](/documentation/property-collection): Property Collections in Apivalk are used to group multiple properties together.
+- [**Property System**](/documentation/property): The building blocks for defining data types and validation rules.
+- [**DocBlock Generator**](/documentation/docblock-generator): Enhances the developer experience with IDE support.
+- [**OpenAPI Generator**](/documentation/openapi-generator): Converts your code-based documentation into a standard format.
+- [**Response Objects**](/documentation/response-objects): Pre-defined reusable objects for common API responses.

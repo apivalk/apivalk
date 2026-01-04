@@ -1,0 +1,82 @@
+---
+title: "Controller"
+description: "In Apivalk, controllers are the entry point for your business logic. Following the Single Responsibility Principle, each controller class should handle exactly one HTTP route and method."
+---
+
+## Creating a Controller
+
+Every controller must extend `AbstractApivalkController` and implement four key methods:
+
+1. `getRoute()`: Defines the path and HTTP method.
+2. `getRequestClass()`: Specifies the `AbstractApivalkRequest` class used for this endpoint.
+3. `getResponseClasses()`: Lists the possible `AbstractApivalkResponse` classes this controller can return.
+4. `__invoke()`: The main execution logic.
+
+### Example
+
+```php
+namespace App\Http\Controller\Pet;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Http\Method\GetMethod;
+use App\Http\Request\Pet\GetPetRequest;
+use App\Http\Response\Pet\GetPetResponse;
+use App\Http\Response\Common\NotFoundResponse;
+
+class GetPetController extends AbstractApivalkController
+{
+    public static function getRoute(): Route
+    {
+        return new Route('/pet/{id}', new GetMethod());
+    }
+
+    public static function getRequestClass(): string
+    {
+        return GetPetRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [
+            GetPetResponse::class,
+            NotFoundResponse::class,
+        ];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        // $request is already populated and validated!
+        $id = $request->path()->id;
+
+        $pet = $this->petRepository->find($id);
+
+        if (!$pet) {
+            return new NotFoundResponse('Pet not found');
+        }
+
+        return new GetPetResponse($pet);
+    }
+}
+```
+
+## Dependency Injection
+
+If you [configured a PSR-11 container](https://dopodev.mintlify.app/configuration#dependency-injection-psr-11-container), you can use constructor injection:
+
+```php
+public function __construct(PetRepository $petRepository)
+{
+    $this->petRepository = $petRepository;
+}
+```
+
+## Route Discovery
+
+Apivalk uses `ClassLocator` to scan your controller directory. You don't need to register routes manually; the framework discovers them automatically by calling `getRoute()` on any class extending `AbstractApivalkController`.
+
+## Pagination
+
+For endpoints returning lists of data, see the [Pagination](/http/pagination) guide.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Util;
 
-final class ClassLocator
+class ClassLocator
 {
     private $path;
     private $namespace;
@@ -26,9 +26,9 @@ final class ClassLocator
     }
 
     /**
-     * @return array{className: string, path: string}
+     * @return array<int, array{className: string, path: string}>
      */
-    public function findClasses(): array
+    public function find(): array
     {
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->getPath()));
         $filePaths = [];

@@ -128,15 +128,16 @@ abstract class AbstractRequestTest extends TestCase
             PREG_SET_ORDER
         );
 
-        foreach ($matches as $match) {
-            [$full, $returnTypes, $section] = $match;
+        foreach ($matches as $matchItem) {
+            [$full, $returnTypes, $section] = $matchItem;
 
             foreach (explode('|', $returnTypes) as $type) {
                 $type = ltrim($type, '\\');
 
-                if (!str_ends_with($type, 'ParameterBag')) {
-                    $shapes[$section] = '\\' . $type;
+                if (substr($type, -strlen('ParameterBag')) === 'ParameterBag') {
+                    continue;
                 }
+                $shapes[$section] = '\\' . $type;
             }
         }
 

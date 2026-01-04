@@ -1,0 +1,61 @@
+---
+title: "Installation"
+description: "Apivalk is a lightweight, framework-agnostic REST API framework for PHP. It can be installed easily via Composer."
+---
+
+## Prerequisites
+
+- **PHP**: 7.2 or higher.
+- **Composer**: Dependency manager for PHP.
+
+## Step-by-Step Installation
+
+### 1. Require Apivalk via Composer
+
+Run the following command in your project root:
+
+```bash
+composer require apivalk/apivalk
+```
+
+### 2. Project Structure (Recommended)
+
+While Apivalk is flexible, we recommend the following structure for your API:
+
+```text
+src/
+└── Http/
+    └── Api/
+        └── v1/
+            └── Pet/
+                ├── Controller/
+                │   └── CreatePetController.php
+                ├── Request/
+                │   └── CreatePetRequest.php
+                └── Response/
+                    └── CreatePetResponse.php
+```
+
+### 3. Autoloading
+
+Ensure your `composer.json` is configured to autoload your classes. For example:
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
+```
+
+After modifying `composer.json`, run:
+
+```bash
+composer dump-autoload
+```
+
+## Next Steps
+
+Once installed, proceed to the [Configuration](https://docs.apivalk.com/docs/configuration) guide to set up your API entry point.

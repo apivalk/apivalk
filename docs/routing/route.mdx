@@ -1,0 +1,49 @@
+---
+title: "Route"
+description: "The `Route` class is a data carrier that represents a single endpoint in your API. It encapsulates all the necessary information to map a URL and HTTP method to a specific action."
+---
+
+## Properties
+
+A `Route` instance contains the following information:
+
+* **URL**: The path template for the endpoint (e.g., `/api/v1/users/{id}`).
+* **Method**: An implementation of `MethodInterface` representing the allowed HTTP verb (GET, POST, etc.).
+* **Description**: An optional human-readable description used for documentation (OpenAPI).
+* **Tags**: A collection of `TagObject` instances used for grouping endpoints in documentation.
+* **Security Requirements**: A collection of `SecurityRequirementObject` instances defining the authentication needed for the route.
+
+## Path Parameters
+
+Routes support dynamic path parameters using the `{parameterName}` syntax. For example:
+
+```php
+new Route('/users/{id}/profile', new GetMethod());
+```
+
+These parameters are automatically identified and converted into capture groups in the internal regex generation logic.
+
+## Integration with Documentation
+
+The `Route` class implements `JsonSerializable`, allowing it to be easily exported for OpenAPI (Swagger) generation. It includes helper methods for:
+
+* `jsonSerialize()`: Converts the route and its metadata into a format suitable for JSON export.
+* `static byJson(string $json)`: Hydrates a `Route` object from a JSON string, which is used when loading routes from the router cache.
+
+## Usage in Controllers
+
+In an Apivalk application, you typically don't instantiate `Route` objects manually. Instead, you define them in your controller's static `getRoute()` method:
+
+```php
+public static function getRoute(): Route
+{
+    return new Route(
+        '/v1/hello-world',
+        new GetMethod(),
+        'A simple hello world endpoint',
+        [new TagObject('Greeting', 'Endpoints for saying hello')]
+    );
+}
+```
+
+The framework's automated discovery system then picks up these definitions and registers them with the router.

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/apivalk/apivalk/compare/v1.1.1...v1.2.0) (2026-01-04)
+
+
+### Features
+
+* add cache layer ([5f70627](https://github.com/apivalk/apivalk/commit/5f706273338406dd715f9ce571d6d9bdebc940ba)), closes [#25](https://github.com/apivalk/apivalk/issues/25)
+* add PHPStan static analysis ([8d56b30](https://github.com/apivalk/apivalk/commit/8d56b3088f0e75078916e6e47fc1ebb4c476cf60)), closes [#20](https://github.com/apivalk/apivalk/issues/20)
+* **logger:** Add logger support ([a0512a2](https://github.com/apivalk/apivalk/commit/a0512a22774cacd89bb2d23e681c7af5835a245f))
+
 ## [1.1.1](https://github.com/apivalk/apivalk/compare/v1.1.0...v1.1.1) (2025-12-20)
 
 

@@ -32,7 +32,7 @@ class OpenAPI
     private $paths = [];
     /** @var array<string, PathItemObject> */
     private $webhooks = [];
-    /** @var ComponentsObject */
+    /** @var ComponentsObject|null */
     private $components;
     /** @var TagObject[] */
     private $tags = [];
@@ -87,31 +87,36 @@ class OpenAPI
         return $this->jsonSchemaDialect;
     }
 
+    /** @return ServerObject[] */
     public function getServers(): array
     {
         return $this->servers;
     }
 
+    /** @return PathsObject[] */
     public function getPaths(): array
     {
         return $this->paths;
     }
 
+    /** @return array<string, PathItemObject> */
     public function getWebhooks(): array
     {
         return $this->webhooks;
     }
 
-    public function getComponents(): ComponentsObject
+    public function getComponents(): ?ComponentsObject
     {
         return $this->components;
     }
 
+    /** @return TagObject[] */
     public function getTags(): array
     {
         return $this->tags;
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         $servers = [];

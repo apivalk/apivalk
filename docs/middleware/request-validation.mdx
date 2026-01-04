@@ -1,0 +1,53 @@
+---
+title: "Request Validation"
+description: "The `RequestValidationMiddleware` is a core component of Apivalk's Documentation-Driven Development approach. It ensures that every request hitting your controller strictly adheres to the schema defined in your `ApivalkRequestDocumentation`."
+---
+
+## How it Works
+
+The middleware intercepts the request before it reaches the controller and performs the following steps:
+
+1. **Extract Documentation**: It retrieves the property definitions for Body, Query, and Path parameters from the Request object.
+2. **Iterative Validation**: It iterates through each defined property and checks the corresponding value in the `ParameterBag`.
+3. **Required Field Check**: If a property is marked as `required` but missing from the request, a validation error is recorded.
+4. **Validator Execution**: If the value is present, it runs all validators attached to that property (e.g., `StringValidator`, `NumberValidator`, `EnumValidator`).
+5. **Error Collection**: If any validation fails, the middleware collects the errors into an array of `ErrorObject` instances.
+
+## Automatic Response
+
+If one or more validation errors are found, the middleware **short-circuits** the request lifecycle. It does not call the next middleware or the controller. Instead, it immediately returns a `BadValidationApivalkResponse` (HTTP 422 Unprocessable Entity).
+
+### Example Error Response
+
+```json
+{
+    "status": "error",
+    "message": "Validation failed",
+    "errors": [
+        {
+            "property": "email",
+            "message": "Value is not a valid email address"
+        },
+        {
+            "property": "age",
+            "message": "Field is required"
+        }
+    ]
+}
+```
+
+## Benefits
+
+- **Clean Controllers**: Your controllers never need to contain validation logic. By the time they are executed, you are guaranteed that the input is valid and correctly typed.
+- **Consistency**: Validation errors follow a standardized format across your entire API.
+- **Synchronized Docs**: Since validation is driven by the documentation, your API's behavior always matches what is described in your generated OpenAPI specification.
+
+## Usage
+
+Enable the middleware in your configuration:
+
+```php
+use apivalk\apivalk\Middleware\RequestValidationMiddleware;
+
+$configuration->addMiddleware(new RequestValidationMiddleware());
+```

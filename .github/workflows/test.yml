@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: PHPUnit (PHP ${{ matrix.php }})
+    name: Test (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -38,7 +38,10 @@ jobs:
           php_version: ${{ matrix.php }}
           php_extensions: ${{ env.PHP_EXTENSIONS }}
 
-      - name: Running unit test
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --error-format=github
+
+      - name: Running unit tests
         uses: php-actions/phpunit@v3
         with:
           version: ${{ matrix.phpunit }}

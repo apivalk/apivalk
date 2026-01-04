@@ -1,0 +1,63 @@
+---
+title: "Docblock Generator"
+description: "The `DocBlockGenerator` is a developer-experience (DX) tool that bridges the gap between your documentation definitions and your IDE. It provides full autocompletion for request properties that are otherwise handled via \"magic\" getters."
+---
+
+## The Problem
+
+In Apivalk, request data is populated into bags. While you can access data using `$request->getBody()->get('name')`, the framework also supports magic getters like `$request->name`. Without extra metadata, IDEs (like PhpStorm) won't know that `name` exists or what type it is.
+
+## The Solution: Automated DocBlocks
+
+The `DocBlockGenerator` automates the creation of this metadata. It performs the following steps for every Request class in your project:
+
+1. **Discovery**: Scans your API directories for classes extending `AbstractApivalkRequest`.
+2. **Extraction**: Executes the `getRequestDocumentation()` method on the associated Controller to find all defined properties.
+3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation.
+4. **Rewrite**: Updates the original Request class file with `@property` tags pointing to these Shape classes.
+
+## Example Result
+
+Before running the generator, your Request class might look like this:
+
+```php
+class GetUserRequest extends AbstractApivalkRequest {
+    // Empty class
+}
+```
+
+After running `DocBlockGenerator`, it is automatically updated to:
+
+```php
+/**
+ * @property GetUserBodyShape $body
+ * @property GetUserQueryShape $query
+ * @property GetUserPathShape $path
+ */
+class GetUserRequest extends AbstractApivalkRequest {
+    // Still empty, but now with IDE support!
+}
+```
+
+Now, in your controller, you can type `$request->body()->` and your IDE will suggest all defined properties with their correct types.
+
+## How to Run
+
+You can trigger the generation process from your bootstrap or a CLI tool:
+
+```php
+use apivalk\apivalk\Documentation\DocBlock\DocBlockGenerator;
+
+$generator = new DocBlockGenerator();
+$generator->run(
+    '/path/to/your/api/src', 
+    'App\\Api'
+);
+```
+
+### Components
+
+* `DocBlockGenerator`: The main entry point that iterates over classes.
+* `DocBlockRequestGenerator`: Converts an `AbstractApivalkRequest` into a `DocBlockRequest` data object.
+* `DocBlockRequest`: Holds the metadata for the three shapes (Body, Query, Path).
+* `DocBlockShape`: Generates the PHP code for the Shape classes.

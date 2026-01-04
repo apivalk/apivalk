@@ -13,24 +13,12 @@ use Psr\Log\LoggerInterface;
 
 class Apivalk
 {
-    /** @var MiddlewareStack */
-    private $middlewareStack;
-    /** @var RendererInterface */
-    private $renderer;
-    /** @var AbstractRouter */
-    private $router;
-    /** @var ContainerInterface|null */
-    private $container;
-    /** @var LoggerInterface */
-    private $logger;
+    /** @var ApivalkConfiguration */
+    private $configuration;
 
     public function __construct(ApivalkConfiguration $apivalkConfiguration)
     {
-        $this->middlewareStack = $apivalkConfiguration->getMiddlewareStack();
-        $this->renderer = $apivalkConfiguration->getRenderer();
-        $this->router = $apivalkConfiguration->getRouter();
-        $this->container = $apivalkConfiguration->getContainer();
-        $this->logger = $apivalkConfiguration->getLogger();
+        $this->configuration = $apivalkConfiguration;
 
         if ($apivalkConfiguration->getExceptionHandler() !== null) {
             set_exception_handler($apivalkConfiguration->getExceptionHandler());
@@ -39,31 +27,31 @@ class Apivalk
 
     public function run(): AbstractApivalkResponse
     {
-        return $this->router->dispatch($this->middlewareStack);
+        return $this->configuration->getRouter()->dispatch($this->configuration->getMiddlewareStack());
     }
 
     public function getMiddlewareStack(): MiddlewareStack
     {
-        return $this->middlewareStack;
+        return $this->configuration->getMiddlewareStack();
     }
 
     public function getRenderer(): RendererInterface
     {
-        return $this->renderer;
+        return $this->configuration->getRenderer();
     }
 
     public function getRouter(): AbstractRouter
     {
-        return $this->router;
+        return $this->configuration->getRouter();
     }
 
     public function getContainer(): ?ContainerInterface
     {
-        return $this->container;
+        return $this->configuration->getContainer();
     }
 
     public function getLogger(): LoggerInterface
     {
-        return $this->logger;
+        return $this->configuration->getLogger();
     }
 }

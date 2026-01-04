@@ -1,0 +1,64 @@
+---
+title: "Response Objects"
+description: "To maintain consistency across your API, Apivalk encourages the use of reusable response objects for common data structures like errors, pagination envelopes, or standard resource representations."
+---
+
+## The Concept
+
+Reusable response objects are implemented as subclasses of `AbstractObjectProperty`. They define a fixed set of properties that can be included in multiple `ApivalkResponseDocumentation` definitions.
+
+## Built-in Examples
+
+### `ErrorApivalkObject`
+
+This object is used to represent a single validation error or a generic error message.
+
+**Structure:**
+
+* `name` (string): The name of the field that caused the error.
+* `error` (string): The human-readable error message.
+
+**Usage in Controller:**
+
+```php
+public static function getResponseDocumentation(): ApivalkResponseDocumentation
+{
+    $doc = new ApivalkResponseDocumentation();
+    $doc->addProperty(new ErrorApivalkObject());
+    return $doc;
+}
+```
+
+## Creating Your Own
+
+You can create custom reusable objects by following these steps:
+
+1. **Create a Property Collection**: Extend `AbstractPropertyCollection` and add your properties.
+2. **Create the Object**: Extend `AbstractObjectProperty` and return your collection in `getPropertyCollection()`.
+
+### Example: `UserObject`
+
+```php
+class UserPropertyCollection extends AbstractPropertyCollection {
+    public function __construct(string $mode) {
+        $this->addProperty(new StringProperty('id', 'User UUID'));
+        $this->addProperty(new StringProperty('email', 'User email address'));
+    }
+}
+
+class UserObject extends AbstractObjectProperty {
+    public function __construct() {
+        parent::__construct('user', 'User details');
+    }
+
+    public function getPropertyCollection(): AbstractPropertyCollection {
+        return new UserPropertyCollection(AbstractPropertyCollection::MODE_VIEW);
+    }
+}
+```
+
+## Benefits
+
+* **Consistency**: All endpoints returning a "User" will have the exact same structure.
+* **Maintenance**: If you add a field to the `UserObject`, it is automatically updated in the OpenAPI documentation for all endpoints that use it.
+* **DRY**: You don't have to redefine the same properties repeatedly.

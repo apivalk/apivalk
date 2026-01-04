@@ -1,6 +1,6 @@
 {
   "name": "apivalk",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A Lightweight, Framework-Agnostic REST API Ecosystem for PHP. Built for speed, precision, and type-safe development.",
   "keywords": [
     "openapi",

@@ -1,0 +1,28 @@
+---
+title: "Routing"
+description: "Routing is the heart of the request-to-controller mapping system in Apivalk. It is designed for high performance, ease of use, and zero-configuration through automated discovery."
+---
+
+## Key Responsibilities
+
+1. **Request Matching**: Analyzing the incoming HTTP method and URI to find a matching route definition.
+2. **Route Discovery**: Automatically scanning specified namespaces for controllers and extracting their route definitions.
+3. **Path Parameter Extraction**: Using regex patterns to identify and capture dynamic parts of the URL (e.g., `/user/{id}`).
+4. **Performance Optimization**: Caching the discovered routes to disk to ensure that heavy scanning logic only runs when necessary.
+
+## Core Components
+
+* **`Router`**: The main dispatcher that handles the matching logic and produces a response.
+* **`Route`**: A data object representing a single API endpoint, including its URL, HTTP method, and metadata.
+* **Cache System**: A subsystem responsible for persisting and retrieving route definitions for maximum efficiency. [Learn more](/cache/index)
+
+## How it Works
+
+1. The `Router` is initialized with a `ClassLocator` and a `CacheInterface` implementation.
+2. During initialization, the `Router` uses `RouteCacheFactory` to ensure the route cache is built and up-to-date.
+3. During dispatch, the `Router` retrieves a route index from the cache.
+4. The `Router` iterates through the index, comparing the current request's URI against the pre-generated regex patterns for each route.
+5. If a match is found, the `Router` retrieves the full route definition from the cache, identifies the associated controller and request classes.
+6. The `Router` then populates the request object and executes the middleware stack.
+
+By combining documentation-driven route definitions with automated discovery and caching, Apivalk provides a powerful routing system that requires minimal manual intervention.
