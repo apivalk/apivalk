@@ -10,14 +10,14 @@ To bootstrap Apivalk, you need to create an instance of `ApivalkConfiguration` a
 ```php
 use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Cache\FilesystemCache;
 use apivalk\apivalk\Router\Router;
-use apivalk\apivalk\Router\Cache\RouterFilesystemCache;
 use apivalk\apivalk\Util\ClassLocator;
 
 // 1. Setup Router with auto-discovery
 $classLocator = new ClassLocator(__DIR__ . '/src/Http/Controller', 'App\\Http\\Controller');
-$routerCache = new RouterFilesystemCache(__DIR__ . '/cache/router.json', $classLocator);
-$router = new Router($routerCache);
+$routerCache = new FilesystemCache(__DIR__ . '/cache');
+$router = new Router($classLocator, $routerCache);
 
 // 2. Create Base Configuration
 $configuration = new ApivalkConfiguration($router, null, [ApivalkExceptionHandler::class, 'handle']);

@@ -31,11 +31,6 @@ parameters:
 			path: Documentation/OpenAPI/Generator/OperationGenerator.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Generator\\\\PathItemGenerator\\:\\:generate\\(\\) has parameter \\$routes with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Generator/PathItemGenerator.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ComponentsObject\\:\\:getHeaders\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/OpenAPI/Object/ComponentsObject.php
@@ -296,11 +291,6 @@ parameters:
 			path: Documentation/OpenAPI/Object/TagObject.php
 
 		-
-			message: "#^Parameter \\#2 \\$routes of method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Generator\\\\PathsGenerator\\:\\:generate\\(\\) expects array\\<string, array\\{controllerClass\\: string, route\\: string\\}\\>, non\\-empty\\-array\\<int\\<0, max\\>, array\\{route\\: mixed, controllerClass\\: mixed\\}\\> given\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/OpenAPIGenerator.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractObjectProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/Property/AbstractObjectProperty.php
@@ -509,16 +499,6 @@ parameters:
 			message: "#^Method apivalk\\\\apivalk\\\\Middleware\\\\RequestValidationMiddleware\\:\\:validateProperties\\(\\) has parameter \\$properties with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Middleware/RequestValidationMiddleware.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Cache\\\\RouterCacheCollection\\:\\:getRouteCacheEntries\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Cache/RouterCacheCollection.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Cache\\\\RouterCacheEntry\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Cache/RouterCacheEntry.php
 
 		-
 			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getSecurityRequirements\\(\\) return type has no value type specified in iterable type array\\.$#"

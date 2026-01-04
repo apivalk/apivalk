@@ -72,7 +72,16 @@ The standard web layer.
 Handles URI-to-Controller mapping.
 
 - Supports regex-based path parameters.
-- Features a `FilesystemCache` to avoid scanning classes on every request in production.
+- Features a high-performance cache to avoid scanning classes on every request in production. [Learn more](/cache/index)
+
+#### `Cache/`
+
+A generic caching layer used for performance optimization.
+
+- `CacheInterface`: The base contract for all cache adapters.
+- `FilesystemCache`: A disk-based implementation of the cache.
+- `CacheItem`: A standardized object representing a cached entry, including TTL and creation metadata.
+- [Learn more about Cache](/cache/index)
 
 #### `Middleware/`
 
@@ -100,6 +109,6 @@ This system ensures that when you access `$request->body()->get('email')`, you a
 
 Apivalk is designed for developer productivity through automation:
 
-1. **Route Discovery**: `RouterFilesystemCache` uses `ClassLocator` to find all classes extending `AbstractApivalkController`. It calls `getRoute()` on each to build the routing table.
+1. **Route Discovery**: `RouteCacheFactory` uses `ClassLocator` to find all classes extending `AbstractApivalkController`. It calls `getRoute()` on each to build the routing table.
 2. **Request Population**: `AbstractApivalkRequest` automatically populates itself using metadata from `getDocumentation()`.
 3. **Request Validation**: `RequestValidationMiddleware` automatically validates the populated request against the same documentation before the controller is invoked.

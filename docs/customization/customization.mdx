@@ -49,15 +49,17 @@ $config = new ApivalkConfiguration($router, null, $exceptionHandler);
 
 ## 💾 Discovery & Optimization
 
-### Custom Router Cache
+### Custom Cache
 
-Apivalk ships with `RouterFilesystemCache`, which scans for controllers and saves the route map to a JSON file. For high-scale environments, you might want to store this in memory.
+Apivalk ships with `FilesystemCache`, which stores items on the local disk. For high-scale environments, you might want to store the routing data in memory.
 
-By implementing `RouterCacheInterface`, you can create a cache provider for:
+By implementing `CacheInterface`, you can create a cache provider for:
 
 - **Redis / Memcached**
 - **Database**
 - **Swoole / RoadRunner shared memory**
+
+[Learn how to implement your own cache](/cache/filesystem-cache)
 
 ## 🔌 Inversion of Control (DI)
 

@@ -13,7 +13,7 @@ The `ClassLocator` is a powerful utility used to scan the filesystem and identif
 
 Apivalk uses the `ClassLocator` primarily for **automated component discovery**. Instead of manually registering every controller or service, the `ClassLocator` can scan a directory, resolve the relative paths to PSR-4 style namespaces, and verify that the classes actually exist.
 
-It is the engine behind the `RouterFilesystemCache`, allowing the framework to find all controllers in your project automatically.
+It is the engine behind the automated route discovery, allowing the framework to find all controllers in your project automatically.
 
 ## Core Features
 
@@ -34,7 +34,7 @@ $namespace = 'App\\Controllers';
 $locator = new ClassLocator($path, $namespace);
 
 // Find all classes in that path matching the namespace
-$classes = $locator->findClasses();
+$classes = $locator->find();
 
 foreach ($classes as $classInfo) {
     echo "Found Class: " . $classInfo['className'] . "\n";

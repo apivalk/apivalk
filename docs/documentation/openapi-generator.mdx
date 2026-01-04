@@ -7,7 +7,7 @@ description: "The `OpenAPIGenerator` is the component responsible for converting
 
 The generator leverages the existing framework infrastructure to discover and process your API metadata:
 
-1. **Route Discovery**: It uses the `Router` and its `RouterCache` to find all registered routes and their corresponding controller classes.
+1. **Route Discovery**: It uses the `Router` to find all registered routes and their corresponding controller classes.
 2. **Metadata Extraction**: For each discovered route, it calls:
    - `AbstractApivalkController::getRequestDocumentation()`
    - `AbstractApivalkController::getResponseDocumentation()`

@@ -14,14 +14,15 @@ description: "Routing is the heart of the request-to-controller mapping system i
 
 * **`Router`**: The main dispatcher that handles the matching logic and produces a response.
 * **`Route`**: A data object representing a single API endpoint, including its URL, HTTP method, and metadata.
-* **Router Cache**: A subsystem responsible for persisting and retrieving route definitions for maximum efficiency.
+* **Cache System**: A subsystem responsible for persisting and retrieving route definitions for maximum efficiency. [Learn more](/cache/index)
 
 ## How it Works
 
-1. The `Router` is initialized with a `RouterCacheInterface` implementation.
-2. During dispatch, the `Router` retrieves a `RouterCacheCollection` from the cache.
-3. The `Router` iterates through the collection, comparing the current request's URI against the pre-generated regex patterns for each route.
-4. If a match is found, the `Router` identifies the associated controller and request classes.
-5. The `Router` then populates the request object and executes the middleware stack.
+1. The `Router` is initialized with a `ClassLocator` and a `CacheInterface` implementation.
+2. During initialization, the `Router` uses `RouteCacheFactory` to ensure the route cache is built and up-to-date.
+3. During dispatch, the `Router` retrieves a route index from the cache.
+4. The `Router` iterates through the index, comparing the current request's URI against the pre-generated regex patterns for each route.
+5. If a match is found, the `Router` retrieves the full route definition from the cache, identifies the associated controller and request classes.
+6. The `Router` then populates the request object and executes the middleware stack.
 
 By combining documentation-driven route definitions with automated discovery and caching, Apivalk provides a powerful routing system that requires minimal manual intervention.

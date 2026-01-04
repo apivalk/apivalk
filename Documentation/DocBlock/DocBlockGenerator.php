@@ -19,7 +19,7 @@ class DocBlockGenerator
         $classLocator = new ClassLocator($apiDirectory, $namespace);
         $generator = new DocBlockRequestGenerator();
 
-        foreach ($classLocator->findClasses() as $class) {
+        foreach ($classLocator->find() as $class) {
             $className = $class['className'];
             $filePath = $class['path'];
 

@@ -1,0 +1,56 @@
+---
+title: "Overview"
+description: "Apivalk features a generic, high-performance caching layer designed to optimize resource-intensive operations, such as automated route discovery and metadata processing."
+---
+
+## Why Caching?
+
+To provide a "zero-config" experience, Apivalk performs automated discovery of controllers and their metadata. While this is extremely developer-friendly, scanning the filesystem and parsing classes on every request would be inefficient.
+
+The cache layer ensures that these operations are performed only when necessary, persisting the results for subsequent requests.
+
+## Core Concepts
+
+The cache system is built around three primary components in the `apivalk\apivalk\Cache` namespace:
+
+### 1. Cache Interface
+
+The `CacheInterface` defines a standard contract for any cache implementation. This makes the framework agnostic to the storage backend.
+
+- **Methods**: `get`, `set`, `delete`, `clear`, `getDefaultCacheLifetime` and `has`.
+- **Learn more**: [Implementation details](/cache/filesystem-cache)
+
+### 2. Cache Item
+
+A `CacheItem` is a value object that encapsulates the cached data along with its metadata:
+- **Key**: A unique identifier for the item.
+- **Value**: The data being stored (serialized/deserialized automatically).
+- **TTL**: Time-to-live in seconds.
+- **Created At**: When the item was created (UTC DateTime object).
+
+Make sure that you always use the `CacheItem` class to interact with the cache.
+When you want a custom "createdAt", you can pass it as a second argument to the constructor. If you do that, make sure to use UTC as a timezone in the given DateTime object because the createdAt focuses on ZULU Timestamp (serialization/deserialization is done automatically).
+
+### 3. Implementations
+
+Apivalk provides a robust default implementation and allows for easy extension:
+
+- **FilesystemCache**: The standard implementation that stores data as JSON files on disk.
+- **Custom Adapters**: You can implement `CacheInterface` to use Redis, Memcached, or any other storage system.
+
+## Integration in Apivalk
+
+While the cache system is generic, its primary use case within the framework is for the **Routing System**.
+
+The `Router` uses the cache to store:
+1. **Route Index**: A mapping of regex patterns to route definitions.
+2. **Route Definitions**: Detailed metadata for each endpoint.
+
+By caching this information, the router can achieve near-instant dispatch times even with hundreds of routes.
+
+## Performance & Production
+
+In a production environment, it is recommended to:
+- Use a long TTL for routing data.
+- Ensure the cache directory (if using `FilesystemCache`) is writable by the web server.
+- Pre-warm the cache during deployment to ensure the first request is as fast as the rest.

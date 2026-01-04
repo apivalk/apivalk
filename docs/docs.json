@@ -57,8 +57,14 @@
             "pages": [
               "routing/index",
               "routing/route",
-              "routing/router",
-              "routing/router-cache"
+              "routing/router"
+            ]
+          },
+          {
+            "group": "Cache",
+            "pages": [
+              "cache/index",
+              "cache/filesystem-cache"
             ]
           },
           {

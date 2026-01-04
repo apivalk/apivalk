@@ -1,0 +1,93 @@
+---
+title: "Filesystem & Custom Cache"
+description: "Learn how to use the built-in FilesystemCache or create your own custom cache implementation for high-scale environments."
+---
+
+## FilesystemCache
+
+The `FilesystemCache` is the default implementation provided by Apivalk. It is suitable for most applications, especially in environments where a shared filesystem is available or on single-server setups.
+
+### Characteristics
+- **Persistence**: Data is saved as JSON-encoded files.
+- **Organization**: Each cache item is stored in its own file, named using a SHA-256 hash of its key.
+- **Safety**: Automatically creates the cache directory if it doesn't exist.
+
+### Usage Example
+
+```php
+use apivalk\apivalk\Cache\FilesystemCache;
+
+$cachePath = __DIR__ . '/cache';
+$cache = new FilesystemCache($cachePath);
+
+// The cache is now ready to be passed to the Router or used standalone
+```
+
+## Generic Nature & Custom Adapters
+
+Apivalk's cache system is strictly interface-based. This means you can easily swap the `FilesystemCache` for an implementation that fits your infrastructure better.
+
+### Implementing `CacheInterface`
+
+Feel free to orientate on the existing `FilesystemCache` implementation for inspiration.
+To create your own cache provider (e.g., for Redis, Memcached, or Database), you only need to implement the `CacheInterface`:
+
+```php
+namespace App\Cache;
+
+use apivalk\apivalk\Cache\CacheInterface;
+use apivalk\apivalk\Cache\CacheItem;
+
+class MyCustomCache implements CacheInterface
+{
+    public function get(string $key): ?CacheItem 
+    {
+        // Retrieve data from your storage
+    }
+
+    public function set(CacheItem $cacheItem): bool 
+    {
+        // Store data in your storage
+    }
+
+    public function delete(string $key): bool 
+    {
+        // Remove item from storage
+    }
+
+    public function clear(): void 
+    {
+        // Flush all items
+    }
+
+    public function has(string $key): bool 
+    {
+        // Check if item exists and is not expired
+    }
+
+    public function getDefaultCacheLifetime(): int
+    {
+        // return default cache item lifetime in seconds
+    }
+}
+```
+
+### Why use a Custom Cache?
+
+- **Distributed Environments**: If your API runs on multiple nodes, using a centralized cache like Redis ensures all nodes share the same routing index.
+- **Extreme Performance**: Memory-based caches (Redis, APCu) are significantly faster than disk-based caches for high-traffic APIs.
+- **Infrastructure Alignment**: Use the tools your team already manages and monitors.
+
+## Using `CacheItem`
+
+When implementing your own cache, you'll interact with the `CacheItem` class. It provides a convenient `toJson()` method for serialization and a static `byJson()` method for restoration, though you are free to store the data in any format as long as you can reconstruct the `CacheItem` object.
+
+```php
+// In your set() method
+$serialized = $cacheItem->toJson();
+$this->redis->set($cacheItem->getKey(), $serialized, $cacheItem->getTtl());
+
+// In your get() method
+$data = $this->redis->get($key);
+return $data ? CacheItem::byJson($data) : null;
+```
