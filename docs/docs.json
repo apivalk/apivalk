@@ -40,7 +40,8 @@
             "pages": [
               "concepts/coding-standards",
               "concepts/request-lifecycle",
-              "concepts/structure"
+              "concepts/structure",
+              "concepts/best-openapi-practices"
             ]
           },
           {
@@ -57,7 +58,8 @@
             "pages": [
               "routing/index",
               "routing/route",
-              "routing/router"
+              "routing/router",
+              "routing/rate-limit"
             ]
           },
           {
@@ -74,7 +76,8 @@
               "middleware/request-validation",
               "middleware/sanitize",
               "middleware/authentication",
-              "middleware/security"
+              "middleware/security",
+              "middleware/rate-limit"
             ]
           },
           {

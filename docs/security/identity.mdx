@@ -26,8 +26,7 @@ Represents a successfully authenticated user.
 Typically created by an [Authenticator](/security/authenticator) after validating a token.
 
 ```php
-use apivalk\apivalk\Security\UserAuthIdentity;
-use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;use apivalk\apivalk\Security\Scope;
 
 $identity = new UserAuthIdentity(
     'user-123', 
@@ -53,7 +52,7 @@ Represents an anonymous or non-authenticated requester.
 By default, every request is initialized with an empty `GuestAuthIdentity`.
 
 ```php
-use apivalk\apivalk\Security\GuestAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 
 $identity = new GuestAuthIdentity();
 ```

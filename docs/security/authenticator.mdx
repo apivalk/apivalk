@@ -33,6 +33,7 @@ use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
 
 $authenticator = new JwtAuthenticator(
     'https://YOUR_DOMAIN/.well-known/jwks.json',
+    $cache, // Instance of CacheInterface or null
     'https://YOUR_ISSUER/',
     'YOUR_AUDIENCE'
 );
@@ -47,9 +48,7 @@ $identity = $authenticator->authenticate($jwtToken);
 You can easily implement your own authenticator by implementing the interface. This is useful for API keys or custom database-backed authentication.
 
 ```php
-use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
-use apivalk\apivalk\Security\UserAuthIdentity;
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;
 
 class ApiKeyAuthenticator implements AuthenticatorInterface
 {

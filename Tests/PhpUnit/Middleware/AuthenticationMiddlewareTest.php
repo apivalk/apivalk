@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
-use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
-use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use PHPUnit\Framework\TestCase;
 
 class AuthenticationMiddlewareTest extends TestCase
 {
@@ -42,7 +43,7 @@ class AuthenticationMiddlewareTest extends TestCase
             return $response;
         };
 
-        $result = $middleware->process($request, 'SomeController', $next);
+        $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);
     }
 
@@ -64,7 +65,7 @@ class AuthenticationMiddlewareTest extends TestCase
             return $response;
         };
 
-        $result = $middleware->process($request, 'SomeController', $next);
+        $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);
     }
 
@@ -92,7 +93,7 @@ class AuthenticationMiddlewareTest extends TestCase
             return $response;
         };
 
-        $result = $middleware->process($request, 'SomeController', $next);
+        $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);
     }
 }

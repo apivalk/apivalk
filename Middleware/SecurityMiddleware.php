@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Middleware;
 
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
 
@@ -14,12 +14,10 @@ class SecurityMiddleware implements MiddlewareInterface
 {
     public function process(
         ApivalkRequestInterface $request,
-        string $controllerClass,
+        AbstractApivalkController $controller,
         callable $next
     ): AbstractApivalkResponse {
-        /** @var AbstractApivalkController $controllerClass */
-        $route = $controllerClass::getRoute();
-        $securityRequirements = $route->getSecurityRequirements();
+        $securityRequirements = $controller::getRoute()->getSecurityRequirements();
 
         if (empty($securityRequirements)) {
             return $next($request);

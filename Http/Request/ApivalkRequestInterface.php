@@ -8,8 +8,9 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 interface ApivalkRequestInterface
 {
@@ -18,6 +19,8 @@ interface ApivalkRequestInterface
     public function populate(Route $route): void;
 
     public function getMethod(): MethodInterface;
+
+    public function getIp(): ?string;
 
     public function header(): ParameterBag;
 
@@ -32,4 +35,8 @@ interface ApivalkRequestInterface
     public function getAuthIdentity(): AbstractAuthIdentity;
 
     public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void;
+
+    public function setRateLimitResult(RateLimitResult $rateLimitResult): void;
+
+    public function getRateLimitResult(): ?RateLimitResult;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Middleware;
 
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
@@ -20,7 +21,7 @@ class AuthenticationMiddleware implements MiddlewareInterface
 
     public function process(
         ApivalkRequestInterface $request,
-        string $controllerClass,
+        AbstractApivalkController $controller,
         callable $next
     ): AbstractApivalkResponse {
         if (!$request->header()->has('Authorization')) {

@@ -63,6 +63,7 @@ use apivalk\apivalk\Middleware\AuthenticationMiddleware;
 
 $authenticator = new JwtAuthenticator(
     'https://example.com/.well-known/jwks.json',
+    $cache, // Instance of CacheInterface or null
     'https://example.com/',
     'my-api-audience'
 );

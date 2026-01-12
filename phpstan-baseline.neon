@@ -490,20 +490,7 @@ parameters:
 			count: 1
 			path: Middleware/RequestValidationMiddleware.php
 
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getSecurityRequirements\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
 
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
 
 		-
 			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$namespace has no type specified\\.$#"

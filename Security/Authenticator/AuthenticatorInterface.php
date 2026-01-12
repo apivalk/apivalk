@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Security\Authenticator;
 
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 interface AuthenticatorInterface
 {

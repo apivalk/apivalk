@@ -1,0 +1,64 @@
+---
+title: "Rate Limit"
+description: "Rate limiting is a critical feature for protecting your API from abuse, brute-force attacks, and ensuring fair usage among all consumers."
+---
+
+## Overview
+
+Apivalk provides a robust and flexible rate limiting system. It consists of several components working together to identify, track, and enforce limits on API requests.
+
+The rate limiting logic is decoupled from the routing itself, allowing you to define limits per route and enforce them using a dedicated middleware.
+
+## Core Components
+
+The rate limiting system is located in the `apivalk\apivalk\Router\RateLimit` namespace:
+
+* **`RateLimitInterface`**: The contract for all rate limit definitions. It defines the name, maximum attempts, window duration, and how the cache key is generated.
+* **`IpRateLimit`**: A built-in implementation that limits requests based on the client's IP address.
+* **`RateLimiter`**: The engine that checks if a request is allowed. It interacts with a `CacheInterface` to track usage.
+* **`RateLimitContext`**: A data object containing information about the current request (IP, identity, route, method) used to evaluate the rate limit.
+* **`RateLimitResult`**: A result object returned by the `RateLimiter`, containing details like remaining attempts and reset time.
+
+## Defining a Rate Limit
+
+You can define a rate limit on a `Route` by passing an implementation of `RateLimitInterface` to its constructor.
+
+### Using IpRateLimit
+
+The `IpRateLimit` class takes three parameters:
+1. **Name**: A unique identifier for the limit (e.g., 'login_limit').
+2. **Max Attempts**: The maximum number of requests allowed within the window.
+3. **Window Seconds**: The duration of the rate limiting window in seconds.
+
+```php
+use apivalk\apivalk\Router\RateLimit\IpRateLimit;
+
+$rateLimit = new IpRateLimit('public_api', 100, 3600); // 100 requests per hour
+```
+
+## Custom Rate Limits
+
+You can create custom rate limiting strategies by implementing `RateLimitInterface`. For example, you might want to limit by authenticated user ID or by a specific request header.
+
+```php
+namespace App\RateLimit;
+
+use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+use apivalk\apivalk\Router\RateLimit\RateLimitContext;
+
+class UserRateLimit implements RateLimitInterface
+{
+    // ... implementation ...
+
+    public function getKey(RateLimitContext $rateLimitContext): string
+    {
+        return 'rate_limit:user:' . $rateLimitContext->getAuthIdentity()->getIdentifier();
+    }
+}
+```
+
+## Enforcement
+
+Rate limits defined on routes are not enforced automatically. You must add the `RateLimitMiddleware` to your middleware stack to enable enforcement.
+
+See the [Rate Limit Middleware](/middleware/rate-limit) documentation for more details.

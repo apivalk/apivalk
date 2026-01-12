@@ -9,16 +9,14 @@ description: "Apivalk highly focuses SRP and therefore is also in generla design
 - **Immutable-like Responses**: Response objects are designed to be built and returned, rather than modified in place across many layers.
 - **Container Integration**: Apivalk supports PSR-11 containers, allowing for easy Dependency Injection in your controllers.
 - **Testing**: The framework is built with testability in mind, utilizing interfaces and factories that are easily mockable.
+- **Automated Discovery**: No manual route registration is required. The framework discovers your controllers and their metadata automatically.
+- **Fail Fast**: Input is validated at the middleware level, before it ever reaches the controller, ensuring that your business logic only receives clean, typed data.
 
-...
+So, for example, let’s say our example is based up on a car store API.
 
-So for example, lets say our example a car store API.
-
-/yourfolder/Api/v1/Car/Controller/CreateController.php
-
-/yourfolder/Api/v1/Car/Request/CreateCarRequest.php
-
-/yourfolder/Api/v1/Car/Response/CreateCarResponse.php
+- /yourfolder/Api/v1/Car/Controller/CreateController.php
+- /yourfolder/Api/v1/Car/Request/CreateCarRequest.php
+- /yourfolder/Api/v1/Car/Response/CreateCarResponse.php
 
 ## Structure inside the Framework
 
@@ -69,10 +67,14 @@ The standard web layer.
 
 #### `Router/`
 
-Handles URI-to-Controller mapping.
+Handles URI-to-Controller mapping and traffic control.
 
-- Supports regex-based path parameters.
-- Features a high-performance cache to avoid scanning classes on every request in production. [Learn more](/cache/index)
+- **Route Matching**: Supports regex-based path parameters and HTTP method matching.
+- **Route Caching**: Features a high-performance cache to avoid scanning classes on every request in production. [Learn more](/cache/index)
+- **Rate Limiting**: Includes a built-in system to protect endpoints from abuse. 
+    - `RateLimitInterface`: The contract for defining limits.
+    - `RateLimiter`: The engine that evaluates usage against the cache.
+    - [Learn more about Rate Limiting](/routing/rate-limit)
 
 #### `Cache/`
 
@@ -89,7 +91,12 @@ An "onion-style" pipeline where each middleware can inspect/modify the Request b
 
 #### `Security/`
 
-Provides the `AbstractAuthIdentity` abstraction to integrate your authentication logic into the Request object seamlessly.
+A robust, OpenAPI-compliant security and authorization system.
+
+- `Identity/`: Objects representing the requester (e.g., `UserAuthIdentity`, `GuestAuthIdentity`).
+- `Scope/`: Granular permissions used for authorization.
+- `Authenticator/`: Services that turn credentials (like JWT) into an Identity (e.g., `JwtAuthenticator`).
+- [Learn more about Security](/security/index)
 
 #### `Util/`
 

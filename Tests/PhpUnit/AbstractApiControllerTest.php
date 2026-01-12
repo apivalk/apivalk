@@ -8,7 +8,7 @@ use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractApiControllerTest extends TestCase

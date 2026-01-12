@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Security;
+namespace apivalk\apivalk\Security\AuthIdentity;
+
+use apivalk\apivalk\Security\ScopeInterface;
 
 abstract class AbstractAuthIdentity
 {

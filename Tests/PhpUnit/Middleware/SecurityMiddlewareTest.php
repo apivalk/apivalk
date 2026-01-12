@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
-use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
-use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Middleware\SecurityMiddleware;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
+use apivalk\apivalk\Middleware\SecurityMiddleware;
 use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use apivalk\apivalk\Security\Scope;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
-use apivalk\apivalk\Security\GuestAuthIdentity;
+use PHPUnit\Framework\TestCase;
 
 class SecurityMiddlewareTest extends TestCase
 {
@@ -27,7 +29,7 @@ class SecurityMiddlewareTest extends TestCase
         $route = $this->createMock(Route::class);
         $route->method('getSecurityRequirements')->willReturn([]);
 
-        $controller = new class($route) {
+        $controller = new class($route) extends AbstractApivalkController {
             private static $route;
 
             public function __construct($r)
@@ -39,13 +41,28 @@ class SecurityMiddlewareTest extends TestCase
             {
                 return self::$route;
             }
+
+            public static function getRequestClass(): string
+            {
+                return '';
+            }
+
+            public static function getResponseClasses(): array
+            {
+                return [];
+            }
+
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+            {
+                return new NotFoundApivalkResponse();
+            }
         };
 
         $next = function ($req) use ($response) {
             return $response;
         };
 
-        $result = $middleware->process($request, get_class($controller), $next);
+        $result = $middleware->process($request, $controller, $next);
         $this->assertSame($response, $result);
     }
 
@@ -65,7 +82,7 @@ class SecurityMiddlewareTest extends TestCase
         $identity->method('isScopeGranted')->willReturn(true);
         $request->method('getAuthIdentity')->willReturn($identity);
 
-        $controller = new class($route) {
+        $controller = new class($route) extends AbstractApivalkController {
             private static $route;
 
             public function __construct($r)
@@ -77,13 +94,28 @@ class SecurityMiddlewareTest extends TestCase
             {
                 return self::$route;
             }
+
+            public static function getRequestClass(): string
+            {
+                return '';
+            }
+
+            public static function getResponseClasses(): array
+            {
+                return [];
+            }
+
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+            {
+                return new NotFoundApivalkResponse();
+            }
         };
 
         $next = function ($req) use ($response) {
             return $response;
         };
 
-        $result = $middleware->process($request, get_class($controller), $next);
+        $result = $middleware->process($request, $controller, $next);
         $this->assertSame($response, $result);
     }
 
@@ -100,7 +132,7 @@ class SecurityMiddlewareTest extends TestCase
         $identity = new GuestAuthIdentity([]); // Guest has no scopes
         $request->method('getAuthIdentity')->willReturn($identity);
 
-        $controller = new class($route) {
+        $controller = new class($route) extends AbstractApivalkController {
             private static $route;
 
             public function __construct($r)
@@ -112,9 +144,24 @@ class SecurityMiddlewareTest extends TestCase
             {
                 return self::$route;
             }
+
+            public static function getRequestClass(): string
+            {
+                return '';
+            }
+
+            public static function getResponseClasses(): array
+            {
+                return [];
+            }
+
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+            {
+                return new NotFoundApivalkResponse();
+            }
         };
 
-        $response = $middleware->process($request, get_class($controller), function () {
+        $response = $middleware->process($request, $controller, function () {
         });
         $this->assertInstanceOf(UnauthorizedApivalkResponse::class, $response);
     }
@@ -135,7 +182,7 @@ class SecurityMiddlewareTest extends TestCase
         $identity->method('getGrantedScopes')->willReturn([$scopeRead]);
         $request->method('getAuthIdentity')->willReturn($identity);
 
-        $controller = new class($route) {
+        $controller = new class($route) extends AbstractApivalkController {
             private static $route;
 
             public function __construct($r)
@@ -147,9 +194,25 @@ class SecurityMiddlewareTest extends TestCase
             {
                 return self::$route;
             }
+
+            public static function getRequestClass(): string
+            {
+                return '';
+            }
+
+            public static function getResponseClasses(): array
+            {
+                return [];
+            }
+
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+            {
+                return new NotFoundApivalkResponse();
+            }
         };
 
-        $response = $middleware->process($request, get_class($controller), function () {});
+        $response = $middleware->process($request, $controller, function () {
+        });
         $this->assertInstanceOf(ForbiddenApivalkResponse::class, $response);
     }
 
@@ -170,7 +233,7 @@ class SecurityMiddlewareTest extends TestCase
         $identity = new GuestAuthIdentity([]);
         $request->method('getAuthIdentity')->willReturn($identity);
 
-        $controller = new class($route) {
+        $controller = new class($route) extends AbstractApivalkController {
             private static $route;
 
             public function __construct($r)
@@ -182,13 +245,28 @@ class SecurityMiddlewareTest extends TestCase
             {
                 return self::$route;
             }
+
+            public static function getRequestClass(): string
+            {
+                return '';
+            }
+
+            public static function getResponseClasses(): array
+            {
+                return [];
+            }
+
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+            {
+                return new NotFoundApivalkResponse();
+            }
         };
 
         $next = function ($req) use ($response) {
             return $response;
         };
 
-        $result = $middleware->process($request, get_class($controller), $next);
+        $result = $middleware->process($request, $controller, $next);
         $this->assertSame($response, $result);
     }
 }

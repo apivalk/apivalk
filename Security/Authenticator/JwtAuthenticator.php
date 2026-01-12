@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Security\Authenticator;
 
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Cache\CacheInterface;
+use apivalk\apivalk\Cache\CacheItem;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;
 use apivalk\apivalk\Security\Scope;
-use apivalk\apivalk\Security\UserAuthIdentity;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -15,6 +17,8 @@ class JwtAuthenticator implements AuthenticatorInterface
 {
     /** @var string */
     private $jwkSetUrl;
+    /** @var CacheInterface|null */
+    private $cache;
     /** @var string */
     private $issuer;
     /** @var string */
@@ -23,13 +27,15 @@ class JwtAuthenticator implements AuthenticatorInterface
     private $keys;
 
     /**
-     * @param string $jwkSetUrl The URL to the JWK Set (e.g. https://example.com/.well-known/jwks.json)
-     * @param string $issuer    Expected issuer (iss claim)
-     * @param string $audience  Expected audience (aud claim)
+     * @param string              $jwkSetUrl The URL to the JWK Set (e.g. https://example.com/.well-known/jwks.json)
+     * @param CacheInterface|null $cache
+     * @param string              $issuer    Expected issuer (iss claim)
+     * @param string              $audience  Expected audience (aud claim)
      */
-    public function __construct(string $jwkSetUrl, string $issuer, string $audience)
+    public function __construct(string $jwkSetUrl, ?CacheInterface $cache, string $issuer, string $audience)
     {
         $this->jwkSetUrl = $jwkSetUrl;
+        $this->cache = $cache;
         $this->issuer = $issuer;
         $this->audience = $audience;
     }
@@ -38,7 +44,7 @@ class JwtAuthenticator implements AuthenticatorInterface
     {
         try {
             $keys = $this->getKeys();
-            
+
             $payload = (array)JWT::decode($token, $keys);
 
             if (isset($payload['iss']) && $payload['iss'] !== $this->issuer) {
@@ -52,7 +58,7 @@ class JwtAuthenticator implements AuthenticatorInterface
             $scopes = [];
             $scopeString = $payload['scope'] ?? $payload['scp'] ?? '';
             $scopeNames = \is_array($scopeString) ? $scopeString : explode(' ', (string)$scopeString);
-            
+
             foreach (array_filter($scopeNames) as $scopeName) {
                 $scopes[] = new Scope($scopeName);
             }
@@ -72,14 +78,32 @@ class JwtAuthenticator implements AuthenticatorInterface
      */
     private function getKeys(): array
     {
-        if ($this->keys === null) {
-            $jwksJson = file_get_contents($this->jwkSetUrl);
-            if (!$jwksJson) {
-                throw new \RuntimeException('Could not fetch JWKS from ' . $this->jwkSetUrl);
-            }
+        if ($this->keys !== null) {
+            return $this->keys;
+        }
 
-            $jwks = json_decode($jwksJson, true);
-            $this->keys = JWK::parseKeySet($jwks);
+        $cacheKey = \sprintf('jwks_%s', md5($this->jwkSetUrl));
+        if ($this->cache !== null) {
+            $cachedItem = $this->cache->get($cacheKey);
+
+            if ($cachedItem !== null) {
+                $jwks = $cachedItem->getValue();
+                $this->keys = JWK::parseKeySet($jwks);
+
+                return $this->keys;
+            }
+        }
+
+        $jwksJson = file_get_contents($this->jwkSetUrl);
+        if (!$jwksJson) {
+            throw new \RuntimeException(\sprintf('Could not fetch JWKS from %s', $this->jwkSetUrl));
+        }
+
+        $jwks = json_decode($jwksJson, true);
+        $this->keys = JWK::parseKeySet($jwks);
+
+        if ($this->cache !== null) {
+            $this->cache->set(new CacheItem($cacheKey, $jwks, 3600));
         }
 
         return $this->keys;

@@ -12,6 +12,7 @@ A `Route` instance contains the following information:
 * **Description**: An optional human-readable description used for documentation (OpenAPI).
 * **Tags**: A collection of `TagObject` instances used for grouping endpoints in documentation.
 * **Security Requirements**: A collection of `SecurityRequirementObject` instances defining the authentication needed for the route.
+* **Rate Limit**: An optional `RateLimitInterface` implementation defining the rate limiting rules for the endpoint.
 
 ## Path Parameters
 
@@ -22,6 +23,38 @@ new Route('/users/{id}/profile', new GetMethod());
 ```
 
 These parameters are automatically identified and converted into capture groups in the internal regex generation logic.
+
+## Security and Scopes
+
+Security requirements are defined on a per-route basis using the `SecurityRequirementObject`. This allows you to specify which authentication schemes (e.g., Bearer, OAuth2) are required and what granular [Scopes](/security/scope) the user must have.
+
+### Basic Security Example
+
+To make a route private, you add a `SecurityRequirementObject` to the route's constructor:
+
+```php
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+
+new Route('/orders', new PostMethod(), 'Create order', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('write:orders')])
+]);
+```
+
+### Public and Optional Security
+
+* **Public Route**: If no security requirements are provided (default), the route is public.
+* **Optional Security**: By providing both a requirement and an empty `SecurityRequirementObject`, you can define a route that is public but provides elevated access if a valid token is present.
+
+```php
+new Route('/news', new GetMethod(), 'Read news', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('premium')]),
+    new SecurityRequirementObject() // Empty requirement = Public fallback
+]);
+```
+
+For more details on how the security system works, check the [Security Overview](/security/index).
 
 ## Integration with Documentation
 
@@ -45,5 +78,27 @@ public static function getRoute(): Route
     );
 }
 ```
+
+## Rate Limiting
+
+You can add rate limiting to a route by providing a rate limit object as the last argument to the `Route` constructor:
+
+```php
+use apivalk\apivalk\Router\RateLimit\IpRateLimit;
+
+public static function getRoute(): Route
+{
+    return new Route(
+        '/v1/sensitive-data',
+        new GetMethod(),
+        'Access sensitive data',
+        [], // Tags
+        [], // Security
+        new IpRateLimit('sensitive_access', 5, 60) // 5 requests per minute
+    );
+}
+```
+
+For more details on available rate limiting strategies, see the [Rate Limit](/routing/rate-limit) documentation.
 
 The framework's automated discovery system then picks up these definitions and registers them with the router.

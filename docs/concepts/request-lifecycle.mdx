@@ -69,7 +69,7 @@ The `Request` object's `populate()` method is called. It uses `ParameterBagFacto
 The `MiddlewareStack` handles the request and controller. It implements an **onion-style** middleware execution:
 
 - Middlewares are executed in the order they were added.
-- Each middleware receives the `Request`, the `Controller` class name, and a `$next` callable.
+- Each middleware receives the `Request`, the `Controller` instance, and a `$next` callable.
 - A middleware can perform actions before passing control to the next layer, or it can short-circuit the request by returning a response immediately.
 
 ### 7. Controller Dispatch

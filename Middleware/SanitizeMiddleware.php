@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Middleware;
 
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -12,7 +13,7 @@ class SanitizeMiddleware implements MiddlewareInterface
 {
     public function process(
         ApivalkRequestInterface $request,
-        string $controllerClass,
+        AbstractApivalkController $controller,
         callable $next
     ): AbstractApivalkResponse {
         $inputParameterBag = $request->body();

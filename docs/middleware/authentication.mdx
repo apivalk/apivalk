@@ -30,6 +30,7 @@ use apivalk\apivalk\Middleware\AuthenticationMiddleware;
 
 $authenticator = new JwtAuthenticator(
     'https://your-domain.com/.well-known/jwks.json',
+    $cache, // Instance of CacheInterface or null
     'https://your-issuer.com/',
     'your-audience'
 );
@@ -46,7 +47,7 @@ If you have custom authentication needs (e.g., API Keys in database), you can im
 
 ```php
 use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
-use apivalk\apivalk\Security\UserAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;
 use apivalk\apivalk\Security\Scope;
 
 class ApiKeyAuthenticator implements AuthenticatorInterface

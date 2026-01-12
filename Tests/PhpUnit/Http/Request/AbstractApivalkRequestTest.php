@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 
-use apivalk\apivalk\Security\GuestAuthIdentity;
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+use PHPUnit\Framework\TestCase;
 
 class AbstractApivalkRequestTest extends TestCase
 {

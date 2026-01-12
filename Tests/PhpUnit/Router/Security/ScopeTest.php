@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Tests\PhpUnit\Security;
+namespace apivalk\apivalk\Tests\PhpUnit\Router\Security;
 
-use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Security\Scope;
+use PHPUnit\Framework\TestCase;
 
 class ScopeTest extends TestCase
 {

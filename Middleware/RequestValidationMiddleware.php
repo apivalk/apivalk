@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Middleware;
 
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -16,8 +17,11 @@ class RequestValidationMiddleware implements MiddlewareInterface
     /** @var ErrorObject[] */
     private $errors = [];
 
-    public function process(ApivalkRequestInterface $request, string $controllerClass, callable $next): AbstractApivalkResponse
-    {
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse {
         $this->errors = [];
 
         $documentation = $request::getDocumentation();

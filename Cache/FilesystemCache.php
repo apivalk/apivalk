@@ -80,11 +80,11 @@ class FilesystemCache implements CacheInterface
     private function isTtlValid(CacheItem $cacheItem): bool
     {
         $ttl = $cacheItem->getTtl();
-        if ($ttl === null) {
+        if ($ttl === null || $cacheItem->getExpiresAt() === null) {
             return true;
         }
 
-        $expiresAt = $cacheItem->getCreatedAt()->getTimestamp() + $ttl;
+        $expiresAt = $cacheItem->getExpiresAt()->getTimestamp();
 
         if ($expiresAt < time()) {
             $this->delete($cacheItem->getKey());
