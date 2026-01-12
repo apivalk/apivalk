@@ -1,0 +1,101 @@
+---
+title: "Authentication Middleware"
+description: "The Authentication Middleware is responsible for identifying the user making the request and populating the Request with an AuthIdentity."
+---
+
+The `AuthenticationMiddleware` acts as the first gate in your security pipeline. Its primary job is to extract a token (usually from the `Authorization` header) and verify it.
+
+## Overview
+
+Unlike many frameworks, Apivalk does not throw exceptions if authentication fails in this middleware. Instead:
+1. It attempts to authenticate the token using an [AuthenticatorInterface](/security/authenticator).
+2. If successful, it sets a [UserAuthIdentity](/security/identity) on the Request.
+3. If it fails or no token is provided, the Request remains with its default [GuestAuthIdentity](/security/identity).
+
+This "passive" authentication allows you to support both public and private routes on the same endpoint, delegating the final authorization decision to the [Security Middleware](/middleware/security).
+
+For a complete picture of how authentication and authorization work together, see the [Security Overview](/security/index).
+
+## Usage
+
+To use it, you must provide an implementation of the [AuthenticatorInterface](/security/authenticator).
+
+### JWT / OAuth Example
+
+If you are using JWT with JWKS (e.g., Auth0, Okta, Azure AD), use the [JwtAuthenticator](/security/authenticator).
+
+```php
+use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+
+$authenticator = new JwtAuthenticator(
+    'https://your-domain.com/.well-known/jwks.json',
+    'https://your-issuer.com/',
+    'your-audience'
+);
+
+$middleware = new AuthenticationMiddleware($authenticator);
+$configuration->addMiddleware($middleware);
+```
+
+## Custom Authentication Logic
+
+If you have custom authentication needs (e.g., API Keys in database), you can implement your own authenticator or middleware.
+
+### Implementing a Custom Authenticator
+
+```php
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
+use apivalk\apivalk\Security\UserAuthIdentity;
+use apivalk\apivalk\Security\Scope;
+
+class ApiKeyAuthenticator implements AuthenticatorInterface
+{
+    public function authenticate(string $token): ?AbstractAuthIdentity
+    {
+        $user = $this->db->findUserByApiKey($token);
+        
+        if (!$user) {
+            return null;
+        }
+
+        return new UserAuthIdentity(
+            $user->id,
+            [new Scope('read'), new Scope('write')]
+        );
+    }
+}
+```
+
+### Implementing a Custom Middleware
+
+If you want full control over the process, you can implement the `MiddlewareInterface` directly and use `setAuthIdentity()` on the request.
+
+```php
+class CustomAuthMiddleware implements MiddlewareInterface
+{
+    public function process($request, $controllerClass, $next): AbstractApivalkResponse
+    {
+        $id = $this->session->get('user_id');
+        
+        if ($id) {
+            $identity = new UserAuthIdentity($id, [new Scope('user')]);
+            $request->setAuthIdentity($identity);
+        }
+
+        return $next($request);
+    }
+}
+```
+
+## Important: Middleware Ordering
+
+**The `AuthenticationMiddleware` MUST run BEFORE the `SecurityMiddleware`.**
+
+The authentication middleware populates the "Who" (Identity), while the security middleware validates the "What" (Scopes). If run out of order, the security middleware will always see a `GuestAuthIdentity`.
+
+```php
+// CORRECT ORDER
+$configuration->addMiddleware(new AuthenticationMiddleware($jwtAuth));
+$configuration->addMiddleware(new SecurityMiddleware());
+```

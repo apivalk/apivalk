@@ -12,6 +12,7 @@ use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Security\AbstractAuthIdentity;
 use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\GuestAuthIdentity;
 
 abstract class AbstractApivalkRequest implements ApivalkRequestInterface
 {
@@ -27,7 +28,7 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $pathParameterBag;
     /** @var FileBag|null */
     private $fileBag;
-    /** @var AbstractAuthIdentity|null */
+    /** @var AbstractAuthIdentity|GuestAuthIdentity */
     private $authIdentity;
 
     abstract public static function getDocumentation(): ApivalkRequestDocumentation;
@@ -42,6 +43,7 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         $this->pathParameterBag = ParameterBagFactory::createPathBag($route, $documentation);
         $this->bodyParameterBag = ParameterBagFactory::createBodyBag($documentation);
         $this->fileBag = FileBagFactory::create();
+        $this->authIdentity = new GuestAuthIdentity([]);
     }
 
     public function getMethod(): MethodInterface
@@ -74,12 +76,12 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         return $this->fileBag;
     }
 
-    public function getAuthIdentity(): ?AbstractAuthIdentity
+    public function getAuthIdentity(): AbstractAuthIdentity
     {
         return $this->authIdentity;
     }
 
-    public function setAuthIdentity(?AbstractAuthIdentity $authIdentity): void
+    public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void
     {
         $this->authIdentity = $authIdentity;
     }

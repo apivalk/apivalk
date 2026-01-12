@@ -29,7 +29,7 @@ interface ApivalkRequestInterface
 
     public function file(): FileBag;
 
-    public function getAuthIdentity(): ?AbstractAuthIdentity;
+    public function getAuthIdentity(): AbstractAuthIdentity;
 
-    public function setAuthIdentity(?AbstractAuthIdentity $authIdentity): void;
+    public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void;
 }

@@ -46,8 +46,8 @@
           {
             "group": "HTTP",
             "pages": [
-              "http/controller",
               "http/index",
+              "http/controller",
               "http/request",
               "http/response"
             ]
@@ -72,7 +72,9 @@
             "pages": [
               "middleware/index",
               "middleware/request-validation",
-              "middleware/sanitize"
+              "middleware/sanitize",
+              "middleware/authentication",
+              "middleware/security"
             ]
           },
           {
@@ -98,7 +100,12 @@
           },
           {
             "group": "Security",
-            "pages": []
+            "pages": [
+              "security/index",
+              "security/identity",
+              "security/scope",
+              "security/authenticator"
+            ]
           },
           {
             "group": "Customization",

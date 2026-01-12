@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use apivalk\apivalk\Security\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
@@ -47,8 +48,8 @@ class RequestValidationMiddlewareTest extends TestCase
             public function body(): ParameterBag { return new ParameterBag(); }
             public function path(): ParameterBag { return new ParameterBag(); }
             public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
-            public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
-            public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
+            public function getAuthIdentity(): \apivalk\apivalk\Security\AbstractAuthIdentity { return new GuestAuthIdentity([]); }
+            public function setAuthIdentity(\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
         };
 
         $next = function ($req) {
@@ -92,8 +93,8 @@ class RequestValidationMiddlewareTest extends TestCase
             }
             public function path(): ParameterBag { return new ParameterBag(); }
             public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
-            public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
-            public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
+            public function getAuthIdentity(): \apivalk\apivalk\Security\AbstractAuthIdentity { return new GuestAuthIdentity([]); }
+            public function setAuthIdentity(\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
         };
 
         $next = function ($req) {

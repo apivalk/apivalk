@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
+use apivalk\apivalk\Security\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
 use apivalk\apivalk\Router\Route;
@@ -35,8 +36,8 @@ class PathsTestRequest implements ApivalkRequestInterface {
     public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createBodyBag(self::getDocumentation()); }
     public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createPathBag(new Route('', new GetMethod()), self::getDocumentation()); }
     public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return \apivalk\apivalk\Http\Request\File\FileBagFactory::create(); }
-    public function getAuthIdentity(): ?\apivalk\apivalk\Security\AbstractAuthIdentity { return null; }
-    public function setAuthIdentity(?\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
+    public function getAuthIdentity(): \apivalk\apivalk\Security\AbstractAuthIdentity { return new GuestAuthIdentity([]); }
+    public function setAuthIdentity(\apivalk\apivalk\Security\AbstractAuthIdentity $authIdentity): void {}
 }
 
 class PathsGeneratorTest extends TestCase

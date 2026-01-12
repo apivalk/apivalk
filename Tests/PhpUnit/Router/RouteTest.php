@@ -9,6 +9,7 @@ use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Security\Scope;
 
 class RouteTest extends TestCase
 {
@@ -31,7 +32,8 @@ class RouteTest extends TestCase
     {
         $method = new GetMethod();
         $tag = new TagObject('user', 'User tag');
-        $security = new SecurityRequirementObject('Bearer', ['read']);
+        $scope = new Scope('read');
+        $security = new SecurityRequirementObject('Bearer', [$scope]);
         
         $route = new Route('/users', $method, 'Desc', [$tag], [$security]);
         
@@ -47,5 +49,6 @@ class RouteTest extends TestCase
         $this->assertEquals('user', $newRoute->getTags()[0]->getName());
         $this->assertCount(1, $newRoute->getSecurityRequirements());
         $this->assertEquals('Bearer', $newRoute->getSecurityRequirements()[0]->getName());
+        $this->assertEquals('read', $newRoute->getSecurityRequirements()[0]->getScopes()[0]->getName());
     }
 }

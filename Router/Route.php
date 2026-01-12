@@ -8,6 +8,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Security\Scope;
 
 class Route implements \JsonSerializable
 {
@@ -77,8 +78,13 @@ class Route implements \JsonSerializable
 
         $securityRequirements = [];
         foreach ($this->securityRequirements as $securityRequirement) {
-            $securityRequirements[] =
-                ['name' => $securityRequirement->getName(), 'scopes' => $securityRequirement->getScopes()];
+            $scopes = [];
+
+            foreach ($securityRequirement->getScopes() as $scope) {
+                $scopes[] = ['name' => $scope->getName(), 'description' => $scope->getDescription()];
+            }
+
+            $securityRequirements[] = ['name' => $securityRequirement->getName(), 'scopes' => $scopes];
         }
 
         return [
@@ -110,8 +116,17 @@ class Route implements \JsonSerializable
 
         $securityRequirements = [];
         foreach ($jsonArray['securityRequirements'] ?? [] as $securityRequirement) {
-            $securityRequirements[] =
-                new SecurityRequirementObject($securityRequirement['name'], $securityRequirement['scopes']);
+            $scopes = [];
+
+            foreach ($securityRequirement['scopes'] as $scope) {
+                if (\is_string($scope)) {
+                    $scopes[] = new Scope($scope);
+                } else {
+                    $scopes[] = new Scope($scope['name'], $scope['description'] ?? null);
+                }
+            }
+
+            $securityRequirements[] = new SecurityRequirementObject($securityRequirement['name'], $scopes);
         }
 
         return new self(

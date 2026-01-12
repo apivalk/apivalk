@@ -256,16 +256,6 @@ parameters:
 			path: Documentation/OpenAPI/Object/SchemaObject.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:__construct\\(\\) has parameter \\$scopes with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:getScopes\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php

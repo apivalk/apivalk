@@ -10,7 +10,18 @@ A Lightweight, Framework-Agnostic REST API Ecosystem for PHP. Built for speed, p
 Harness the power of the Valkyrie. APIs that soar instead of crawl. Apivalk gives you an OpenAPI-first mind that brings
 structure, automation, and clarity to your backend.
 
-⚡ **OpenAPI-first** 🧠 **Type-safe** 🪶 **Lightweight** 🔮 **Framework-agnostic**
+⚡ **OpenAPI-first** 🔒 **Scope-based Security** 🧠 **Type-safe** 🪶 **Lightweight** 🔮 **Framework-agnostic**
+
+---
+
+## 🔒 Security & Authorization
+
+Apivalk features a robust, OpenAPI-compliant security system out of the box.
+
+- **Identity System**: Unified handling of `UserAuthIdentity` and `GuestAuthIdentity`.
+- **Scope Objects**: Granular, type-safe authorization using `Scope` objects instead of simple strings.
+- **JWT & OAuth**: First-class support for JWK-based JWT validation via `JwtAuthenticator` (based on `firebase/php-jwt`).
+- **Middleware Pipeline**: Dedicated `AuthenticationMiddleware` and `SecurityMiddleware` for clean, decoupled authorization.
 
 ---
 

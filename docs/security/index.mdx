@@ -1,0 +1,109 @@
+---
+title: "Overview"
+description: "Apivalk features a robust, OpenAPI-compliant security and authorization system."
+---
+
+The security system in Apivalk is designed to be extensible, type-safe, and fully compatible with OpenAPI 3.0 standards. It handles everything from identifying the requester to enforcing granular permissions via scopes.
+
+## Core Concepts
+
+The security layer consists of four main pillars:
+
+1.  **[Identities](/security/identity)**: Objects representing the current requester (e.g., a logged-in user or a guest).
+2.  **[Scopes](/security/scope)**: Value objects that define specific permissions or capabilities.
+3.  **[Authenticators](/security/authenticator)**: Services that turn credentials (like a JWT) into an Identity.
+4.  **[Middleware](/middleware/security)**: The glue that executes authentication and enforces authorization on routes.
+
+## The Security Flow
+
+1.  **Request Arrival**: An HTTP request enters the application.
+2.  **Authentication**: An authentication middleware (like `AuthenticationMiddleware`) uses an `Authenticator` to identify the requester and sets an `AuthIdentity` on the request.
+3.  **Authorization**: The `SecurityMiddleware` compares the `AuthIdentity`'s granted scopes against the `securityRequirements` defined in the `Route`.
+4.  **Controller**: If authorized, the controller receives the request and can access the identity via `$request->getAuthIdentity()`.
+
+## Quick Example: Private Route
+
+```php
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+
+$route = new Route('/admin/settings', new GetMethod(), 'Admin Settings', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('admin:read')])
+]);
+```
+
+In this example, the route requires a security scheme named `BearerAuth` with the `admin:read` scope.
+
+### Connection to OpenAPI
+
+When generating documentation using the `OpenAPIGenerator`, the name you use in your `SecurityRequirementObject` (e.g., `'BearerAuth'`) MUST match the name of a `SecuritySchemeObject` defined in your `ComponentsObject`.
+
+If the names match, Apivalk will use your full configuration (flows, descriptions, etc.) in the generated Swagger file. This is the best practice for complex setups like OAuth2, as it allows Swagger UI to "just work" with your authentication server.
+
+If they don't match, Apivalk will generate a basic placeholder scheme automatically.
+
+> Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
+
+See the [OpenAPI Generator documentation](/documentation/openapi-generator#security-schemes-and-components) for details on how to configure these components.
+
+## Examples: Getting Started with Middleware
+
+To use the security system, you typically need to register two middlewares in your `MiddlewareStack`.
+
+### 1. Authentication Middleware
+
+The [Authentication Middleware](/middleware/authentication) identifies the user. It uses an authenticator to turn a token into an identity.
+
+<a id="authentication-middleware"></a>
+
+```php
+use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+
+$authenticator = new JwtAuthenticator(
+    'https://example.com/.well-known/jwks.json',
+    'https://example.com/',
+    'my-api-audience'
+);
+
+$configuration->addMiddleware(new AuthenticationMiddleware($authenticator));
+```
+
+### 2. Security Middleware
+
+The [Security Middleware](/middleware/security) enforces the scopes defined on your routes. It MUST run after the authentication middleware.
+
+<a id="security-middleware"></a>
+
+```php
+use apivalk\apivalk\Middleware\SecurityMiddleware;
+
+$configuration->addMiddleware(new SecurityMiddleware());
+```
+
+### Full Example: Public and Private Routes
+
+Here is how you would define routes with different security requirements:
+
+```php
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+
+// PRIVATE: Requires 'write:orders' scope
+$privateRoute = new Route('/orders', new PostMethod(), 'Create order', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('write:orders')])
+]);
+
+// OPTIONAL: Public access, but upgraded if 'premium' scope is present
+$optionalRoute = new Route('/news', new GetMethod(), 'Read news', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('premium')]),
+    new SecurityRequirementObject() // Empty requirement = Public
+]);
+
+// PUBLIC: No security requirements
+$publicRoute = new Route('/about', new GetMethod(), 'About us');
+```
+
+For more details on custom logic, check the [Custom Authentication](/middleware/authentication#custom-authentication-logic) section.

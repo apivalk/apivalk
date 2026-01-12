@@ -1,0 +1,71 @@
+---
+title: "Security Middleware"
+description: "The Security Middleware enforces scope-based authorization as defined in your OpenAPI route specifications."
+---
+
+The `SecurityMiddleware` is the core authorization engine of Apivalk. It ensures that the current requester has the necessary scopes to access a specific route. For a deep dive into the underlying architecture, check the [Security Overview](/security/index).
+
+## How it Works
+
+The middleware retrieves the `Route` object from the controller being called and examines its `securityRequirements`.
+
+### OR Logic (Requirements)
+A route can have multiple security requirements. If **any** one of these requirements is satisfied, the request is allowed.
+
+### AND Logic (Scopes)
+Each security requirement can have multiple [Scopes](/security/scope). The current [Identity](/security/identity) must possess **all** of those scopes to satisfy that specific requirement.
+
+## Route Examples
+
+### Private Route (Scopes Required)
+A route that requires a logged-in user with specific [Scopes](/security/scope).
+
+```php
+use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Security\Scope;
+
+$route = new Route('/admin/dashboard', new GetMethod(), 'Admin Dashboard', [], [
+    new SecurityRequirementObject('BearerAuth', [
+        new Scope('admin:read'),
+        new Scope('admin:write')
+    ])
+]);
+```
+
+### Public Route (No Scopes)
+A route that is accessible by anyone.
+
+```php
+$route = new Route('/about', new GetMethod(), 'About page', [], []);
+```
+
+### Optional Security (Public with Scopes)
+A route that is public but allows extra access if a token with specific scopes is provided. This is achieved by adding an empty `SecurityRequirementObject`.
+
+```php
+$route = new Route('/news', new GetMethod(), 'News feed', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('premium')]), // Premium requirement
+    new SecurityRequirementObject()                                      // Public requirement (empty)
+]);
+```
+
+## Status Codes
+
+When authorization fails, the middleware throws an exception that results in one of two HTTP status codes:
+
+1.  **401 Unauthorized**: Thrown when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
+2.  **403 Forbidden**: Thrown when an authenticated [UserAuthIdentity](/security/identity) does not have the required scopes for the route.
+
+## Scopes vs. Roles
+
+While many frameworks use roles (e.g., `ROLE_ADMIN`), Apivalk follows the OpenAPI standard of using **Scopes**. Scopes are more granular and describe *what* an identity is allowed to do (e.g., `read:users`) rather than *who* they are.
+
+## Integration
+
+The `SecurityMiddleware` should always be placed **after** your authentication middleware in the stack.
+
+```php
+$configuration->addMiddleware(new AuthenticationMiddleware($authenticator));
+$configuration->addMiddleware(new SecurityMiddleware());
+```

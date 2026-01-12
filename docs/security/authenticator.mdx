@@ -1,0 +1,69 @@
+---
+title: "Authenticators"
+description: "Authenticators are services responsible for turning raw credentials into an AuthIdentity."
+---
+
+Authenticators encapsulate the logic required to verify a user's credentials. This could be a JWT token, an API key, or a session cookie.
+
+## AuthenticatorInterface
+
+All authenticators must implement the `AuthenticatorInterface`.
+
+### Methods
+
+- **`authenticate(string $token): ?AbstractAuthIdentity`**: Takes a raw token (or credential string) and returns an identity object if valid, or `null` if authentication fails.
+
+---
+
+## JwtAuthenticator
+
+Apivalk provides a production-ready `JwtAuthenticator` that uses the `firebase/php-jwt` library. It is designed to work with OAuth2 providers (like Auth0, Okta, or Keycloak) that expose a JWKS (JSON Web Key Set) endpoint.
+
+### Features
+
+- **JWKS Support**: Automatically fetches and parses public keys from a remote URL.
+- **Claim Validation**: Validates the `iss` (issuer), `aud` (audience), and `exp` (expiration) claims.
+- **Scope Extraction**: Automatically parses scopes from the `scope` or `scp` claims.
+- **Identity Creation**: Returns a `UserAuthIdentity` populated with the `sub` claim and all other JWT claims.
+
+### Usage
+
+```php
+use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+
+$authenticator = new JwtAuthenticator(
+    'https://YOUR_DOMAIN/.well-known/jwks.json',
+    'https://YOUR_ISSUER/',
+    'YOUR_AUDIENCE'
+);
+
+$identity = $authenticator->authenticate($jwtToken);
+```
+
+---
+
+## Custom Authenticators
+
+You can easily implement your own authenticator by implementing the interface. This is useful for API keys or custom database-backed authentication.
+
+```php
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
+use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Security\UserAuthIdentity;
+
+class ApiKeyAuthenticator implements AuthenticatorInterface
+{
+    public function authenticate(string $token): ?AbstractAuthIdentity
+    {
+        // 1. Check if the API key exists in your database
+        $user = $this->db->findUserByApiKey($token);
+        
+        if (!$user) {
+            return null;
+        }
+
+        // 2. Return a UserAuthIdentity
+        return new UserAuthIdentity($user->id, $user->getScopes());
+    }
+}
+```
