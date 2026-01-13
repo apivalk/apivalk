@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/apivalk/apivalk/compare/v1.2.0...v1.3.0) (2026-01-13)
+
+
+### Features
+
+* implement authentication and security middleware ([88e23aa](https://github.com/apivalk/apivalk/commit/88e23aac116ddcdc8040f735c13ba74f4f21a767)), closes [#31](https://github.com/apivalk/apivalk/issues/31)
+* implement rate limiting ([ed160c4](https://github.com/apivalk/apivalk/commit/ed160c4df48e980ac3214ac353193558e96b7821)), closes [#35](https://github.com/apivalk/apivalk/issues/35)
+* improve not found error massage ([f378004](https://github.com/apivalk/apivalk/commit/f37800420e546b0e4d30f8ccc8b9252feb61f9be))
+
 ## [1.2.0](https://github.com/apivalk/apivalk/compare/v1.1.1...v1.2.0) (2026-01-04)
 
 
