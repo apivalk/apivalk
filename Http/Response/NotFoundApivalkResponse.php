@@ -9,6 +9,9 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class NotFoundApivalkResponse extends AbstractApivalkResponse
 {
+    /** @var string */
+    private $errorMessage = 'Not found';
+
     public static function getDocumentation(): ApivalkResponseDocumentation
     {
         $responseDocumentation = new ApivalkResponseDocumentation();
@@ -24,10 +27,17 @@ class NotFoundApivalkResponse extends AbstractApivalkResponse
         return self::HTTP_404_NOT_FOUND;
     }
 
+    public function setErrorMessage(string $errorMessage): self
+    {
+        $this->errorMessage = $errorMessage;
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
-            'error' => 'Not found'
+            'error' => $this->errorMessage
         ];
     }
 }

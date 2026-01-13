@@ -40,14 +40,15 @@
             "pages": [
               "concepts/coding-standards",
               "concepts/request-lifecycle",
-              "concepts/structure"
+              "concepts/structure",
+              "concepts/best-openapi-practices"
             ]
           },
           {
             "group": "HTTP",
             "pages": [
-              "http/controller",
               "http/index",
+              "http/controller",
               "http/request",
               "http/response"
             ]
@@ -57,7 +58,8 @@
             "pages": [
               "routing/index",
               "routing/route",
-              "routing/router"
+              "routing/router",
+              "routing/rate-limit"
             ]
           },
           {
@@ -72,7 +74,10 @@
             "pages": [
               "middleware/index",
               "middleware/request-validation",
-              "middleware/sanitize"
+              "middleware/sanitize",
+              "middleware/authentication",
+              "middleware/security",
+              "middleware/rate-limit"
             ]
           },
           {
@@ -98,7 +103,12 @@
           },
           {
             "group": "Security",
-            "pages": []
+            "pages": [
+              "security/index",
+              "security/identity",
+              "security/scope",
+              "security/authenticator"
+            ]
           },
           {
             "group": "Customization",

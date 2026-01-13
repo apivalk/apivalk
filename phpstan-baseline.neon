@@ -256,16 +256,6 @@ parameters:
 			path: Documentation/OpenAPI/Object/SchemaObject.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:__construct\\(\\) has parameter \\$scopes with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:getScopes\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\SecurityRequirementObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/OpenAPI/Object/SecurityRequirementObject.php
@@ -500,20 +490,7 @@ parameters:
 			count: 1
 			path: Middleware/RequestValidationMiddleware.php
 
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getSecurityRequirements\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
 
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Router\\\\Route\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Router/Route.php
 
 		-
 			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$namespace has no type specified\\.$#"

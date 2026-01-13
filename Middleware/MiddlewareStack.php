@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Middleware;
 
-use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
@@ -20,16 +19,19 @@ class MiddlewareStack
 
     public function handle(ApivalkRequestInterface $request, callable $controller): AbstractApivalkResponse
     {
-        /** @var class-string<AbstractApivalkController> $controllerClass */
-        $controllerClass = \get_class($controller);
         $next = $controller;
 
         foreach (array_reverse($this->middlewares) as $middleware) {
-            $next = static function (ApivalkRequestInterface $request) use ($middleware, $controllerClass, $next) {
-                return $middleware->process($request, $controllerClass, $next);
+            $next = static function (ApivalkRequestInterface $request) use ($middleware, $controller, $next) {
+                return $middleware->process($request, $controller, $next);
             };
         }
 
-        return $next($request);
+        $response = $next($request);
+        $response->addHeaders(
+            $request->getRateLimitResult() !== null ? $request->getRateLimitResult()->toHeaderArray() : []
+        );
+
+        return $response;
     }
 }

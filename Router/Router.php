@@ -108,7 +108,7 @@ class Router extends AbstractRouter
                     continue;
                 }
 
-                $route = Route::byJson($routeCacheItem->getValue());
+                $route = RouteJsonSerializer::deserialize($routeCacheItem->getValue());
                 $matchingRoutes[$route->getMethod()->getName()] = [
                     'route' => $route,
                     'controllerClass' => $indexEntry['controllerClass'],
@@ -138,7 +138,7 @@ class Router extends AbstractRouter
             }
 
             $routes[] = [
-                'route' => Route::byJson($routeCacheItem->getValue()),
+                'route' => RouteJsonSerializer::deserialize($routeCacheItem->getValue()),
                 'controllerClass' => $indexEntry['controllerClass']
             ];
         }

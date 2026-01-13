@@ -10,13 +10,13 @@ All middlewares must implement the `apivalk\apivalk\Middleware\MiddlewareInterfa
 ```php
 public function process(
     ApivalkRequestInterface $request,
-    string $controllerClass,
+    AbstractApivalkController $controller,
     callable $next
 ): AbstractApivalkResponse;
 ```
 
 - **`$request`**: The current request object.
-- **`$controllerClass`**: The fully qualified class name of the target controller.
+- **`$controller`**: The target controller instance.
 - **`$next`**: The next middleware in the stack or the final controller.
 
 ## Middleware Stack
@@ -47,3 +47,6 @@ Apivalk comes with several essential middlewares out of the box:
 
 - [Sanitize Middleware](/middleware/sanitize)
 - [Request Validation Middleware](/middleware/request-validation)
+- [Rate Limit Middleware](/middleware/rate-limit)
+- [Authentication Middleware](/middleware/authentication)
+- [Security Middleware](/middleware/security)

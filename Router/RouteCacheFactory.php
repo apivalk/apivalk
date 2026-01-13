@@ -47,7 +47,7 @@ class RouteCacheFactory
             $cache->set(
                 new CacheItem(
                     $routeCacheKey,
-                    json_encode($route),
+                    json_encode(RouteJsonSerializer::serialize($route)),
                     $cache->getDefaultCacheLifetime()
                 )
             );

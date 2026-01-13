@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
+use apivalk\apivalk\Router\RouteJsonSerializer;
 use apivalk\apivalk\Router\RouteRegexFactory;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Router\Router;
@@ -14,13 +15,10 @@ use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
-use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
-use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 
 class RouterTest extends TestCase
 {
@@ -70,7 +68,7 @@ class RouterTest extends TestCase
                 return new CacheItem(AbstractRouter::CACHE_INDEX_KEY, json_encode($indexData));
             }
             if ($key === 'route_key') {
-                return new CacheItem('route_key', json_encode($route));
+                return new CacheItem('route_key', json_encode(RouteJsonSerializer::serialize($route)));
             }
             return null;
         });
@@ -123,7 +121,7 @@ class RouterTest extends TestCase
                 return new CacheItem(AbstractRouter::CACHE_INDEX_KEY, json_encode($indexData));
             }
             if ($key === 'route_key') {
-                return new CacheItem('route_key', json_encode($route));
+                return new CacheItem('route_key', json_encode(RouteJsonSerializer::serialize($route)));
             }
             return null;
         });
@@ -161,12 +159,12 @@ class RouterTest extends TestCase
         ];
 
         $cache = $this->createMock(CacheInterface::class);
-        $cache->method('get')->willReturnCallback(function ($key) use ($indexData, $route) {
+        $cache->method('get')->willReturnCallback(static function ($key) use ($indexData, $route) {
             if ($key === AbstractRouter::CACHE_INDEX_KEY) {
                 return new CacheItem(AbstractRouter::CACHE_INDEX_KEY, json_encode($indexData));
             }
             if ($key === 'route_key') {
-                return new CacheItem('route_key', json_encode($route));
+                return new CacheItem('route_key', json_encode(RouteJsonSerializer::serialize($route)));
             }
             return null;
         });

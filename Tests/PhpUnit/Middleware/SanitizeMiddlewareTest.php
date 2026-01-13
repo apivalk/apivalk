@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Middleware\SanitizeMiddleware;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
@@ -36,7 +37,7 @@ class SanitizeMiddlewareTest extends TestCase
             return $this->createMock(AbstractApivalkResponse::class);
         };
 
-        $middleware->process($request, 'SomeController', $next);
+        $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
 
         $this->assertEquals('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', $body->html);
         $this->assertEquals(123, $body->num);

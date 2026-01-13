@@ -41,25 +41,131 @@ The `OpenAPIGenerator` coordinates several specialized generators:
 ```php
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 
 // 1. Define API Metadata
-$info = new InfoObject('My API', '1.0.0');
-$info->setDescription('Welcome to my awesome API');
+$info = new InfoObject('My nice api', '1.0.0', 'Nice', 'Best API in ze world');
 
-// 2. Instantiate the Generator
-$generator = new OpenAPIGenerator($apivalk, $info);
+// 2. Define Components (e.g., Security Schemes)
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    'bearerAuth' => new SecuritySchemeObject(
+        'http',
+        'bearerAuth',
+        'Standard Bearer Authentication',
+        null,
+        'bearer',
+        'JWT',
+        null,
+        null
+    ),
+    'oauth2' => new SecuritySchemeObject(
+        'oauth2',
+        'oauth2',
+        'OAuth2 Authentication',
+        null,
+        null,
+        null,
+        new OAuthFlowsObject(
+            null,
+            new OAuthFlowObject(
+                'https://example.com/api/oauth/authorize',
+                'https://example.com/api/oauth/token',
+                'https://example.com/api/oauth/refresh',
+                [
+                    'read' => 'Read access',
+                    'write' => 'Write access'
+                ]
+            ),
+            null,
+            null
+        ),
+        null
+    ),
+    'fido' => new SecuritySchemeObject(
+        'apiKey',
+        'fido',
+        'FIDO/WebAuthn Authentication',
+        'header',
+        null,
+        null,
+        null,
+        null
+    )
+]);
 
-// 3. Generate the JSON string
+// 3. Instantiate the Generator
+$generator = new OpenAPIGenerator(
+    $apivalk, 
+    $info, 
+    [new ServerObject('http://localhost:8080', 'My local server')],
+    $components
+);
+
+// 4. Generate the JSON string
 $json = $generator->generate('json');
 
-// 4. Output or save to file
+// 5. Output or save to file
 header('Content-Type: application/json');
 echo $json;
 ```
 
-## Security Schemes
+## Security Schemes and Components
 
-You can also define security requirements (like Bearer Auth) by adding a `SecuritySchemeObject` to the `ComponentsObject` passed to the generator's constructor.
+The `ComponentsObject` is where you define reusable elements for your OpenAPI specification, such as security schemes, common schemas, or parameters.
+
+### Automatic Security Scheme Generation
+
+If you use security requirements in your routes but haven't defined them in the `ComponentsObject`, the `OpenAPIGenerator` will attempt to automatically generate a base authorization part for you:
+
+- If the scheme name contains "bearer", it defaults to an `http` type with a `bearer` scheme.
+- If the scheme name contains "oauth2", it defaults to an `oauth2` type with a basic password flow.
+- If the scheme name contains "fido", it defaults to an `apiKey` type in the `header`.
+- Otherwise, it defaults to an `apiKey` type in the `header`.
+
+### Best Practice: Explicit Definition
+
+While automatic generation works for simple cases, it is highly recommended to explicitly define your security schemes when initializing the `OpenAPIGenerator`. 
+
+By defining your own `SecuritySchemeObject` in the `ComponentsObject`, you gain full control over the documentation. This is especially important for complex schemes like **OAuth2**, where you can define `OAuthFlows` (authorization URLs, token URLs, scopes). This allows tools like Swagger UI to provide a functional "Authorize" button that works instantly with your authentication provider.
+
+**Crucially, the name you use in your routes (`SecurityRequirementObject`) must match the key used in `ComponentsObject::setSecuritySchemes()`.**
+
+> Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
+
+```php
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    'BearerAuth' => new SecuritySchemeObject(
+        'http',
+        'BearerAuth', // This name should match the key
+        'Standard JWT Bearer Authentication',
+        null,
+        'bearer',
+        'JWT',
+        null,
+        null
+    )
+]);
+
+// In your route:
+$route = new Route('/orders', new PostMethod(), 'Create order', [], [
+    new SecurityRequirementObject('BearerAuth', [new Scope('write:orders')])
+]);
+```
+
+Passing your custom components to the generator:
+
+```php
+$generator = new OpenAPIGenerator(
+    $apivalk,
+    $info,
+    $servers,
+    $components // Pass your custom components here
+);
+```
 
 ## Automated Pagination Envelope
 

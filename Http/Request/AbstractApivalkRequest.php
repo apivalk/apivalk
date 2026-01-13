@@ -10,8 +10,11 @@ use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\File\FileBagFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
-use apivalk\apivalk\Security\AbstractAuthIdentity;
+use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+use apivalk\apivalk\Util\IpResolver;
 
 abstract class AbstractApivalkRequest implements ApivalkRequestInterface
 {
@@ -27,8 +30,12 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $pathParameterBag;
     /** @var FileBag|null */
     private $fileBag;
-    /** @var AbstractAuthIdentity|null */
+    /** @var AbstractAuthIdentity|GuestAuthIdentity */
     private $authIdentity;
+    /** @var string|null */
+    private $ip;
+    /** @var RateLimitResult|null */
+    private $rateLimitResult;
 
     abstract public static function getDocumentation(): ApivalkRequestDocumentation;
 
@@ -42,11 +49,18 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         $this->pathParameterBag = ParameterBagFactory::createPathBag($route, $documentation);
         $this->bodyParameterBag = ParameterBagFactory::createBodyBag($documentation);
         $this->fileBag = FileBagFactory::create();
+        $this->authIdentity = new GuestAuthIdentity([]);
+        $this->ip = IpResolver::getClientIp();
     }
 
     public function getMethod(): MethodInterface
     {
         return $this->method;
+    }
+
+    public function getIp(): ?string
+    {
+        return $this->ip;
     }
 
     public function header(): ParameterBag
@@ -74,13 +88,23 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         return $this->fileBag;
     }
 
-    public function getAuthIdentity(): ?AbstractAuthIdentity
+    public function getAuthIdentity(): AbstractAuthIdentity
     {
         return $this->authIdentity;
     }
 
-    public function setAuthIdentity(?AbstractAuthIdentity $authIdentity): void
+    public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void
     {
         $this->authIdentity = $authIdentity;
+    }
+
+    public function setRateLimitResult(RateLimitResult $rateLimitResult): void
+    {
+        $this->rateLimitResult = $rateLimitResult;
+    }
+
+    public function getRateLimitResult(): ?RateLimitResult
+    {
+        return $this->rateLimitResult;
     }
 }

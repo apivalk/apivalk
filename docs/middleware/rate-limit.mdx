@@ -1,0 +1,55 @@
+---
+title: "Rate Limit Middleware"
+description: "The `RateLimitMiddleware` enforces rate limiting rules defined on your routes. It tracks request frequency and returns a 429 Too Many Requests response when limits are exceeded."
+---
+
+## How it Works
+
+The `RateLimitMiddleware` inspects the matched route for any defined rate limit. If a rate limit exists, it uses the `RateLimiter` and the provided `CacheInterface` to track and validate the request frequency.
+
+### Key features:
+* **Automated Enforcement**: If a route has a rate limit definition, the middleware handles the tracking and response automatically.
+* **Standard Headers**: It automatically adds `X-RateLimit-*` headers to the response, informing the client about their current status.
+* **Retry-After**: When a limit is exceeded, it includes a `Retry-After` header indicating when the client can try again.
+
+## Mandatory Cache Integration
+
+Rate limiting requires a persistent storage to track request counts across multiple requests and processes. Therefore, providing a `CacheInterface` implementation is **mandatory** when instantiating the middleware.
+
+```php
+use apivalk\apivalk\Middleware\RateLimitMiddleware;
+use apivalk\apivalk\Cache\FilesystemCache;
+
+// You must provide a cache implementation
+$cache = new FilesystemCache('/path/to/cache');
+$rateLimitMiddleware = new RateLimitMiddleware($cache);
+```
+
+## Usage
+
+To enable rate limiting for your application, add the middleware to your configuration. It is generally recommended to place it early in the stack, but after authentication if you want to use identity-based rate limiting.
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Middleware\RateLimitMiddleware;
+
+/** @var \apivalk\apivalk\Cache\CacheInterface $cache */
+$configuration->getMiddlewareStack()->add(new RateLimitMiddleware($cache));
+```
+
+## Response
+
+When a client exceeds the defined rate limit, the middleware short-circuits the request and returns a `TooManyRequestsApivalkResponse` (HTTP 429).
+
+### Example Response Headers:
+```http
+HTTP/1.1 429 Too Many Requests
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1705012345
+Retry-After: 1705012345
+```
+
+## Integration with Routes
+
+For the middleware to have an effect, you must define rate limits on your routes. Learn more in the [Route Rate Limit](/routing/rate-limit) documentation.

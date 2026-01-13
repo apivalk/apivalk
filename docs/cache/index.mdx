@@ -40,9 +40,12 @@ Apivalk provides a robust default implementation and allows for easy extension:
 
 ## Integration in Apivalk
 
-While the cache system is generic, its primary use case within the framework is for the **Routing System**.
+While the cache system is generic, its primary use cases within the framework are:
 
-The `Router` uses the cache to store:
+1. **Routing System**: Storing route indexes and definitions for near-instant dispatch.
+2. **Rate Limiting**: Tracking request counts across multiple requests.
+
+### Routing System Integration
 1. **Route Index**: A mapping of regex patterns to route definitions.
 2. **Route Definitions**: Detailed metadata for each endpoint.
 

@@ -113,6 +113,14 @@ abstract class AbstractApivalkResponse
         $this->headers = $headers;
     }
 
+    /** @param array<string, string|bool|float|int> $headers */
+    public function addHeaders(array $headers): void
+    {
+        foreach ($headers as $headerKey => $headerValue) {
+            $this->headers[$headerKey] = $headerValue;
+        }
+    }
+
     public function getHeaders(): array
     {
         return $this->headers;

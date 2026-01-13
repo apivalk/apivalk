@@ -42,6 +42,15 @@ class CacheItem
         return $this->createdAt;
     }
 
+    public function getExpiresAt(): ?\DateTime
+    {
+        if ($this->ttl === null) {
+            return null;
+        }
+
+        return $this->createdAt->modify(\sprintf('+%d seconds', $this->ttl));
+    }
+
     public function getTtl(): ?int
     {
         return $this->ttl;
@@ -53,6 +62,14 @@ class CacheItem
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setValue($value): void
+    {
+        $this->value = $value;
     }
 
     public static function byJson(string $json): ?self

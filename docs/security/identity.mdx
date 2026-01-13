@@ -1,0 +1,85 @@
+---
+title: "Identities"
+description: "Identities represent the entity making the request, whether it's an authenticated user or an anonymous guest."
+---
+
+Every request in Apivalk is associated with an `AbstractAuthIdentity`. This ensures that your authorization logic can always rely on an identity object being present, eliminating the need for `null` checks.
+
+## AbstractAuthIdentity
+
+The base class for all identities. It defines the contract for checking authentication status and granted scopes.
+
+### Methods
+
+- **`isAuthenticated(): bool`**: Returns `true` if the requester is authenticated.
+- **`getGrantedScopes(): ScopeInterface[]`**: Returns an array of scopes granted to this identity.
+- **`isScopeGranted(ScopeInterface $scope): bool`**: Helper method to check if a specific scope is present.
+
+---
+
+## UserAuthIdentity
+
+Represents a successfully authenticated user.
+
+### Usage
+
+Typically created by an [Authenticator](/security/authenticator) after validating a token.
+
+```php
+use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;use apivalk\apivalk\Security\Scope;
+
+$identity = new UserAuthIdentity(
+    'user-123', 
+    [new Scope('read:profile')], 
+    ['email' => 'user@example.com']
+);
+```
+
+### Additional Methods
+
+- **`getUserId(): string`**: Returns the unique identifier for the user (e.g., the `sub` claim from a JWT).
+- **`getClaims(): array`**: Returns all metadata/claims associated with the user.
+- **`getClaim(string $name)`**: Retrieves a specific claim by name.
+
+---
+
+## GuestAuthIdentity
+
+Represents an anonymous or non-authenticated requester.
+
+### Usage
+
+By default, every request is initialized with an empty `GuestAuthIdentity`.
+
+```php
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+
+$identity = new GuestAuthIdentity();
+```
+
+### Public Scopes
+
+You can initialize a `GuestAuthIdentity` with default scopes. This is useful for "Public but scoped" endpoints where you want to grant certain permissions to everyone.
+
+```php
+$identity = new GuestAuthIdentity([new Scope('public:read')]);
+```
+
+---
+
+## Accessing Identity in Controllers
+
+You can retrieve the current identity from the request object in any controller.
+
+```php
+class MyController extends AbstractApivalkController {
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse {
+        $identity = $request->getAuthIdentity();
+        
+        if ($identity->isAuthenticated()) {
+            $userId = $identity->getUserId();
+            // ... logic for logged-in users
+        }
+    }
+}
+```

@@ -58,6 +58,7 @@ Apivalk provides several pre-defined error responses for common scenarios:
 
 * `BadRequestApivalkResponse` (400)
 * `UnauthorizedApivalkResponse` (401)
+* `ForbiddenApivalkResponse` (403)
 * `NotFoundApivalkResponse` (404)
 * `MethodNotAllowedApivalkResponse` (405)
 * `TooManyRequestsApivalkResponse` (429)
@@ -72,7 +73,21 @@ You can add custom headers to any response object:
 $response->setHeaders([
     'X-Custom-Header' => 'Value'
 ]);
+
+$response->addHeaders(['APP-ID' => '213']);
 ```
+
+### Automatic Rate Limit Headers
+
+When the [Rate Limit Middleware](/middleware/rate-limit) is active, Apivalk automatically appends rate limit information to the response headers. This ensures that clients are always aware of their current quota and remaining requests.
+
+The following headers are automatically added:
+
+* `X-RateLimit-Limit`: The maximum number of requests allowed in the current window.
+* `X-RateLimit-Remaining`: The number of requests left for the current window.
+* `X-RateLimit-Reset`: The time at which the current rate limit window resets (UTC timestamp).
+
+If the rate limit is exceeded (429 Too Many Requests), the `Retry-After` header is also included.
 
 ## Rendering
 

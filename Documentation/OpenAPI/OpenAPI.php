@@ -32,10 +32,15 @@ class OpenAPI
     private $paths = [];
     /** @var array<string, PathItemObject> */
     private $webhooks = [];
-    /** @var ComponentsObject|null */
+    /** @var ComponentsObject */
     private $components;
     /** @var TagObject[] */
     private $tags = [];
+
+    public function __construct()
+    {
+        $this->components = new ComponentsObject();
+    }
 
     public function setInfo(InfoObject $info): void
     {
@@ -105,7 +110,7 @@ class OpenAPI
         return $this->webhooks;
     }
 
-    public function getComponents(): ?ComponentsObject
+    public function getComponents(): ComponentsObject
     {
         return $this->components;
     }
@@ -145,8 +150,7 @@ class OpenAPI
             'servers' => $servers,
             'paths' => $paths,
             'webhooks' => $webhooks,
-            'components' => $this->components instanceof ComponentsObject ? array_filter($this->components->toArray())
-                : null,
+            'components' => array_filter($this->components->toArray()),
             'tags' => $tags,
         ]);
     }
