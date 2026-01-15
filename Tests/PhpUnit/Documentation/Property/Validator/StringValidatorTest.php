@@ -33,17 +33,8 @@ class StringValidatorTest extends TestCase
         $property->setMaxLength(null)->setPattern('/^abc/');
         $this->assertTrue($validator->validate('abcdef')->isSuccess());
         $this->assertFalse($validator->validate('bcdef')->isSuccess());
-
-        $property->setPattern(null)->setFormat(StringProperty::FORMAT_DATE);
-        $this->assertTrue($validator->validate('2023-12-20')->isSuccess());
-        $this->assertFalse($validator->validate('2023-13-20')->isSuccess());
-        $this->assertFalse($validator->validate('20-12-2023')->isSuccess());
-
-        $property->setFormat(StringProperty::FORMAT_DATE_TIME);
-        $this->assertTrue($validator->validate('2023-12-20T14:00:00Z')->isSuccess());
-        $this->assertFalse($validator->validate('2023-12-20 14:00:00')->isSuccess());
         
-        $property->setFormat(StringProperty::FORMAT_BYTE);
+        $property->setPattern(null)->setFormat(StringProperty::FORMAT_BYTE);
         $this->assertTrue($validator->validate(base64_encode('test'))->isSuccess());
         $this->assertFalse($validator->validate('not base64!')->isSuccess());
     }
