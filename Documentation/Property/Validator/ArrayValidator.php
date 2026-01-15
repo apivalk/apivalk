@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\Property\Validator;
 
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
+
 class ArrayValidator extends AbstractValidator
 {
-    public function validate($value): ValidatorResult
+    public function validate(Parameter $parameter): ValidatorResult
     {
+        $value = $parameter->getValue();
         if (\is_array($value)) {
             return new ValidatorResult(true);
         }

@@ -20,7 +20,7 @@ final class ParameterBagFactory
                 continue;
             }
 
-            $headerBag->set(new Parameter(strtoupper(substr($key, 5)), $value));
+            $headerBag->set(new Parameter(strtoupper(substr($key, 5)), $value, $value));
         }
 
         return $headerBag;
@@ -43,7 +43,8 @@ final class ParameterBagFactory
             $queryBag->set(
                 new Parameter(
                     $key,
-                    self::typeCastValueByProperty($value, $properties[$key])
+                    self::typeCastValueByProperty($value, $properties[$key]),
+                    $value
                 )
             );
         }
@@ -99,7 +100,8 @@ final class ParameterBagFactory
             $pathBag->set(
                 new Parameter(
                     $parameterName,
-                    self::typeCastValueByProperty($parameterValue, $properties[$parameterName])
+                    self::typeCastValueByProperty($parameterValue, $properties[$parameterName]),
+                    $parameterValue
                 )
             );
         }
@@ -134,7 +136,8 @@ final class ParameterBagFactory
             $inputBag->set(
                 new Parameter(
                     $inputProperty->getPropertyName(),
-                    self::typeCastValueByProperty($value, $inputProperty)
+                    self::typeCastValueByProperty($value, $inputProperty),
+                    $value
                 )
             );
         }
@@ -172,6 +175,12 @@ final class ParameterBagFactory
                 }
 
                 return null;
+            case '\DateTime':
+                try {
+                    return new \DateTime($value);
+                } catch (\Exception $e) {
+                    return null;
+                }
             default:
                 return null;
         }

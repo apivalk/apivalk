@@ -76,7 +76,7 @@ class RequestValidationMiddlewareTest extends TestCase
             public function query(): ParameterBag
             {
                 $bag = new ParameterBag();
-                $bag->set(new Parameter('test', 'val'));
+                $bag->set(new Parameter('test', 'val', 'val'));
                 return $bag;
             }
 
@@ -191,7 +191,7 @@ class RequestValidationMiddlewareTest extends TestCase
             public function body(): ParameterBag
             {
                 $bag = new ParameterBag();
-                $bag->set(new Parameter('test', 'val'));
+                $bag->set(new Parameter('test', 'val', 'val'));
                 return $bag;
             }
 

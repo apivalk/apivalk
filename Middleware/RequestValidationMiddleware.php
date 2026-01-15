@@ -65,7 +65,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             }
 
             foreach ($property->getValidators() as $validator) {
-                $validationResult = $validator->validate($parameter->getValue());
+                $validationResult = $validator->validate($parameter);
 
                 if (!$validationResult->isSuccess()) {
                     $this->errors[] = new ErrorObject(

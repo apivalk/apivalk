@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.1](https://github.com/apivalk/apivalk/compare/v1.3.0...v1.3.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* datetime validation ([6a251cf](https://github.com/apivalk/apivalk/commit/6a251cfa737bd58ca1036cc0f265e8b4252e6e8b))
+
 ## [1.3.0](https://github.com/apivalk/apivalk/compare/v1.2.0...v1.3.0) (2026-01-13)
 
 
