@@ -10,12 +10,17 @@ use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\NumberProperty;
 use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 final class ValidatorFactory
 {
     public static function create(AbstractProperty $property): AbstractValidator
     {
         if ($property instanceof StringProperty) {
+            if (\in_array($property->getFormat(), [StringProperty::FORMAT_DATE, StringProperty::FORMAT_DATE_TIME], true)) {
+                return new DateTimeValidator($property);
+            }
+
             return new StringValidator($property);
         }
 
@@ -37,7 +42,7 @@ final class ValidatorFactory
 
         // Default validator for unknown properties (e.g. anonymous classes in tests)
         return new class($property) extends AbstractValidator {
-            public function validate($value): ValidatorResult
+            public function validate(Parameter $parameter): ValidatorResult
             {
                 return new ValidatorResult(true);
             }

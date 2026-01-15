@@ -28,7 +28,7 @@ class AuthenticationMiddlewareTest extends TestCase
             ->willReturn($identity);
 
         $headerBag = new ParameterBag();
-        $headerBag->set(new Parameter('Authorization', 'Bearer ' . $token));
+        $headerBag->set(new Parameter('Authorization', 'Bearer ' . $token, 'Bearer ' . $token));
 
         $request = $this->createMock(ApivalkRequestInterface::class);
         $request->method('header')->willReturn($headerBag);
@@ -80,7 +80,7 @@ class AuthenticationMiddlewareTest extends TestCase
             ->willReturn(null);
 
         $headerBag = new ParameterBag();
-        $headerBag->set(new Parameter('Authorization', 'Bearer ' . $token));
+        $headerBag->set(new Parameter('Authorization', 'Bearer ' . $token, 'Bearer ' . $token));
 
         $request = $this->createMock(ApivalkRequestInterface::class);
         $request->method('header')->willReturn($headerBag);

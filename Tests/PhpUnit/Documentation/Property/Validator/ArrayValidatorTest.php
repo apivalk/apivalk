@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\Property\Validator\ArrayValidator;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
 use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 class ArrayValidatorTest extends TestCase
 {
@@ -17,9 +18,9 @@ class ArrayValidatorTest extends TestCase
         $property = new ArrayProperty('test', '', $objProp);
         $validator = new ArrayValidator($property);
 
-        $this->assertTrue($validator->validate(['a', 'b'])->isSuccess());
-        $this->assertTrue($validator->validate('["a", "b"]')->isSuccess());
-        $this->assertFalse($validator->validate('not a json array')->isSuccess());
-        $this->assertFalse($validator->validate(123)->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', ['a', 'b'], ['a', 'b']))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', '["a", "b"]', '["a", "b"]'))->isSuccess());
+        $this->assertFalse($validator->validate(new Parameter('test', 'not a json array', 'not a json array'))->isSuccess());
+        $this->assertFalse($validator->validate(new Parameter('test', 123, 123))->isSuccess());
     }
 }

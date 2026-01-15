@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\Property\Validator;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 abstract class AbstractValidator
 {
@@ -12,11 +13,11 @@ abstract class AbstractValidator
     private $property;
 
     /**
-     * @param int|bool|float|string $value
+     * @param Parameter $parameter
      *
      * @return ValidatorResult
      */
-    abstract public function validate($value): ValidatorResult;
+    abstract public function validate(Parameter $parameter): ValidatorResult;
 
     public function __construct(AbstractProperty $property)
     {

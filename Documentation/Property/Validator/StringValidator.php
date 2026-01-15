@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\Property\Validator;
 
 use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 class StringValidator extends AbstractValidator
 {
-    public function validate($value): ValidatorResult
+    public function validate(Parameter $parameter): ValidatorResult
     {
+        $value = $parameter->getValue();
         if (!is_string($value)) {
             return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_STRING);
         }
@@ -37,29 +39,6 @@ class StringValidator extends AbstractValidator
 
         if ($pattern !== null && !preg_match($pattern, $value)) {
             return new ValidatorResult(false, ValidatorResult::VALUE_DOES_NOT_MATCH_PATTERN);
-        }
-
-        if ($format === $property::FORMAT_DATE) {
-            $date = \DateTime::createFromFormat('Y-m-d', $value);
-            $isValidDate = $date && $date->format('Y-m-d') === $value;
-
-            if (!$isValidDate) {
-                return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_VALID_DATE);
-            }
-        }
-
-        if ($format === $property::FORMAT_DATE_TIME) {
-            $dateTime = \DateTime::createFromFormat(\DateTimeInterface::RFC3339, $value);
-            if (!$dateTime) {
-                $dateTime = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $value);
-            }
-
-            $errors = \DateTime::getLastErrors();
-            $isValidDateTime = $dateTime instanceof \DateTime && $errors['warning_count'] === 0 && $errors['error_count'] === 0;
-
-            if (!$isValidDateTime) {
-                return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_VALID_DATE_TIME);
-            }
         }
 
         if (($format === $property::FORMAT_BYTE)

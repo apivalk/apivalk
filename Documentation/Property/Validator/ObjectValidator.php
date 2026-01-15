@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\Property\Validator;
 
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
+
 class ObjectValidator extends AbstractValidator
 {
-    public function validate($value): ValidatorResult
+    public function validate(Parameter $parameter): ValidatorResult
     {
+        $value = $parameter->getValue();
         if (!\is_string($value)) {
             return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_AN_OBJECT);
         }
