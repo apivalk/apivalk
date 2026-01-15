@@ -13,7 +13,7 @@ class ParameterBagTest extends TestCase
     public function testBag(): void
     {
         $bag = new ParameterBag();
-        $param = new Parameter('test', 'value');
+        $param = new Parameter('test', 'value', 'value');
         $bag->set($param);
 
         $this->assertTrue($bag->has('test'));

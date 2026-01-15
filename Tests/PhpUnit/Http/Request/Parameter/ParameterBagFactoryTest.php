@@ -98,4 +98,19 @@ class ParameterBagFactoryTest extends TestCase
         $prop = new StringProperty('test');
         $this->assertEquals('123', ParameterBagFactory::typeCastValueByProperty(123, $prop));
     }
+
+    public function testTypeCastDateTimeValue(): void
+    {
+        $prop = new StringProperty('test');
+        $prop->setFormat(StringProperty::FORMAT_DATE);
+
+        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20', $prop);
+        $this->assertInstanceOf(\DateTime::class, $result);
+        $this->assertEquals('2023-12-20', $result->format('Y-m-d'));
+
+        $prop->setFormat(StringProperty::FORMAT_DATE_TIME);
+        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20T14:00:00+00:00', $prop);
+        $this->assertInstanceOf(\DateTime::class, $result);
+        $this->assertEquals('2023-12-20T14:00:00+00:00', $result->format(\DateTime::ATOM));
+    }
 }

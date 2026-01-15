@@ -11,11 +11,20 @@ class ParameterTest extends TestCase
 {
     public function testParameter(): void
     {
-        $parameter = new Parameter('id', 123);
+        $parameter = new Parameter('id', 123, 123);
         $this->assertEquals('id', $parameter->getName());
         $this->assertEquals(123, $parameter->getValue());
+        $this->assertEquals(123, $parameter->getRawValue());
 
         $parameter->setValue('abc');
         $this->assertEquals('abc', $parameter->getValue());
+    }
+
+    public function testParameterWithRawValue(): void
+    {
+        $parameter = new Parameter('id', 123, '123');
+        $this->assertEquals('id', $parameter->getName());
+        $this->assertEquals(123, $parameter->getValue());
+        $this->assertEquals('123', $parameter->getRawValue());
     }
 }

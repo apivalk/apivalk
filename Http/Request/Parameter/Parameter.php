@@ -8,13 +8,16 @@ class Parameter
 {
     /** @var string */
     private $name;
-    /** @var string|int|float|bool|array|null */
+    /** @var string|int|float|bool|array|\DateTime|null */
     private $value;
+    /** @var string|int|float|bool|array|null */
+    private $rawValue;
 
-    public function __construct(string $name, $value)
+    public function __construct(string $name, $value, $rawValue)
     {
         $this->name = $name;
         $this->value = $value;
+        $this->rawValue = $rawValue;
     }
 
     public function getName(): string
@@ -30,5 +33,15 @@ class Parameter
     public function setValue($value): void
     {
         $this->value = $value;
+    }
+
+    public function getRawValue()
+    {
+        return $this->rawValue;
+    }
+    
+    public function setRawValue($rawValue): void
+    {
+        $this->rawValue = $rawValue;
     }
 }

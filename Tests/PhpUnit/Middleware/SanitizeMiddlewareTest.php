@@ -19,14 +19,14 @@ class SanitizeMiddlewareTest extends TestCase
         $middleware = new SanitizeMiddleware();
         
         $body = new ParameterBag();
-        $body->set(new Parameter('html', '<script>alert("xss")</script>'));
-        $body->set(new Parameter('num', 123));
+        $body->set(new Parameter('html', '<script>alert("xss")</script>', '<script>alert("xss")</script>'));
+        $body->set(new Parameter('num', 123, 123));
         
         $query = new ParameterBag();
-        $query->set(new Parameter('q', '<b>hi</b>'));
+        $query->set(new Parameter('q', '<b>hi</b>', '<b>hi</b>'));
         
         $path = new ParameterBag();
-        $path->set(new Parameter('slug', 'my-slug"'));
+        $path->set(new Parameter('slug', 'my-slug"', 'my-slug"'));
 
         $request = $this->createMock(ApivalkRequestInterface::class);
         $request->method('body')->willReturn($body);

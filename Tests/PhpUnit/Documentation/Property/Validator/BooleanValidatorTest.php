@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\Property\Validator\BooleanValidator;
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 class BooleanValidatorTest extends TestCase
 {
@@ -15,14 +16,14 @@ class BooleanValidatorTest extends TestCase
         $property = new BooleanProperty('test', '', true);
         $validator = new BooleanValidator($property);
 
-        $this->assertTrue($validator->validate(true)->isSuccess());
-        $this->assertTrue($validator->validate(false)->isSuccess());
-        $this->assertTrue($validator->validate(1)->isSuccess());
-        $this->assertTrue($validator->validate(0)->isSuccess());
-        $this->assertTrue($validator->validate('true')->isSuccess());
-        $this->assertTrue($validator->validate('false')->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', true, true))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', false, false))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 1, 1))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 0, 0))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 'true', 'true'))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 'false', 'false'))->isSuccess());
         
-        $this->assertFalse($validator->validate('yes')->isSuccess());
-        $this->assertFalse($validator->validate(2)->isSuccess());
+        $this->assertFalse($validator->validate(new Parameter('test', 'yes', 'yes'))->isSuccess());
+        $this->assertFalse($validator->validate(new Parameter('test', 2, 2))->isSuccess());
     }
 }
