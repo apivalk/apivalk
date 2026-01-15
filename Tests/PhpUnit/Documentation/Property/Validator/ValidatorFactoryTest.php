@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
+use apivalk\apivalk\Documentation\Property\Validator\DatetimeValidator;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorFactory;
 use apivalk\apivalk\Documentation\Property\Validator\StringValidator;
@@ -23,6 +24,14 @@ class ValidatorFactoryTest extends TestCase
     {
         $stringProp = new StringProperty('test');
         $this->assertInstanceOf(StringValidator::class, ValidatorFactory::create($stringProp));
+
+        $stringProp = new StringProperty('test');
+        $stringProp->setFormat(StringProperty::FORMAT_DATE);
+        $this->assertInstanceOf(DatetimeValidator::class, ValidatorFactory::create($stringProp));
+
+        $stringProp = new StringProperty('test');
+        $stringProp->setFormat(StringProperty::FORMAT_DATE_TIME);
+        $this->assertInstanceOf(DatetimeValidator::class, ValidatorFactory::create($stringProp));
 
         $numberProp = new NumberProperty('test');
         $this->assertInstanceOf(NumberValidator::class, ValidatorFactory::create($numberProp));

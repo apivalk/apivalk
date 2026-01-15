@@ -39,29 +39,6 @@ class StringValidator extends AbstractValidator
             return new ValidatorResult(false, ValidatorResult::VALUE_DOES_NOT_MATCH_PATTERN);
         }
 
-        if ($format === $property::FORMAT_DATE) {
-            $date = \DateTime::createFromFormat('Y-m-d', $value);
-            $isValidDate = $date && $date->format('Y-m-d') === $value;
-
-            if (!$isValidDate) {
-                return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_VALID_DATE);
-            }
-        }
-
-        if ($format === $property::FORMAT_DATE_TIME) {
-            $dateTime = \DateTime::createFromFormat(\DateTimeInterface::RFC3339, $value);
-            if (!$dateTime) {
-                $dateTime = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $value);
-            }
-
-            $errors = \DateTime::getLastErrors();
-            $isValidDateTime = $dateTime instanceof \DateTime && $errors['warning_count'] === 0 && $errors['error_count'] === 0;
-
-            if (!$isValidDateTime) {
-                return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_VALID_DATE_TIME);
-            }
-        }
-
         if (($format === $property::FORMAT_BYTE)
             && !preg_match('/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/', $value)) {
             return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_A_VALID_BASE64_STRING);

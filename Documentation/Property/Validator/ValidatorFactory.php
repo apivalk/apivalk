@@ -16,6 +16,10 @@ final class ValidatorFactory
     public static function create(AbstractProperty $property): AbstractValidator
     {
         if ($property instanceof StringProperty) {
+            if (\in_array($property->getFormat(), [StringProperty::FORMAT_DATE_TIME, StringProperty::FORMAT_DATE], true)) {
+                return new DatetimeValidator($property);
+            }
+            
             return new StringValidator($property);
         }
 
