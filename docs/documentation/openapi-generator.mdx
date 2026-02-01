@@ -151,9 +151,7 @@ $components->setSecuritySchemes([
 ]);
 
 // In your route:
-$route = new Route('/orders', new PostMethod(), 'Create order', [],
-    new RouteAuthorization('BearerAuth', ['write:orders'])
-);
+$route = Route::post('/orders')->description('Create order')->authorization('BearerAuth', ['write:orders'])
 ```
 
 Passing your custom components to the generator:

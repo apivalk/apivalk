@@ -16,6 +16,7 @@ class RouteJsonSerializer
      *     url: string,
      *     method: string,
      *     description: string|null,
+     *     summary: string|null,
      *     tags: array<int, array{
      *         name: string,
      *         description: string|null
@@ -63,6 +64,7 @@ class RouteJsonSerializer
             'url' => $route->getUrl(),
             'method' => $route->getMethod()->getName(),
             'description' => $route->getDescription(),
+            'summary' => $route->getSummary(),
             'tags' => $tags,
             'routeAuthorization' => $routeAuthorizationData ?? null,
             'rateLimit' => $rateLimitData ?? null,
@@ -112,6 +114,7 @@ class RouteJsonSerializer
             $jsonArray['url'],
             MethodFactory::create($jsonArray['method']),
             $jsonArray['description'] ?? null,
+            $jsonArray['summary'] ?? null,
             $tags,
             $routeAuthorization,
             $rateLimit

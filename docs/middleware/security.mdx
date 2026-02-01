@@ -27,16 +27,17 @@ A route that requires a logged-in user with specific scopes and permissions.
 use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
-$route = new Route('/admin/dashboard', new GetMethod(), 'Admin Dashboard', [],
-    new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read'])
-);
+$route = Route::get('/admin/dashboard')
+                ->description('Admin Dashboard')
+                ->authorization(new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read']))
+
 ```
 
 ### Public Route (No Authorization)
 A route that is accessible by anyone.
 
 ```php
-$route = new Route('/about', new GetMethod(), 'About page', [], null);
+$route = Route::get('/about')->description('About page');
 ```
 
 ### Optional Security (Public with Authorization)
