@@ -156,51 +156,6 @@ parameters:
 			path: Documentation/OpenAPI/Object/ObjectInterface.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$responses with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$security with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$tags with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getParameters\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getResponses\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getSecurity\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ParameterObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/OpenAPI/Object/ParameterObject.php
@@ -337,9 +292,14 @@ parameters:
 
 
 		-
-			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ErrorApivalkObjectPropertyCollection has an unused parameter \\$mode\\.$#"
+			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ValidationErrorObjectPropertyCollection has an unused parameter \\$mode\\.$#"
 			count: 1
-			path: Documentation/Response/ErrorApivalkObjectPropertyCollection.php
+			path: Documentation/Response/ValidationErrorObjectPropertyCollection.php
+
+		-
+			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ErrorObjectPropertyCollection has an unused parameter \\$mode\\.$#"
+			count: 1
+			path: Documentation/Response/ErrorObjectPropertyCollection.php
 
 		-
 			message: "#^Class apivalk\\\\apivalk\\\\Http\\\\Request\\\\File\\\\FileBag implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
@@ -506,7 +466,10 @@ parameters:
 			count: 1
 			path: Middleware/RequestValidationMiddleware.php
 
-
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractObjectProperty\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/AbstractObjectProperty.php
 
 		-
 			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$namespace has no type specified\\.$#"

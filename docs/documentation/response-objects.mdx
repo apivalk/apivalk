@@ -9,14 +9,15 @@ Reusable response objects are implemented as subclasses of `AbstractObjectProper
 
 ## Built-in Examples
 
-### `ErrorApivalkObject`
+### `ValidationErrorObject`
 
 This object is used to represent a single validation error or a generic error message.
 
 **Structure:**
 
-* `name` (string): The name of the field that caused the error.
-* `error` (string): The human-readable error message.
+* `parameter` (string): The name of the field that caused the error.
+* `message` (string): The human-readable error message.
+* `errorKey` (string): The machine-readable error code.
 
 **Usage in Controller:**
 
@@ -24,7 +25,7 @@ This object is used to represent a single validation error or a generic error me
 public static function getResponseDocumentation(): ApivalkResponseDocumentation
 {
     $doc = new ApivalkResponseDocumentation();
-    $doc->addProperty(new ErrorApivalkObject());
+    $doc->addProperty(new ValidationErrorObject());
     return $doc;
 }
 ```
@@ -38,24 +39,132 @@ You can create custom reusable objects by following these steps:
 
 ### Example: `UserObject`
 
+This example shows an object schema used for documentation and, optionally, as a runtime data container.
+
+- The constructor **must** call `parent::__construct($name, $description)`.
+- Do **not** hydrate runtime values in the constructor. The documentation needs to be built independently of real values.
+- Populate the object only when you actually need an instantiated object at runtime, for example in `populate()`, a builder, or from a DTO.
+
 ```php
-class UserPropertyCollection extends AbstractPropertyCollection {
-    public function __construct(string $mode) {
+class UserPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
         $this->addProperty(new StringProperty('id', 'User UUID'));
         $this->addProperty(new StringProperty('email', 'User email address'));
     }
 }
 
-class UserObject extends AbstractObjectProperty {
-    public function __construct() {
+class UserObject extends AbstractObjectProperty
+{
+    private string $id;
+    private string $email;
+
+    /**
+     * Defines the object's schema name and description.
+     *
+     * Important:
+     * - Always required.
+     * - Do not hydrate runtime values here.
+     * - Documentation is built without needing a populated instance.
+     */
+    public function __construct()
+    {
         parent::__construct('user', 'User details');
     }
 
-    public function getPropertyCollection(): AbstractPropertyCollection {
+    public function getPropertyCollection(): AbstractPropertyCollection
+    {
         return new UserPropertyCollection(AbstractPropertyCollection::MODE_VIEW);
+    }
+
+    /**
+     * Optional runtime population.
+     *
+     * Populate the object only when you want to use the instance as an
+     * actual data container at runtime.
+     */
+    public function populate(string $id, string $email): void
+    {
+        $this->id = $id;
+        $this->email = $email;
+    }
+
+    /** Populated response data. This is called when you use the object as a response object in response documentation - and that is converted to array. */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+        ];
     }
 }
 ```
+
+Usage:
+
+```php
+/** Your response class */
+class UserListResponse extends AbstractApivalkResponse
+{
+    /** @var UserObject[] */
+    private $users;
+
+    public function __construct(array $users = [])
+    {
+        $this->users = $users;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $responseDocumentation = new ApivalkResponseDocumentation();
+
+        $responseDocumentation->setDescription('User list');
+        $responseDocumentation->addProperty(
+            new ArrayProperty(
+                'users',
+                'List of users',
+                new UserObject()
+            )
+        );
+
+        return $responseDocumentation;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public function toArray(): array
+    {
+        $usersArray = [];
+
+        foreach ($this->users as $error) {
+            $usersArray[] = $error->toArray();
+        }
+
+        return ['users' => $usersArray];
+    }
+}
+
+/** And somewhere in the controller */
+
+$userObject = new UserObject();
+$userObject->populate('0f3b6c7f-7b1b-4f1f-9d0a-1b2c3d4e5f60', 'test@test.test');
+
+return new UserListResponse([$userObject]);
+```
+
+**Alternative population strategies**
+
+You can populate the object however you prefer, for example:
+- from a database record
+- via setters/getters
+- with a fluent builder
+- by mapping a DTO
+
+The key rule is: constructor is for schema identity (name, description), not for data hydration.
 
 ## Benefits
 

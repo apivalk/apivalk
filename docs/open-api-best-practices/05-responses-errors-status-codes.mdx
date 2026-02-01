@@ -1,0 +1,161 @@
+---
+title: Response format and status codes
+description: Standard response envelopes, error objects, validation errors, and HTTP status codes.
+---
+
+# Response format and status codes
+
+## Response format and status codes
+
+### Base success response (200, 201, 202)
+
+```json
+{
+  "data": {
+    "user_id": 123,
+    "user_name": "john_doe"
+  },
+  "message": "User retrieved successfully."
+}
+```
+
+### Base collection response (200)
+
+```json
+{
+  "data": [
+    { "user_id": 123, "user_name": "john_doe" },
+    { "user_id": 456, "user_name": "jane_doe" }
+  ],
+  "pagination": {
+    "page": 1,
+    "page_size": 10,
+    "total_pages": 5
+  },
+  "message": "Users retrieved successfully."
+}
+```
+
+Empty response must be an empty array:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "page_size": 10,
+    "total_pages": null
+  },
+  "message": "Users retrieved successfully."
+}
+```
+
+### Base error response (400-500)
+
+```json
+{
+  "error": {
+    "key": "USER_NOT_FOUND",
+    "message": "The specified user does not exist."
+  }
+}
+```
+
+Rules:
+
+- error.key is mandatory and machine-readable
+- error.message is human-readable and should be localized
+
+### Base deleted response (204)
+
+HTTP 204 responses have no body.
+
+### Base validation error response (422)
+
+```json
+{
+  "errors": [
+    {
+      "parameter": "user_name",
+      "message": "User name is not long enough.",
+      "key": "USER_NAME_NOT_LONG_ENOUGH"
+    }
+  ]
+}
+```
+
+Rules:
+
+- parameter should use snake_case and match the request field name where possible
+- message should be localized
+- key should be stable and machine-readable
+
+### Base OPTIONS response
+
+OPTIONS responses should rely on headers, not a body.
+
+Example headers:
+
+```http
+HTTP/1.1 200 OK
+Allow: GET,HEAD,POST,OPTIONS
+Content-Length: 0
+```
+
+### HTTP status codes
+
+| Code | Meaning | Use when |
+|---|---|---|
+| 200 | OK | Standard GET, PUT, PATCH, DELETE |
+| 201 | Created | New resource created (POST) |
+| 202 | Accepted | Async operation started |
+| 204 | No Content | Successful with no body |
+| 400 | Bad Request | Validation error or bad input |
+| 401 | Unauthorized | Auth missing or invalid |
+| 403 | Forbidden | No permission |
+| 404 | Not Found | Resource does not exist |
+| 409 | Conflict | Duplicate or inconsistent data |
+| 422 | Unprocessable Entity | Semantic validation failure |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Unexpected backend failure |
+
+## Rate limiting
+
+All REST APIs should expose standardized rate-limit information via HTTP response headers.
+
+Headers:
+
+| Header | Description |
+|---|---|
+| X-RateLimit-Limit | Maximum number of requests allowed within the time window |
+| X-RateLimit-Remaining | Requests remaining in the current window |
+| X-RateLimit-Reset | UNIX timestamp (seconds) when the window resets |
+| Retry-After | Seconds to wait before retrying (429 only) |
+
+Example:
+
+```http
+HTTP/1.1 200 OK
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 742
+X-RateLimit-Reset: 1705228800
+```
+
+Rate limit exceeded example:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1705228800
+```
+
+```json
+{
+  "error": {
+    "key": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please retry after the rate limit window resets."
+  }
+}
+```

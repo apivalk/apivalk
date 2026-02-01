@@ -4,24 +4,23 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
-use apivalk\apivalk\Security\Scope;
-use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use PHPUnit\Framework\TestCase;
 
 class SecurityRequirementObjectTest extends TestCase
 {
     public function testToArray(): void
     {
-        $security = new SecurityRequirementObject('BearerAuth', [new Scope('read'), new Scope('write')]);
+        $security = new SecurityRequirementObject('BearerAuth', ['read', 'write']);
         
         $expected = [
             'BearerAuth' => ['read', 'write']
         ];
 
         $this->assertEquals($expected, $security->toArray());
-        $this->assertEquals('BearerAuth', $security->getName());
+        $this->assertEquals('BearerAuth', $security->getSecuritySchemeName());
         $this->assertCount(2, $security->getScopes());
-        $this->assertEquals('read', $security->getScopes()[0]->getName());
+        $this->assertEquals('read', $security->getScopes()[0]);
     }
 
     public function testToArrayDefaultScopes(): void
@@ -34,7 +33,7 @@ class SecurityRequirementObjectTest extends TestCase
     {
         $security = new SecurityRequirementObject();
         $this->assertTrue($security->isPublicEndpoint());
-        $this->assertNull($security->getName());
+        $this->assertNull($security->getSecuritySchemeName());
         $this->assertEquals([], $security->toArray());
     }
 }

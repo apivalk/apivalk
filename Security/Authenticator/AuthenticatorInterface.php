@@ -8,9 +8,5 @@ use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 interface AuthenticatorInterface
 {
-    /**
-     * @param string $token
-     * @return AbstractAuthIdentity|null Returns null if authentication fails
-     */
     public function authenticate(string $token): ?AbstractAuthIdentity;
 }

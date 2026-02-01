@@ -10,7 +10,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ResponseObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
+use apivalk\apivalk\Security\RouteAuthorization;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 
@@ -33,8 +33,10 @@ class OperationObjectTest extends TestCase
         $response = $this->createMock(ResponseObject::class);
         $response->method('toArray')->willReturn([200 => ['description' => 'Success']]);
         
-        $security = $this->createMock(SecurityRequirementObject::class);
-        $security->method('toArray')->willReturn(['BearerAuth' => []]);
+        $security = $this->createMock(RouteAuthorization::class);
+        $security->method('getSecuritySchemeName')->willReturn('BearerAuth');
+        $security->method('getRequiredScopes')->willReturn([]);
+        $security->method('getRequiredPermissions')->willReturn([]);
 
         $operation = new OperationObject(
             $method,
@@ -45,7 +47,7 @@ class OperationObjectTest extends TestCase
             [$parameter],
             $requestBody,
             [$response],
-            [$security]
+            $security
         );
 
         $result = $operation->toArray();
@@ -66,7 +68,7 @@ class OperationObjectTest extends TestCase
         $this->assertEquals([$parameter], $operation->getParameters());
         $this->assertSame($requestBody, $operation->getRequestBody());
         $this->assertEquals([$response], $operation->getResponses());
-        $this->assertEquals([$security], $operation->getSecurity());
+        $this->assertSame($security, $operation->getRouteAuthorization());
     }
 
     public function testRequestBodyExcludedForGet(): void
@@ -81,7 +83,9 @@ class OperationObjectTest extends TestCase
             null,
             null,
             [],
-            $requestBody
+            $requestBody,
+            [],
+            null
         );
 
         $result = $operation->toArray();

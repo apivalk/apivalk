@@ -20,8 +20,10 @@ Apivalk features a robust, OpenAPI-compliant security system out of the box.
 
 - **Identity System**: Unified handling of `UserAuthIdentity` and `GuestAuthIdentity`.
 - **Scope Objects**: Granular, type-safe authorization using `Scope` objects instead of simple strings.
-- **JWT & OAuth**: First-class support for JWK-based JWT validation via `JwtAuthenticator` (based on `firebase/php-jwt`).
-- **Middleware Pipeline**: Dedicated `AuthenticationMiddleware` and `SecurityMiddleware` for clean, decoupled authorization.
+- **JWT & OAuth**: First-class support for JWK-based JWT validation via `JwtAuthenticator` (based on
+  `firebase/php-jwt`).
+- **Middleware Pipeline**: Dedicated `AuthenticationMiddleware` and `SecurityMiddleware` for clean, decoupled
+  authorization.
 
 ---
 
@@ -114,6 +116,26 @@ $apivalk->getRenderer()->render($response);
 - **Apivalk Cloud** (In Research): Managed platform for Apivalk APIs.
 
 Official Website: [apivalk.com](https://apivalk.com) | Documentation: [docs.apivalk.com](https://docs.apivalk.com)
+
+---
+
+## Contributing and local development
+
+- For local development, fork this repository.
+- After checking out your branch, build the images:
+    - `docker compose build`
+
+  If you prefer, you can also use your own PHP setup or tools like DDEV, Lando, etc. In that case, the docker steps
+  below are optional, and on your responsibility.
+
+- Run commands inside the PHP 7.2 container like this:
+    - `docker compose run --rm php72 <command>`
+
+  Examples:
+    - `docker compose run --rm php72 php -v`
+    - `docker compose run --rm php72 composer install`
+    - `docker compose run --rm php72 composer test`
+    - `docker compose run --rm php72 composer phpstan`
 
 ---
 

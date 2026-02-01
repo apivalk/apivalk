@@ -3,52 +3,45 @@ title: "Security Middleware"
 description: "The Security Middleware enforces scope-based authorization as defined in your OpenAPI route specifications."
 ---
 
-The `SecurityMiddleware` is the core authorization engine of Apivalk. It ensures that the current requester has the necessary scopes to access a specific route. For a deep dive into the underlying architecture, check the [Security Overview](/security/index).
+The `SecurityMiddleware` is the core authorization engine of Apivalk. It ensures that the current requester has the necessary scopes and permissions to access a specific route. For a deep dive into the underlying architecture, check the [Security Overview](/security/index).
 
 ## How it Works
 
-The middleware retrieves the `Route` object from the controller being called and examines its `securityRequirements`.
+The middleware retrieves the `Route` object from the controller being called and examines its `RouteAuthorization`.
 
-### OR Logic (Requirements)
-A route can have multiple security requirements. If **any** one of these requirements is satisfied, the request is allowed.
+### Authorization Logic
 
-### AND Logic (Scopes)
-Each security requirement can have multiple [Scopes](/security/scope). The current [Identity](/security/identity) must possess **all** of those scopes to satisfy that specific requirement.
+A route can have a `RouteAuthorization` object that defines:
+1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`).
+2. **Scopes**: A list of required scopes.
+3. **Permissions**: A list of required permissions.
+
+The current [Identity](/security/identity) must possess **all** the required scopes and permissions to be granted access.
 
 ## Route Examples
 
-### Private Route (Scopes Required)
-A route that requires a logged-in user with specific [Scopes](/security/scope).
+### Private Route (Authorization Required)
+A route that requires a logged-in user with specific scopes and permissions.
 
 ```php
 use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
-use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Security\RouteAuthorization;
 
-$route = new Route('/admin/dashboard', new GetMethod(), 'Admin Dashboard', [], [
-    new SecurityRequirementObject('BearerAuth', [
-        new Scope('admin:read'),
-        new Scope('admin:write')
-    ])
-]);
+$route = Route::get('/admin/dashboard')
+                ->description('Admin Dashboard')
+                ->authorization(new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read']))
+
 ```
 
-### Public Route (No Scopes)
+### Public Route (No Authorization)
 A route that is accessible by anyone.
 
 ```php
-$route = new Route('/about', new GetMethod(), 'About page', [], []);
+$route = Route::get('/about')->description('About page');
 ```
 
-### Optional Security (Public with Scopes)
-A route that is public but allows extra access if a token with specific scopes is provided. This is achieved by adding an empty `SecurityRequirementObject`.
-
-```php
-$route = new Route('/news', new GetMethod(), 'News feed', [], [
-    new SecurityRequirementObject('BearerAuth', [new Scope('premium')]), // Premium requirement
-    new SecurityRequirementObject()                                      // Public requirement (empty)
-]);
-```
+### Optional Security (Public with Authorization)
+Currently, optional security (where a route is public but can optionally take a token) is handled by not defining a `RouteAuthorization` on the route, or by custom middleware logic. If a `RouteAuthorization` is present, it will be enforced.
 
 ## Status Codes
 
@@ -57,9 +50,9 @@ When authorization fails, the middleware throws an exception that results in one
 1.  **401 Unauthorized**: Thrown when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
 2.  **403 Forbidden**: Thrown when an authenticated [UserAuthIdentity](/security/identity) does not have the required scopes for the route.
 
-## Scopes vs. Roles
+## Scopes and Permissions
 
-While many frameworks use roles (e.g., `ROLE_ADMIN`), Apivalk follows the OpenAPI standard of using **Scopes**. Scopes are more granular and describe *what* an identity is allowed to do (e.g., `read:users`) rather than *who* they are.
+While many frameworks use roles (e.g., `ROLE_ADMIN`), Apivalk follows the OpenAPI standard of using **Scopes** and **Permissions**. Scopes and permissions are more granular and describe *what* an identity is allowed to do (e.g., `read:users`) rather than *who* they are.
 
 ## Integration
 

@@ -8,6 +8,7 @@ use apivalk\apivalk\Http\Method\DeleteMethod;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Security\RouteAuthorization;
 
 /**
  * Class OperationObject
@@ -32,11 +33,22 @@ class OperationObject implements ObjectInterface
     private $requestBody;
     /** @var ResponseObject[] */
     private $responses;
-    /** @var SecurityRequirementObject[] */
-    private $security;
+    /** @var RouteAuthorization */
+    private $routeAuthorization;
     /** @var MethodInterface */
     private $method;
 
+    /**
+     * @param MethodInterface $method
+     * @param TagObject[] $tags
+     * @param string|null $summary
+     * @param string|null $description
+     * @param string|null $operationId
+     * @param ParameterObject[] $parameters
+     * @param RequestBodyObject|null $requestBody
+     * @param ResponseObject[] $responses
+     * @param RouteAuthorization|null $routeAuthorization
+     */
     public function __construct(
         MethodInterface $method,
         array $tags = [],
@@ -46,7 +58,7 @@ class OperationObject implements ObjectInterface
         array $parameters = [],
         ?RequestBodyObject $requestBody = null,
         array $responses = [],
-        ?array $security = []
+        ?RouteAuthorization $routeAuthorization
     ) {
         $this->method = $method;
         $this->tags = $tags;
@@ -56,7 +68,7 @@ class OperationObject implements ObjectInterface
         $this->parameters = $parameters;
         $this->requestBody = $requestBody;
         $this->responses = $responses;
-        $this->security = $security;
+        $this->routeAuthorization = $routeAuthorization;
     }
 
     public function getMethod(): MethodInterface
@@ -64,6 +76,9 @@ class OperationObject implements ObjectInterface
         return $this->method;
     }
 
+    /**
+     * @return TagObject[]
+     */
     public function getTags(): array
     {
         return $this->tags;
@@ -84,6 +99,9 @@ class OperationObject implements ObjectInterface
         return $this->operationId;
     }
 
+    /**
+     * @return ParameterObject[]
+     */
     public function getParameters(): array
     {
         return $this->parameters;
@@ -94,16 +112,33 @@ class OperationObject implements ObjectInterface
         return $this->requestBody;
     }
 
+    /**
+     * @return ResponseObject[]
+     */
     public function getResponses(): array
     {
         return $this->responses;
     }
 
-    public function getSecurity(): array
+    public function getRouteAuthorization(): ?RouteAuthorization
     {
-        return $this->security;
+        return $this->routeAuthorization;
     }
 
+    /**
+     * @return array{
+     *     tags: string[],
+     *     summary: string|null,
+     *     description: string|null,
+     *     operationId: string|null,
+     *     parameters: array<int, mixed>,
+     *     requestBody: array<string, mixed>|null,
+     *     responses: array<string, mixed>,
+     *     security: array<int, array<string, string[]>>,
+     *     x-permissions: string[],
+     *     x-scopes: string[]
+     * }
+     */
     public function toArray(): array
     {
         $parameters = [];
@@ -118,8 +153,17 @@ class OperationObject implements ObjectInterface
         }
 
         $securities = [];
-        foreach ($this->security as $security) {
-            $securities[] = $security->toArray();
+        $permissions = [];
+        $scopes = [];
+
+        if ($this->routeAuthorization !== null) {
+            $securities[] = (new SecurityRequirementObject(
+                $this->routeAuthorization->getSecuritySchemeName(),
+                $this->routeAuthorization->getRequiredScopes()
+            ))->toArray();
+
+            $permissions = $this->routeAuthorization->getRequiredPermissions();
+            $scopes = $this->routeAuthorization->getRequiredScopes();
         }
 
         $tags = [];
@@ -141,6 +185,8 @@ class OperationObject implements ObjectInterface
                 ) : null,
             'responses' => $responses,
             'security' => $securities,
+            'x-permissions' => $permissions,
+            'x-scopes' => $scopes,
         ];
     }
 }

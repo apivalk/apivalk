@@ -7,39 +7,43 @@ Every request in Apivalk is associated with an `AbstractAuthIdentity`. This ensu
 
 ## AbstractAuthIdentity
 
-The base class for all identities. It defines the contract for checking authentication status and granted scopes.
+The base class for all identities. It defines the contract for checking authentication status, granted scopes, and permissions.
 
 ### Methods
 
 - **`isAuthenticated(): bool`**: Returns `true` if the requester is authenticated.
-- **`getGrantedScopes(): ScopeInterface[]`**: Returns an array of scopes granted to this identity.
-- **`isScopeGranted(ScopeInterface $scope): bool`**: Helper method to check if a specific scope is present.
+- **`getScopes(): string[]`**: Returns an array of scope names granted to this identity.
+- **`getPermissions(): string[]`**: Returns an array of permission names granted to this identity.
+- **`isScopeGranted(string $scope): bool`**: Helper method to check if a specific scope is present.
+- **`isPermissionGranted(string $permission): bool`**: Helper method to check if a specific permission is present.
 
 ---
 
-## UserAuthIdentity
+## JwtAuthIdentity
 
-Represents a successfully authenticated user.
+Represents a successfully authenticated user via JWT.
 
 ### Usage
 
-Typically created by an [Authenticator](/security/authenticator) after validating a token.
+Typically created by the [JwtAuthenticator](/security/authenticator) after validating a token.
 
 ```php
-use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity;
 
-$identity = new UserAuthIdentity(
-    'user-123', 
-    [new Scope('read:profile')], 
-    ['email' => 'user@example.com']
+$identity = new JwtAuthIdentity(
+    'john_doe',
+    'john@example.com',
+    'user-123',
+    ['read:profile'],
+    ['profile:view']
 );
 ```
 
 ### Additional Methods
 
-- **`getUserId(): string`**: Returns the unique identifier for the user (e.g., the `sub` claim from a JWT).
-- **`getClaims(): array`**: Returns all metadata/claims associated with the user.
-- **`getClaim(string $name)`**: Retrieves a specific claim by name.
+- **`getUsername(): ?string`**: Returns the username.
+- **`getEmail(): ?string`**: Returns the email.
+- **`getSub(): ?string`**: Returns the subject (`sub` claim).
 
 ---
 
@@ -62,7 +66,7 @@ $identity = new GuestAuthIdentity();
 You can initialize a `GuestAuthIdentity` with default scopes. This is useful for "Public but scoped" endpoints where you want to grant certain permissions to everyone.
 
 ```php
-$identity = new GuestAuthIdentity([new Scope('public:read')]);
+$identity = new GuestAuthIdentity(['public:read']);
 ```
 
 ---

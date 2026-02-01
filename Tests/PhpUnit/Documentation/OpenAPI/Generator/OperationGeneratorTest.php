@@ -36,7 +36,7 @@ class OperationGeneratorTest extends TestCase
         $route->method('getDescription')->willReturn('Route desc');
         $route->method('getUrl')->willReturn('/test');
         $route->method('getTags')->willReturn([]);
-        $route->method('getSecurityRequirements')->willReturn([]);
+        $route->method('getRouteAuthorization')->willReturn(null);
         
         $requestDoc = $this->createMock(ApivalkRequestDocumentation::class);
         $requestDoc->method('getPathProperties')->willReturn([]);
@@ -45,7 +45,8 @@ class OperationGeneratorTest extends TestCase
         
         $operation = $generator->generate($route, $requestDoc, [TestResponse::class]);
         
-        $this->assertEquals('Route desc', $operation->getSummary());
+        $this->assertEquals('Route desc', $operation->getDescription());
+        $this->assertNull($operation->getSummary());
         $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
     }
 }

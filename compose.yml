@@ -1,0 +1,10 @@
+services:
+  php72:
+    container_name: apivalk-dev-php72
+    build:
+      context: .
+      dockerfile: docker/php72/Dockerfile
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: [ "bash" ]

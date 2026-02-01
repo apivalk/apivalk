@@ -106,7 +106,6 @@
             "pages": [
               "security/index",
               "security/identity",
-              "security/scope",
               "security/authenticator"
             ]
           },
@@ -114,6 +113,17 @@
             "group": "Customization",
             "pages": [
               "customization/customization"
+            ]
+          },
+          {
+            "group": "API Standards",
+            "pages": [
+              "open-api-best-practices/01-overview",
+              "open-api-best-practices/02-rest-design-and-naming",
+              "open-api-best-practices/03-versioning-and-structure",
+              "open-api-best-practices/04-pagination-filtering-sorting",
+              "open-api-best-practices/05-responses-errors-status-codes",
+              "open-api-best-practices/06-localization-i18n"
             ]
           }
         ]

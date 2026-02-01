@@ -5,7 +5,9 @@
       "/.github",
       "/.gitignore",
       "/phpunit.xml",
-      "/vendor"
+      "/vendor",
+      "/docker",
+      "compose.yml"
     ]
   },
   "description": "A Lightweight, Framework-Agnostic REST API Ecosystem for PHP. Built for speed, precision, and type-safe development.",
@@ -40,8 +42,12 @@
     "firebase/php-jwt": "^6.4"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.5",
+    "phpunit/phpunit": "^8.5",
     "phpstan/phpstan": "^1.12"
+  },
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse"
   },
   "autoload": {
     "psr-4": {

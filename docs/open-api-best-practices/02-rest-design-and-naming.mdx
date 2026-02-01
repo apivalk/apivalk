@@ -1,0 +1,117 @@
+---
+title: RESTful design and naming
+description: REST principles, HTTP methods, and naming conventions for routes, identifiers, and fields.
+---
+
+# RESTful design and naming
+
+## RESTful design principles
+
+Follow industry-standard REST conventions.
+
+### HTTP methods
+
+| Method | Description |
+|---|---|
+| GET | Retrieve resources |
+| POST | Create a new resource |
+| PUT | Fully update an existing resource |
+| PATCH | Partially update an existing resource |
+| DELETE | Delete a resource |
+| OPTIONS | Show available methods (optional if docs cover it) |
+| HEAD | Same as GET but returns only headers, no response body |
+
+## Naming conventions
+
+### URI naming
+
+Rules:
+
+- Use plural nouns, lowercase, hyphenated names
+- No verbs in URLs
+- Nest resources only if there is a logical hierarchy or relationship
+- Keep nesting shallow (2 levels max)
+
+Examples:
+
+```http
+GET    /users
+POST   /users
+GET    /users/{user_uuid}
+PATCH  /users/{user_uuid}
+DELETE /users/{user_uuid}
+GET    /users/{user_uuid}/authenticators
+
+GET    /user-groups
+GET    /user/{user_uuid}/adress-verification-requests
+```
+
+### Resource identifiers: IDs vs UUIDs
+
+Path parameters that identify a single resource should (if possible) use UUIDs.
+
+Rules:
+
+- UUIDs should be used for externally exposed REST APIs
+- Numeric, auto-increment IDs (/users/1) must not be exposed; they have a risk for enumeration
+- Only when there is no other way around it you can use auto-increment IDs
+- Internal IDs may exist but should never be part of the public API contract
+
+Rationale:
+
+- Prevents ID enumeration and scraping
+- Improves security by design
+- Decouples API contracts from database implementation details
+- Enables safer data migrations and sharding
+
+Examples:
+
+Correct:
+
+```http
+GET /users/550e8400-e29b-41d4-a716-446655440000
+PATCH /devices/{device_uuid}
+DELETE /orders/{order_uuid}
+```
+
+Avoid:
+
+```http
+GET /users/1
+PATCH /devices/42
+```
+
+### Path parameter naming
+
+Path parameters should be explicitly named:
+
+- {user_uuid}
+- {order_uuid}
+- {device_uuid}
+
+Avoid generic {id} or {uuid} naming to clarify to what resource the ID belongs to.
+
+### Field naming (JSON bodies)
+
+Use snake_case:
+
+```json
+{
+  "user_name": "john_doe",
+  "email_address": "john@example.com"
+}
+```
+
+### Parameter naming in URI, path, body
+
+Use snake_case consistently:
+
+```http
+GET /users?page_size=50&client_id=123
+```
+
+```json
+{
+  "first_name": "Max"
+}
+```

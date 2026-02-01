@@ -32,7 +32,7 @@ class DateTimeValidatorTest extends TestCase
 
         $result = $validator->validate(new Parameter('test', '2023-13-20', '2023-13-20'));
         $this->assertFalse($result->isSuccess());
-        $this->assertSame(ValidatorResult::VALUE_IS_NOT_A_VALID_DATE, $result->getMessage());
+        $this->assertSame(ValidatorResult::VALUE_IS_NOT_A_VALID_DATE, $result->getErrorKey());
 
         $this->assertFalse($validator->validate(new Parameter('test', '20-12-2023', '20-12-2023'))->isSuccess()); // wrong format
         $this->assertFalse($validator->validate(new Parameter('test', '2023/12/20', '2023/12/20'))->isSuccess()); // wrong separator
@@ -64,7 +64,7 @@ class DateTimeValidatorTest extends TestCase
 
         $result = $validator->validate(new Parameter('test', '2023-12-20 14:00:00', '2023-12-20 14:00:00'));
         $this->assertFalse($result->isSuccess());
-        $this->assertSame(ValidatorResult::VALUE_IS_NOT_A_VALID_DATE_TIME, $result->getMessage());
+        $this->assertSame(ValidatorResult::VALUE_IS_NOT_A_VALID_DATE_TIME, $result->getErrorKey());
 
         $this->assertFalse($validator->validate(new Parameter('test', '2023-12-20', '2023-12-20'))->isSuccess()); // date only
         $this->assertFalse($validator->validate(new Parameter('test', '14:00:00', '14:00:00'))->isSuccess()); // time only

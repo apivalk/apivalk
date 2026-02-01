@@ -21,7 +21,7 @@ class JwtAuthenticatorTest extends TestCase
         $cache = $this->createMock(CacheInterface::class);
         $authenticator = $this->getMockBuilder(JwtAuthenticator::class)
             ->setConstructorArgs([self::JWK_SET_URL, $cache, self::ISSUER, self::AUDIENCE])
-            ->setMethods(['getKeys'])
+            ->setMethods(['getJwksKeys'])
             ->getMock();
 
         $payload = [
@@ -60,9 +60,9 @@ class JwtAuthenticatorTest extends TestCase
 
         $authenticator = new JwtAuthenticator(self::JWK_SET_URL, $cache, self::ISSUER, self::AUDIENCE);
 
-        // We use reflection to call private getKeys
+        // We use reflection to call private getJwksKeys
         $reflection = new \ReflectionClass(JwtAuthenticator::class);
-        $method = $reflection->getMethod('getKeys');
+        $method = $reflection->getMethod('getJwksKeys');
         $method->setAccessible(true);
 
         $keys = $method->invoke($authenticator);

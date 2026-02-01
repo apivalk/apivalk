@@ -5,28 +5,35 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Router\Security;
 
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
-use apivalk\apivalk\Security\Scope;
 use PHPUnit\Framework\TestCase;
 
 class AbstractAuthIdentityTest extends TestCase
 {
     public function testAbstractAuthIdentity(): void
     {
-        $readScope = new Scope('read');
-        $writeScope = new Scope('write');
-
-        $identity = new class($readScope, $writeScope) extends AbstractAuthIdentity {
+        $identity = new class(['read', 'write'], ['perm1']) extends AbstractAuthIdentity {
             private $scopes;
-            public function __construct($read, $write) { $this->scopes = [$read, $write]; }
-            public function getGrantedScopes(): array {
+            private $perms;
+            public function __construct(array $scopes, array $perms) {
+                $this->scopes = $scopes;
+                $this->perms = $perms;
+            }
+            public function getScopes(): array {
                 return $this->scopes;
+            }
+            public function getPermissions(): array {
+                return $this->perms;
             }
             public function isAuthenticated(): bool {
                 return true;
             }
         };
 
-        $this->assertEquals([$readScope, $writeScope], $identity->getGrantedScopes());
+        $this->assertEquals(['read', 'write'], $identity->getScopes());
+        $this->assertEquals(['perm1'], $identity->getPermissions());
         $this->assertTrue($identity->isAuthenticated());
+        $this->assertTrue($identity->isScopeGranted('read'));
+        $this->assertFalse($identity->isScopeGranted('other'));
+        $this->assertTrue($identity->isPermissionGranted('perm1'));
     }
 }

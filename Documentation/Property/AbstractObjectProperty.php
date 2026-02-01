@@ -18,6 +18,8 @@ abstract class AbstractObjectProperty extends AbstractProperty
         return static::class;
     }
 
+    abstract public function toArray(): array;
+
     final public function getDocumentationArray(): array
     {
         $array = [
@@ -27,6 +29,7 @@ abstract class AbstractObjectProperty extends AbstractProperty
 
         $required = [];
 
+        /** @var AbstractProperty $property */
         foreach ($this->getPropertyCollection() as $property) {
             $array['properties'][$property->getPropertyName()] = $property->getDocumentationArray();
 

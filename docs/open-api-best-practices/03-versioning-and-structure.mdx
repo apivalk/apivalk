@@ -1,0 +1,38 @@
+---
+title: Versioning and resource structure
+description: URL-based versioning and folder and resource organization guidelines.
+---
+
+# Versioning and resource structure
+
+## API versioning strategy
+
+Use URL-based versioning.
+
+Examples:
+
+- https://api.example.com/v1/...
+- https://app.example.com/v1/...
+
+Why:
+
+- Explicit versioning in every request
+- Easier debugging, monitoring, and routing
+- Cleaner folder structure
+- Old versions can coexist safely
+
+## Resource structure and folder organization
+
+Use RESTful, hierarchical naming to reflect relationships.
+
+Example:
+
+```http
+GET /users/{user_uuid}/addresses
+```
+
+Guidelines:
+
+- Plural nouns only (/users, /addresses)
+- Keep nesting shallow (2 levels max)
+- Actions are defined by HTTP verbs, not URLs

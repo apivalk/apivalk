@@ -6,11 +6,11 @@ namespace apivalk\apivalk\Http\Response;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
-use apivalk\apivalk\Documentation\Response\ErrorApivalkObject;
+use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 
 class BadValidationApivalkResponse extends AbstractApivalkResponse
 {
-    /** @var ErrorObject[] */
+    /** @var ValidationErrorObject[] */
     private $errors;
 
     public function __construct(array $errors = [])
@@ -27,7 +27,7 @@ class BadValidationApivalkResponse extends AbstractApivalkResponse
             new ArrayProperty(
                 'errors',
                 'List of errors',
-                new ErrorApivalkObject()
+                new ValidationErrorObject()
             )
         );
 
@@ -40,7 +40,7 @@ class BadValidationApivalkResponse extends AbstractApivalkResponse
     }
 
     /**
-     * @return ErrorObject[]
+     * @return ValidationErrorObject[]
      */
     public function getErrors(): array
     {
@@ -52,7 +52,7 @@ class BadValidationApivalkResponse extends AbstractApivalkResponse
         $errorArray = [];
 
         foreach ($this->errors as $error) {
-            $errorArray[$error->getKey()] = $error->getMessage();
+            $errorArray[] = $error->toArray();
         }
 
         return ['errors' => $errorArray];

@@ -131,7 +131,7 @@ While automatic generation works for simple cases, it is highly recommended to e
 
 By defining your own `SecuritySchemeObject` in the `ComponentsObject`, you gain full control over the documentation. This is especially important for complex schemes like **OAuth2**, where you can define `OAuthFlows` (authorization URLs, token URLs, scopes). This allows tools like Swagger UI to provide a functional "Authorize" button that works instantly with your authentication provider.
 
-**Crucially, the name you use in your routes (`SecurityRequirementObject`) must match the key used in `ComponentsObject::setSecuritySchemes()`.**
+**Crucially, the name you use in your routes (`RouteAuthorization`) must match the key used in `ComponentsObject::setSecuritySchemes()`.**
 
 > Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
 
@@ -151,9 +151,7 @@ $components->setSecuritySchemes([
 ]);
 
 // In your route:
-$route = new Route('/orders', new PostMethod(), 'Create order', [], [
-    new SecurityRequirementObject('BearerAuth', [new Scope('write:orders')])
-]);
+$route = Route::post('/orders')->description('Create order')->authorization('BearerAuth', ['write:orders'])
 ```
 
 Passing your custom components to the generator:

@@ -18,8 +18,9 @@ class RouteJsonSerializerTest extends TestCase
             '/users',
             new GetMethod(),
             'User list',
+            null,
             [],
-            [],
+            null,
             new IpRateLimit('ip_limit', 10, 60)
         );
 
@@ -36,6 +37,38 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertEquals($route->getUrl(), $deserialized->getUrl());
         $this->assertEquals($route->getMethod()->getName(), $deserialized->getMethod()->getName());
         $this->assertEquals($route->getDescription(), $deserialized->getDescription());
+        $this->assertNull($deserialized->getSummary());
+        $this->assertInstanceOf(IpRateLimit::class, $deserialized->getRateLimit());
+        $this->assertEquals('ip_limit', $deserialized->getRateLimit()->getName());
+    }
+
+    public function testSerializeDeserializeWithSummary(): void
+    {
+        $route = new Route(
+            '/users',
+            new GetMethod(),
+            'User list',
+            'Test',
+            [],
+            null,
+            new IpRateLimit('ip_limit', 10, 60)
+        );
+
+        $serialized = RouteJsonSerializer::serialize($route);
+        $this->assertEquals('/users', $serialized['url']);
+        $this->assertEquals('GET', $serialized['method']);
+        $this->assertEquals('User list', $serialized['description']);
+        $this->assertEquals('Test', $serialized['summary']);
+        $this->assertEquals('apivalk\apivalk\Router\RateLimit\IpRateLimit', $serialized['rateLimit']['class']);
+        $this->assertEquals('ip_limit', $serialized['rateLimit']['name']);
+
+        $json = json_encode($serialized);
+        $deserialized = RouteJsonSerializer::deserialize($json);
+
+        $this->assertEquals($route->getUrl(), $deserialized->getUrl());
+        $this->assertEquals($route->getMethod()->getName(), $deserialized->getMethod()->getName());
+        $this->assertEquals($route->getDescription(), $deserialized->getDescription());
+        $this->assertEquals($route->getSummary(), $deserialized->getSummary());
         $this->assertInstanceOf(IpRateLimit::class, $deserialized->getRateLimit());
         $this->assertEquals('ip_limit', $deserialized->getRateLimit()->getName());
     }

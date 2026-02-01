@@ -24,16 +24,28 @@ class AuthenticationMiddleware implements MiddlewareInterface
         AbstractApivalkController $controller,
         callable $next
     ): AbstractApivalkResponse {
-        if (!$request->header()->has('Authorization')) {
+        $authorizationValue = null;
+
+        if ($request->header()->has('Authorization')) {
+            $authorizationValue = $request->header()->get('Authorization')->getValue();
+        }
+
+        if ($request->header()->has('AUTHORIZATION')) {
+            $authorizationValue = $request->header()->get('AUTHORIZATION')->getValue();
+        }
+
+        if ($request->header()->has('authorization')) {
+            $authorizationValue = $request->header()->get('authorization')->getValue();
+        }
+
+        if ($authorizationValue === null || $authorizationValue === '') {
             return $next($request);
         }
 
-        $authorization = $request->header()->get('Authorization')->getValue();
-        
-        if ($authorization && preg_match('/Bearer\s+(.*)$/i', (string)$authorization, $matches)) {
-            $token = $matches[1];
-            $identity = $this->authenticator->authenticate($token);
-            
+        if (preg_match('/Bearer\s+(.*)$/i', (string)$authorizationValue, $matches)) {
+            $bearerToken = $matches[1];
+            $identity = $this->authenticator->authenticate($bearerToken);
+
             if ($identity) {
                 $request->setAuthIdentity($identity);
             }

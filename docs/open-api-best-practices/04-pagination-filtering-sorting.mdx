@@ -1,0 +1,105 @@
+---
+title: Pagination, filtering, and sorting
+description: How to paginate, sort, and filter collections consistently.
+---
+
+# Pagination, filtering, and sorting
+
+## Pagination, filtering and sorting
+
+### Pagination
+
+#### Offset or page pagination
+
+Use limit and offset or page:
+
+```http
+GET /users?limit=50&offset=100
+GET /users?page=2
+```
+
+Example response snippet:
+
+```json
+{
+  "pagination": {
+    "page": 1,
+    "total_pages": 1,
+    "page_size": 10
+  }
+}
+```
+
+#### Cursor pagination
+
+```http
+GET /users?cursor=base64EncodedCursor
+GET /users?cursor=base64EncodedCursor&limit=100
+```
+
+Example response snippet:
+
+```json
+{
+  "pagination": {
+    "cursor": {
+      "next": "string",
+      "prev": "string"
+    }
+  }
+}
+```
+
+### Sorting
+
+Use '+' (ASC) or '-' (DESC) as a prefix for each field. If not specified, default is ASC.
+
+```http
+GET /users?order_by=+id,-price
+```
+
+### Filtering
+
+Filtering allows clients to narrow down results by specifying conditions on fields.
+
+Two supported approaches:
+
+- Basic filters: simple key-value pairs, useful for direct or indirect matching in smaller or performance-sensitive APIs
+- Advanced filters: a filter parameter allowing multiple field expressions
+
+#### Basic filtering
+
+Use flat key-value parameters.
+
+Example: retrieve all plugs with phase AC:
+
+```http
+GET /plugs?phase=AC
+```
+
+Basic filters may also use parameter names that are not directly bound to object fields.
+
+Example:
+
+```http
+GET /orders?min_price=200
+```
+
+#### Advanced filtering
+
+Use the `filter` parameter (inspired by JSON:API).
+
+```http
+GET /users?filter[email]=@example.com&filter[id]=5
+```
+
+Notes:
+
+- Advanced filters must always be bound to actual fields on the resource
+- Operators (`=, LIKE, <, >, etc.`) are decided by the API implementation and must be documented
+
+#### Combining basic and advanced filters
+
+```http
+GET /orders?filter[status]=active&min_gross=200
+```

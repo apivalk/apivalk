@@ -24,7 +24,7 @@ Apivalk provides a production-ready `JwtAuthenticator` that uses the `firebase/p
 - **JWKS Support**: Automatically fetches and parses public keys from a remote URL.
 - **Claim Validation**: Validates the `iss` (issuer), `aud` (audience), and `exp` (expiration) claims.
 - **Scope Extraction**: Automatically parses scopes from the `scope` or `scp` claims.
-- **Identity Creation**: Returns a `UserAuthIdentity` populated with the `sub` claim and all other JWT claims.
+- **Identity Creation**: Returns a `JwtAuthIdentity` populated with the `sub`, `email`, `username`, `scopes`, and `permissions`.
 
 ### Usage
 
@@ -48,7 +48,7 @@ $identity = $authenticator->authenticate($jwtToken);
 You can easily implement your own authenticator by implementing the interface. This is useful for API keys or custom database-backed authentication.
 
 ```php
-use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;use apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity;
 
 class ApiKeyAuthenticator implements AuthenticatorInterface
 {
@@ -61,8 +61,14 @@ class ApiKeyAuthenticator implements AuthenticatorInterface
             return null;
         }
 
-        // 2. Return a UserAuthIdentity
-        return new UserAuthIdentity($user->id, $user->getScopes());
+        // 2. Return a JwtAuthIdentity (or a custom identity class)
+        return new JwtAuthIdentity(
+            $user->username,
+            $user->email,
+            (string)$user->id,
+            $user->getScopes(),
+            $user->getPermissions()
+        );
     }
 }
 ```

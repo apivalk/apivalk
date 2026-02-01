@@ -7,47 +7,34 @@ on:
       - main
       - release
 
+env:
+  PHP72_SERVICE: php72
+
 jobs:
-  test:
-    name: Test (PHP ${{ matrix.php }})
+  test_php72:
+    name: Test (php72)
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        php: [ '7.2' ]
-        phpunit: [ '7.5' ]
-
-    env:
-      PHP_EXTENSIONS: 'json mbstring'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache Composer dependencies
+      - name: Cache vendor
         uses: actions/cache@v4
         with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          path: vendor
+          key: vendor-${{ runner.os }}-${{ hashFiles('composer.json', 'composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-
+            vendor-${{ runner.os }}-
 
-      - name: Installing dependencies
-        uses: php-actions/composer@v6
-        with:
-          php_version: ${{ matrix.php }}
-          php_extensions: ${{ env.PHP_EXTENSIONS }}
+      - name: Build image
+        run: docker compose build --pull ${{ env.PHP72_SERVICE }}
+
+      - name: Install dependencies (into cached vendor/)
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer install --no-interaction --prefer-dist
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --error-format=github
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer phpstan --error-format=github
 
-      - name: Running unit tests
-        uses: php-actions/phpunit@v3
-        with:
-          version: ${{ matrix.phpunit }}
-          php_version: ${{ matrix.php }}
-          php_extensions: ${{ env.PHP_EXTENSIONS }}
-          args: "-d date.timezone=Europe/Berlin"
-          memory_limit: 300M
-          configuration: phpunit.xml
-          testsuite: "Apivalk Unit Tests"
+      - name: Run PHPUnit
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer test

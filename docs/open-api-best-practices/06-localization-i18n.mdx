@@ -1,0 +1,59 @@
+---
+title: Localization and internationalization
+description: Standards for localized response messages and language negotiation.
+---
+
+# Localization and internationalization
+
+## Localization and internationalization (i18n)
+
+All REST APIs should support localized, human-readable messages (success, error, validation). Localization applies only to message strings, never to API contracts or machine-readable fields.
+If you do not want to be as dynamic, at least make sure to include English readable messages.
+
+### Request language negotiation
+
+APIs must determine the response language using the standard HTTP request header Accept-Language.
+
+The value must follow BCP 47 language tags (RFC 5646).
+
+Examples:
+
+```http
+Accept-Language: de-DE
+Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Language: en
+```
+
+### Language resolution rules (mandatory)
+
+Resolve the response language in this order:
+
+1. Accept-Language header
+2. Fallback to default language en
+
+If the requested language is not supported, the API must fall back to English and continue processing.
+
+### Response language declaration
+
+Return the resolved language via Content-Language.
+
+```http
+Content-Language: de-DE
+```
+
+### What must be localized
+
+Localize:
+
+- message fields in success responses
+- message fields in error responses
+- Validation error messages
+- Human-readable descriptions
+
+Must not be localized:
+
+- Field names
+- JSON keys
+- Error keys or error codes
+- Enum values
+- IDs, UUIDs, technical identifiers

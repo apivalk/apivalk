@@ -4,29 +4,30 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Security\AuthIdentity;
 
-use apivalk\apivalk\Security\ScopeInterface;
-
 class GuestAuthIdentity extends AbstractAuthIdentity
 {
-    /** @var ScopeInterface[] */
-    private $grantedScopes;
+    /** @var string[] */
+    private $scopes;
 
-    /**
-     * @param ScopeInterface[] $grantedScopes
-     */
-    public function __construct(array $grantedScopes = [])
+    /** @param string[] $scopes */
+    public function __construct(array $scopes = [])
     {
-        $this->grantedScopes = $grantedScopes;
+        $this->scopes = $scopes;
     }
 
-    /** @return ScopeInterface[] */
-    public function getGrantedScopes(): array
+    /** @return string[] */
+    public function getScopes(): array
     {
-        return $this->grantedScopes;
+        return $this->scopes;
     }
 
     public function isAuthenticated(): bool
     {
         return false;
+    }
+
+    public function getPermissions(): array
+    {
+        return [];
     }
 }

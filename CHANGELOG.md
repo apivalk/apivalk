@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/apivalk/apivalk/compare/v1.3.1...v1.4.0) (2026-02-01)
+
+
+### Features
+
+* add composer for dev and fix vulnerability ([325c5d8](https://github.com/apivalk/apivalk/commit/325c5d8cf5428bf6084ca157e316465f4770fe26))
+* extend Route with HTTP methods, summary, and fluent API ([5eee0a9](https://github.com/apivalk/apivalk/commit/5eee0a9f653d401b89ad42b33a5e8e3e611714be)), closes [#47](https://github.com/apivalk/apivalk/issues/47)
+* refactor security and authorization to improve scope handling ([ee1afd2](https://github.com/apivalk/apivalk/commit/ee1afd2fa8a7244fd46af9d63046605d4a7b3127))
+* replace `ErrorObject` with `ValidationErrorObject` for enhanced validation handling ([0fb13e8](https://github.com/apivalk/apivalk/commit/0fb13e8df9dea7b1580e4f097152c317560b5752)), closes [#54](https://github.com/apivalk/apivalk/issues/54)
+
 ## [1.3.1](https://github.com/apivalk/apivalk/compare/v1.3.0...v1.3.1) (2026-01-15)
 
 

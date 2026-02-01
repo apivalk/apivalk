@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Router\Security;
 
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
-use apivalk\apivalk\Security\Scope;
 use PHPUnit\Framework\TestCase;
 
 class GuestAuthIdentityTest extends TestCase
 {
     public function testGuestAuthIdentity(): void
     {
-        $scope = new Scope('public-read');
-        $identity = new GuestAuthIdentity([$scope]);
+        $identity = new GuestAuthIdentity(['public-read']);
 
-        $this->assertEquals([$scope], $identity->getGrantedScopes());
+        $this->assertEquals(['public-read'], $identity->getScopes());
         $this->assertFalse($identity->isAuthenticated());
     }
 
@@ -23,7 +21,7 @@ class GuestAuthIdentityTest extends TestCase
     {
         $identity = new GuestAuthIdentity();
 
-        $this->assertEquals([], $identity->getGrantedScopes());
+        $this->assertEquals([], $identity->getScopes());
         $this->assertFalse($identity->isAuthenticated());
     }
 }
