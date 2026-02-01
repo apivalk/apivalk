@@ -292,9 +292,9 @@ parameters:
 
 
 		-
-			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ErrorApivalkObjectPropertyCollection has an unused parameter \\$mode\\.$#"
+			message: "#^Constructor of class apivalk\\\\apivalk\\\\Documentation\\\\Response\\\\ValidationErrorObjectPropertyCollection has an unused parameter \\$mode\\.$#"
 			count: 1
-			path: Documentation/Response/ErrorApivalkObjectPropertyCollection.php
+			path: Documentation/Response/ValidationErrorObjectPropertyCollection.php
 
 		-
 			message: "#^Class apivalk\\\\apivalk\\\\Http\\\\Request\\\\File\\\\FileBag implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
@@ -461,7 +461,10 @@ parameters:
 			count: 1
 			path: Middleware/RequestValidationMiddleware.php
 
-
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractObjectProperty\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/AbstractObjectProperty.php
 
 		-
 			message: "#^Property apivalk\\\\apivalk\\\\Util\\\\ClassLocator\\:\\:\\$namespace has no type specified\\.$#"

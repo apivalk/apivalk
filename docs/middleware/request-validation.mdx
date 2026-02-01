@@ -11,7 +11,7 @@ The middleware intercepts the request before it reaches the controller and perfo
 2. **Iterative Validation**: It iterates through each defined property and checks the corresponding value in the `ParameterBag`.
 3. **Required Field Check**: If a property is marked as `required` but missing from the request, a validation error is recorded.
 4. **Validator Execution**: If the value is present, it runs all validators attached to that property (e.g., `StringValidator`, `NumberValidator`, `EnumValidator`).
-5. **Error Collection**: If any validation fails, the middleware collects the errors into an array of `ErrorObject` instances.
+5. **Error Collection**: If any validation fails, the middleware collects the errors into an array of `ValidationErrorObject` instances.
 
 ## Automatic Response
 

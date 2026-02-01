@@ -13,6 +13,11 @@ class ArrayPropertyTest extends TestCase
     public function testArrayProperty()
     {
         $objectProperty = new class('obj', 'desc') extends AbstractObjectProperty {
+            public function toArray(): array
+            {
+                return [];
+            }
+
             public function getPropertyCollection(): \apivalk\apivalk\Documentation\Property\AbstractPropertyCollection {
                 return new class(\apivalk\apivalk\Documentation\Property\AbstractPropertyCollection::MODE_VIEW) extends \apivalk\apivalk\Documentation\Property\AbstractPropertyCollection {
                     public function __construct($mode) {}

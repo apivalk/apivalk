@@ -4,23 +4,33 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
-use apivalk\apivalk\Http\Response\ErrorObject;
 
 class BadValidationApivalkResponseTest extends TestCase
 {
     public function testResponse(): void
     {
-        $error = new ErrorObject('email', 'Invalid email');
+        $error = new ValidationErrorObject();
+        $error->populate('email', new ValidatorResult(false, ValidatorResult::VALUE_DOES_NOT_MATCH_PATTERN));
+
         $response = new BadValidationApivalkResponse([$error]);
 
         $this->assertEquals(422, $response->getStatusCode());
         $this->assertEquals([$error], $response->getErrors());
-        
+
         $expected = [
-            'errors' => ['email' => 'Invalid email']
+            'errors' => [
+                [
+                    'parameter' => 'email',
+                    'message' => 'This value does not match the required pattern.',
+                    'key' => 'value_does_not_match_pattern',
+                ]
+            ]
         ];
+
         $this->assertEquals($expected, $response->toArray());
     }
 

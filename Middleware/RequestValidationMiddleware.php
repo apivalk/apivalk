@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Middleware;
 
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
-use apivalk\apivalk\Http\Response\ErrorObject;
 
 class RequestValidationMiddleware implements MiddlewareInterface
 {
-    /** @var ErrorObject[] */
+    /** @var ValidationErrorObject[] */
     private $errors = [];
 
     public function process(
@@ -52,6 +53,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
         array $properties,
         ParameterBag $parameterBag
     ): void {
+        /** @var AbstractProperty $property */
         foreach ($properties as $property) {
             $parameter = $parameterBag->get($property->getPropertyName());
 
@@ -60,17 +62,26 @@ class RequestValidationMiddleware implements MiddlewareInterface
             }
 
             if ($parameter === null && $property->isRequired()) {
-                $this->errors[] = new ErrorObject($property->getPropertyName(), ValidatorResult::FIELD_IS_REQUIRED);
+                $error = new ValidationErrorObject();
+                $error->populate(
+                    $property->getPropertyName(),
+                    new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
+                );
+
+                $this->errors[] = $error;
+
                 continue;
             }
 
             foreach ($property->getValidators() as $validator) {
-                $validationResult = $validator->validate($parameter);
+                /** @var ValidatorResult $validatorResult */
+                $validatorResult = $validator->validate($parameter);
 
-                if (!$validationResult->isSuccess()) {
-                    $this->errors[] = new ErrorObject(
-                        $property->getPropertyName(), $validationResult->getMessage()
-                    );
+                if (!$validatorResult->isSuccess()) {
+                    $error = new ValidationErrorObject();
+                    $error->populate($property->getPropertyName(), $validatorResult);
+
+                    $this->errors[] = $error;
                 }
             }
         }

@@ -29,6 +29,11 @@ class AbstractObjectPropertyTest extends TestCase
             public function getPropertyCollection(): AbstractPropertyCollection {
                 return $this->coll;
             }
+
+            public function toArray(): array
+            {
+                return [];
+            }
         };
 
         $this->assertEquals('object', $objectProperty->getType());
