@@ -9,7 +9,7 @@ The `AuthenticationMiddleware` acts as the first gate in your security pipeline.
 
 Unlike many frameworks, Apivalk does not throw exceptions if authentication fails in this middleware. Instead:
 1. It attempts to authenticate the token using an [AuthenticatorInterface](/security/authenticator).
-2. If successful, it sets a [UserAuthIdentity](/security/identity) on the Request.
+2. If successful, it sets a [JwtAuthIdentity](/security/identity) on the Request.
 3. If it fails or no token is provided, the Request remains with its default [GuestAuthIdentity](/security/identity).
 
 This "passive" authentication allows you to support both public and private routes on the same endpoint, delegating the final authorization decision to the [Security Middleware](/middleware/security).
@@ -47,8 +47,7 @@ If you have custom authentication needs (e.g., API Keys in database), you can im
 
 ```php
 use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
-use apivalk\apivalk\Security\AuthIdentity\UserAuthIdentity;
-use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity;
 
 class ApiKeyAuthenticator implements AuthenticatorInterface
 {
@@ -60,9 +59,12 @@ class ApiKeyAuthenticator implements AuthenticatorInterface
             return null;
         }
 
-        return new UserAuthIdentity(
-            $user->id,
-            [new Scope('read'), new Scope('write')]
+        return new JwtAuthIdentity(
+            $user->username,
+            $user->email,
+            (string)$user->id,
+            ['read', 'write'],
+            []
         );
     }
 }
@@ -80,7 +82,7 @@ class CustomAuthMiddleware implements MiddlewareInterface
         $id = $this->session->get('user_id');
         
         if ($id) {
-            $identity = new UserAuthIdentity($id, [new Scope('user')]);
+            $identity = new JwtAuthIdentity('user', 'user@example.com', (string)$id, ['user'], []);
             $request->setAuthIdentity($identity);
         }
 

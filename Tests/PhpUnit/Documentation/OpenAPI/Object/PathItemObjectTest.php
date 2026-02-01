@@ -13,7 +13,7 @@ class PathItemObjectTest extends TestCase
 {
     public function testToArray(): void
     {
-        $getOperation = new OperationObject(new GetMethod());
+        $getOperation = new OperationObject(new GetMethod(), [], null, null, null, [], null, [], null);
         $pathItem = new PathItemObject('Summary', 'Description', $getOperation);
         
         $result = $pathItem->toArray();

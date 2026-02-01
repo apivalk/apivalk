@@ -17,43 +17,32 @@ class SecurityMiddleware implements MiddlewareInterface
         AbstractApivalkController $controller,
         callable $next
     ): AbstractApivalkResponse {
-        $securityRequirements = $controller::getRoute()->getSecurityRequirements();
+        $routeAuthorization = $controller::getRoute()->getRouteAuthorization();
 
-        if (empty($securityRequirements)) {
+        if ($routeAuthorization === null) {
             return $next($request);
         }
 
         $authIdentity = $request->getAuthIdentity();
-        $isAuthorized = false;
 
-        foreach ($securityRequirements as $requirement) {
-            if ($requirement->isPublicEndpoint()) {
-                $isAuthorized = true;
-                break;
-            }
-
-            $requiredScopes = $requirement->getScopes();
-
-            $hasAllScopes = true;
-            foreach ($requiredScopes as $requiredScope) {
-                if (!$authIdentity->isScopeGranted($requiredScope)) {
-                    $hasAllScopes = false;
-                    break;
+        foreach ($routeAuthorization->getRequiredScopes() as $requiredScope) {
+            if (!$authIdentity->isScopeGranted($requiredScope)) {
+                if ($authIdentity->isAuthenticated()) {
+                    return new ForbiddenApivalkResponse();
                 }
-            }
 
-            if ($hasAllScopes) {
-                $isAuthorized = true;
-                break;
+                return new UnauthorizedApivalkResponse();
             }
         }
 
-        if (!$isAuthorized) {
-            if (!$authIdentity->isAuthenticated()) {
+        foreach ($routeAuthorization->getRequiredPermissions() as $requiredPermission) {
+            if (!$authIdentity->isPermissionGranted($requiredPermission)) {
+                if ($authIdentity->isAuthenticated()) {
+                    return new ForbiddenApivalkResponse();
+                }
+
                 return new UnauthorizedApivalkResponse();
             }
-
-            return new ForbiddenApivalkResponse();
         }
 
         return $next($request);

@@ -19,7 +19,7 @@ class RouteJsonSerializerTest extends TestCase
             new GetMethod(),
             'User list',
             [],
-            [],
+            null,
             new IpRateLimit('ip_limit', 10, 60)
         );
 

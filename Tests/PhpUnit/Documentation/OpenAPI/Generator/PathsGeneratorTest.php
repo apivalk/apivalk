@@ -134,7 +134,7 @@ class PathsGeneratorTest extends TestCase
         $route->method('getUrl')->willReturn('/test');
         $route->method('getDescription')->willReturn('desc');
         $route->method('getTags')->willReturn([]);
-        $route->method('getSecurityRequirements')->willReturn([]);
+        $route->method('getRouteAuthorization')->willReturn(null);
 
         $routes = [
             ['route' => $route, 'controllerClass' => PathsTestController::class]

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router;
 
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+use apivalk\apivalk\Security\RouteAuthorization;
 
 class Route
 {
@@ -17,34 +17,34 @@ class Route
     private $method;
     /** @var string|null */
     private $description;
-    /** @var SecurityRequirementObject[] */
-    private $securityRequirements;
+    /** @var RouteAuthorization */
+    private $routeAuthorization;
     /** @var TagObject[] */
     private $tags;
     /** @var null|RateLimitInterface */
     private $rateLimit;
 
     /**
-     * @param string                      $url
-     * @param MethodInterface             $method
-     * @param string|null                 $description
-     * @param TagObject[]                 $tags
-     * @param SecurityRequirementObject[] $securityRequirements
-     * @param RateLimitInterface|null     $rateLimit
+     * @param string                  $url
+     * @param MethodInterface         $method
+     * @param string|null             $description
+     * @param TagObject[]             $tags
+     * @param RouteAuthorization|null $routeAuthorization
+     * @param RateLimitInterface|null $rateLimit
      */
     public function __construct(
         string $url,
         MethodInterface $method,
         ?string $description = null,
-        array $tags = [],
-        array $securityRequirements = [],
+        ?array $tags = null,
+        ?RouteAuthorization $routeAuthorization = null,
         ?RateLimitInterface $rateLimit = null
     ) {
         $this->url = $url;
         $this->method = $method;
         $this->description = $description;
-        $this->tags = $tags;
-        $this->securityRequirements = $securityRequirements;
+        $this->tags = $tags ?? [];
+        $this->routeAuthorization = $routeAuthorization;
         $this->rateLimit = $rateLimit;
     }
 
@@ -63,10 +63,9 @@ class Route
         return $this->description;
     }
 
-    /** @return SecurityRequirementObject[] */
-    public function getSecurityRequirements(): array
+    public function getRouteAuthorization(): ?RouteAuthorization
     {
-        return $this->securityRequirements;
+        return $this->routeAuthorization;
     }
 
     /** @return TagObject[] */

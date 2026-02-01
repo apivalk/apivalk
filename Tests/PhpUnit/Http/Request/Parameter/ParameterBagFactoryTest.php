@@ -69,7 +69,7 @@ class ParameterBagFactoryTest extends TestCase
 
         $bag = ParameterBagFactory::createPathBag($route, $doc);
         $this->assertEquals(123, $bag->id);
-        $this->assertInternalType('int', $bag->id);
+        $this->assertIsInt($bag->id);
     }
 
     public function testCreateBodyBag(): void
@@ -84,7 +84,7 @@ class ParameterBagFactoryTest extends TestCase
         $bag = ParameterBagFactory::createBodyBag($doc);
         $this->assertEquals('Jane', $bag->name);
         $this->assertEquals(30, $bag->age);
-        $this->assertInternalType('int', $bag->age);
+        $this->assertIsInt($bag->age);
     }
 
     public function testTypeCastValue(): void

@@ -93,9 +93,9 @@ An "onion-style" pipeline where each middleware can inspect/modify the Request b
 
 A robust, OpenAPI-compliant security and authorization system.
 
-- `Identity/`: Objects representing the requester (e.g., `UserAuthIdentity`, `GuestAuthIdentity`).
-- `Scope/`: Granular permissions used for authorization.
+- `AuthIdentity/`: Objects representing the requester (e.g., `JwtAuthIdentity`, `GuestAuthIdentity`).
 - `Authenticator/`: Services that turn credentials (like JWT) into an Identity (e.g., `JwtAuthenticator`).
+- `RouteAuthorization`: Data carrier for security requirements on a route.
 - [Learn more about Security](/security/index)
 
 #### `Util/`

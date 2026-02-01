@@ -73,7 +73,7 @@ class OperationGenerator
             $parameters,
             $requestBodyGenerator->generate($requestDocumentation, $route),
             $responses,
-            $route->getSecurityRequirements()
+            $route->getRouteAuthorization()
         );
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
-use apivalk\apivalk\Security\ScopeInterface;
-
 /**
  * Class SecurityRequirementObject
  *
@@ -16,31 +14,31 @@ use apivalk\apivalk\Security\ScopeInterface;
 class SecurityRequirementObject implements ObjectInterface
 {
     /** @var string|null */
-    private $name;
-    /** @var ScopeInterface[] */
+    private $securitySchemeName;
+    /** @var string[] */
     private $scopes;
 
     /**
-     * @param string|null      $name Null means "no security required" (OpenAPI {})
-     * @param ScopeInterface[] $scopes
+     * @param string|null $securitySchemeName Null means "no security required" (OpenAPI {})
+     * @param string[]    $scopes
      */
-    function __construct(?string $name = null, array $scopes = [])
+    function __construct(?string $securitySchemeName = null, array $scopes = [])
     {
-        $this->name = $name;
+        $this->securitySchemeName = $securitySchemeName;
         $this->scopes = $scopes;
     }
 
-    public function getName(): ?string
+    public function getSecuritySchemeName(): ?string
     {
-        return $this->name;
+        return $this->securitySchemeName;
     }
 
     public function isPublicEndpoint(): bool
     {
-        return $this->name === null;
+        return $this->securitySchemeName === null;
     }
 
-    /** @return ScopeInterface[] */
+    /** @return string[] */
     public function getScopes(): array
     {
         return $this->scopes;
@@ -55,11 +53,11 @@ class SecurityRequirementObject implements ObjectInterface
         $scopes = [];
 
         foreach ($this->scopes as $scope) {
-            $scopes[] = $scope->getName();
+            $scopes[] = $scope;
         }
 
         return [
-            $this->name => $scopes
+            $this->securitySchemeName => $scopes
         ];
     }
 }

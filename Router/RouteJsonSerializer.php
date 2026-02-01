@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router;
 
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecurityRequirementObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Security\Scope;
+use apivalk\apivalk\Security\RouteAuthorization;
 
 class RouteJsonSerializer
 {
@@ -21,13 +20,11 @@ class RouteJsonSerializer
      *         name: string,
      *         description: string|null
      *     }>,
-     *     securityRequirements: array<int, array{
-     *         name: string,
-     *         scopes: array<int, array{
-     *             name: string,
-     *             description: string|null
-     *         }>
-     *     }>,
+     *     routeAuthorization: array{
+     *         securitySchemeName: string,
+     *         scopes: string[],
+     *         permissions: string[]
+     *     }|null,
      *     rateLimit: array{
      *          class: class-string<RateLimitInterface>,
      *          name: string,
@@ -43,15 +40,13 @@ class RouteJsonSerializer
             $tags[] = ['name' => $tag->getName(), 'description' => $tag->getDescription()];
         }
 
-        $securityRequirements = [];
-        foreach ($route->getSecurityRequirements() as $securityRequirement) {
-            $scopes = [];
-
-            foreach ($securityRequirement->getScopes() as $scope) {
-                $scopes[] = ['name' => $scope->getName(), 'description' => $scope->getDescription()];
-            }
-
-            $securityRequirements[] = ['name' => $securityRequirement->getName(), 'scopes' => $scopes];
+        $routeAuthorization = $route->getRouteAuthorization();
+        if ($routeAuthorization instanceof RouteAuthorization) {
+            $routeAuthorizationData = [
+                'securitySchemeName' => $routeAuthorization->getSecuritySchemeName(),
+                'scopes' => $routeAuthorization->getRequiredScopes(),
+                'permissions' => $routeAuthorization->getRequiredPermissions(),
+            ];
         }
 
         $rateLimit = $route->getRateLimit();
@@ -69,7 +64,7 @@ class RouteJsonSerializer
             'method' => $route->getMethod()->getName(),
             'description' => $route->getDescription(),
             'tags' => $tags,
-            'securityRequirements' => $securityRequirements,
+            'routeAuthorization' => $routeAuthorizationData ?? null,
             'rateLimit' => $rateLimitData ?? null,
         ];
     }
@@ -92,19 +87,14 @@ class RouteJsonSerializer
             $tags[] = new TagObject($tag['name'], $tag['description']);
         }
 
-        $securityRequirements = [];
-        foreach ($jsonArray['securityRequirements'] ?? [] as $securityRequirement) {
-            $scopes = [];
-
-            foreach ($securityRequirement['scopes'] as $scope) {
-                if (\is_string($scope)) {
-                    $scopes[] = new Scope($scope);
-                } else {
-                    $scopes[] = new Scope($scope['name'], $scope['description'] ?? null);
-                }
-            }
-
-            $securityRequirements[] = new SecurityRequirementObject($securityRequirement['name'], $scopes);
+        $routeAuthorization = null;
+        $routeAuthorizationData = $jsonArray['routeAuthorization'] ?? null;
+        if ($routeAuthorizationData !== null) {
+            $routeAuthorization = new RouteAuthorization(
+                $routeAuthorizationData['securitySchemeName'],
+                $routeAuthorizationData['scopes'],
+                $routeAuthorizationData['permissions']
+            );
         }
 
         $rateLimit = null;
@@ -123,7 +113,7 @@ class RouteJsonSerializer
             MethodFactory::create($jsonArray['method']),
             $jsonArray['description'] ?? null,
             $tags,
-            $securityRequirements,
+            $routeAuthorization,
             $rateLimit
         );
     }

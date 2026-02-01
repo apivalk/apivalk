@@ -106,7 +106,6 @@
             "pages": [
               "security/index",
               "security/identity",
-              "security/scope",
               "security/authenticator"
             ]
           },

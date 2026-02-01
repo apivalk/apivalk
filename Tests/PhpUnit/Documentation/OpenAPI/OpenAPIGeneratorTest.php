@@ -59,7 +59,7 @@ class OpenAPIGeneratorTest extends TestCase
         $generator = new OpenAPIGenerator($apivalk, $info, [$server], $components);
         
         $json = $generator->generate();
-        $this->assertInternalType('string', $json);
+        $this->assertIsString($json);
         
         $data = json_decode($json, true);
         $this->assertEquals('3.1.1', $data['openapi']);

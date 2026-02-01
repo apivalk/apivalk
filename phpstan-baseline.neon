@@ -156,51 +156,6 @@ parameters:
 			path: Documentation/OpenAPI/Object/ObjectInterface.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$responses with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$security with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:__construct\\(\\) has parameter \\$tags with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getParameters\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getResponses\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getSecurity\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:getTags\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\OperationObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/OpenAPI/Object/OperationObject.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\OpenAPI\\\\Object\\\\ParameterObject\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/OpenAPI/Object/ParameterObject.php
