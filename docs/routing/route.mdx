@@ -19,7 +19,7 @@ A `Route` instance contains the following information:
 Routes support dynamic path parameters using the `{parameterName}` syntax. For example:
 
 ```php
-new Route('/users/{id}/profile', new GetMethod());
+Route::get('/users/{id}/profile');
 ```
 
 These parameters are automatically identified and converted into capture groups in the internal regex generation logic.
@@ -36,12 +36,9 @@ To make a route private, you add a `RouteAuthorization` to the route's construct
 use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
-new Route('/orders',
-    new PostMethod(),
-    'Create order',
-    [],
-    new RouteAuthorization('apiKey', ['accounting:orders'], ['accounting:orders:create'])
-);
+Route::post('/orders')
+       ->description('Create order')
+       ->routeAuthorization(new RouteAuthorization('apiKey', ['accounting:orders'], ['accounting:orders:create']));
 ```
 
 ### Public and Optional Security
@@ -65,12 +62,9 @@ In an Apivalk application, you typically don't instantiate `Route` objects manua
 ```php
 public static function getRoute(): Route
 {
-    return new Route(
-        '/v1/hello-world',
-        new GetMethod(),
-        'A simple hello world endpoint',
-        [new TagObject('Greeting', 'Endpoints for saying hello')]
-    );
+    return Route::get('/v1/hello-world')
+                  ->description('A simple hello world endpoint')
+                  ->tag(new TagObject('Greeting', 'Endpoints for saying hello'));
 }
 ```
 
@@ -83,14 +77,9 @@ use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 
 public static function getRoute(): Route
 {
-    return new Route(
-        '/v1/sensitive-data',
-        new GetMethod(),
-        'Access sensitive data',
-        [], // Tags
-        null, // Security
-        new IpRateLimit('sensitive_access', 5, 60) // 5 requests per minute
-    );
+    return new Route::get('/v1/sensitive-data')
+                      ->description('Access sensitive data')
+                      ->rateLimit(new IpRateLimit('sensitive_access', 5, 60));
 }
 ```
 

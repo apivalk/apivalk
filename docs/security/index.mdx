@@ -27,9 +27,7 @@ The security layer consists of four main pillars:
 use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
-$route = new Route('/admin/settings', new GetMethod(), 'Admin Settings', [],
-    new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read'])
-);
+$route = Route::get('/admin/settings')->description('Admin Settings')->authorization(new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read']))
 ```
 
 In this example, the route requires a security scheme named `BearerAuth` with the `admin:settings` scope and `admin:settings:read` permission.
@@ -91,12 +89,10 @@ use apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 // PRIVATE: Requires 'write:orders' scope
-$privateRoute = new Route('/orders', new PostMethod(), 'Create order', [],
-    new RouteAuthorization('BearerAuth', ['order'], ['order:create'])
-);
+$privateRoute = Route::post('/orders')->description('Create order')->authorization(new RouteAuthorization('BearerAuth', ['order'], ['order:create']))
 
 // PUBLIC: No security requirements
-$publicRoute = new Route('/about', new GetMethod(), 'About us');
+$publicRoute = Route::get('/about')->description('About us');
 ```
 
 For more details on custom logic, check the [Custom Authentication](/middleware/authentication#custom-authentication-logic) section.

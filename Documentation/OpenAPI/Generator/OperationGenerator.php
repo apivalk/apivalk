@@ -67,7 +67,7 @@ class OperationGenerator
         return new OperationObject(
             $route->getMethod(),
             $route->getTags(),
-            $route->getDescription(),
+            $route->getSummary(),
             $route->getDescription(),
             \sprintf('%s_%s', $route->getUrl(), $route->getMethod()->getName()),
             $parameters,
