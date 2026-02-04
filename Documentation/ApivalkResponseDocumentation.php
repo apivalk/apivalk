@@ -15,9 +15,9 @@ class ApivalkResponseDocumentation
     /** @var bool */
     private $hasResponsePagination = false;
 
-    public function addProperty(AbstractProperty $parameter): void
+    public function addProperty(AbstractProperty $property): void
     {
-        $this->properties[] = $parameter;
+        $this->properties[] = $property->init();
     }
 
     public function setHasResponsePagination(bool $hasResponsePagination): void

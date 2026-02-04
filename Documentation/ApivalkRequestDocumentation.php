@@ -18,17 +18,17 @@ class ApivalkRequestDocumentation
 
     public function addBodyProperty(AbstractProperty $property): void
     {
-        $this->bodyProperties[$property->getPropertyName()] = $property;
+        $this->bodyProperties[$property->getPropertyName()] = $property->init();
     }
 
     public function addQueryProperty(AbstractProperty $property): void
     {
-        $this->queryProperties[$property->getPropertyName()] = $property;
+        $this->queryProperties[$property->getPropertyName()] = $property->init();
     }
 
     public function addPathProperty(AbstractProperty $property): void
     {
-        $this->pathProperties[$property->getPropertyName()] = $property;
+        $this->pathProperties[$property->getPropertyName()] = $property->init();
     }
 
     public function getBodyProperties(): array

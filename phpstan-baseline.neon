@@ -246,11 +246,6 @@ parameters:
 			path: Documentation/Property/AbstractProperty.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractProperty\\:\\:getValidators\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/Property/AbstractProperty.php
-
-		-
 			message: "#^Class apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\AbstractPropertyCollection implements generic interface IteratorAggregate but does not specify its types\\: TKey, TValue$#"
 			count: 1
 			path: Documentation/Property/AbstractPropertyCollection.php
