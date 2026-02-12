@@ -45,6 +45,10 @@ class SecurityMiddleware implements MiddlewareInterface
             }
         }
 
+        if (!$authIdentity->isAuthenticated()) {
+            return new UnauthorizedApivalkResponse();
+        }
+
         return $next($request);
     }
 }
