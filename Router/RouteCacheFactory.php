@@ -41,9 +41,9 @@ class RouteCacheFactory
             }
 
             $route = $className::getRoute();
+            $documentation = ($className::getRequestClass())::getDocumentation();
 
             $routeCacheKey = $this->getRouteCacheKey($route);
-
             $cache->set(
                 new CacheItem(
                     $routeCacheKey,
@@ -53,7 +53,7 @@ class RouteCacheFactory
             );
 
             $cacheIndex[] = [
-                'regex' => RouteRegexFactory::build($route),
+                'regex' => RouteRegexFactory::build($route, $documentation),
                 'method' => $route->getMethod()->getName(),
                 'key' => $routeCacheKey,
                 'controllerClass' => $className,
