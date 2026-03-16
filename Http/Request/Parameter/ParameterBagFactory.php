@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Http\Request\Parameter;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Router\Route;
 
 final class ParameterBagFactory
@@ -62,13 +63,23 @@ final class ParameterBagFactory
 
         $url = $route->getUrl();
         $escapedUrl = preg_replace_callback(
-            '/(\{[a-zA-Z0-9]+\})|([^{]+)/',
-            static function ($matches) {
+            '/(\{([a-zA-Z0-9]+)\})|([^{]+)/',
+            static function ($matches) use ($properties) {
                 if (!empty($matches[1])) {
+                    $paramName = $matches[2];
+
+                    // Use custom pattern from documentation if available
+                    if (isset($properties[$paramName])
+                        && $properties[$paramName] instanceof StringProperty
+                        && $properties[$paramName]->getPattern() !== null
+                    ) {
+                        return \sprintf('(%s)', $properties[$paramName]->getPattern());
+                    }
+
                     return '([a-zA-Z0-9-_]+)';
                 }
 
-                return preg_quote($matches[2], '#');
+                return preg_quote($matches[3], '#');
             },
             $url
         );
