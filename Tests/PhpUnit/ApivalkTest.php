@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit;
 
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\ApivalkConfiguration;
@@ -23,6 +24,7 @@ class ApivalkTest extends TestCase
         $router = $this->createMock(AbstractRouter::class);
         $container = $this->createMock(ContainerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
+        $localizationConfiguration = $this->createMock(LocalizationConfiguration::class);
 
         $config = $this->createMock(ApivalkConfiguration::class);
         $config->method('getMiddlewareStack')->willReturn($middlewareStack);
@@ -30,6 +32,7 @@ class ApivalkTest extends TestCase
         $config->method('getRouter')->willReturn($router);
         $config->method('getContainer')->willReturn($container);
         $config->method('getLogger')->willReturn($logger);
+        $config->method('getLocalizationConfiguration')->willReturn($localizationConfiguration);
 
         $apivalk = new Apivalk($config);
 
@@ -38,6 +41,7 @@ class ApivalkTest extends TestCase
         $this->assertSame($router, $apivalk->getRouter());
         $this->assertSame($container, $apivalk->getContainer());
         $this->assertSame($logger, $apivalk->getLogger());
+        $this->assertSame($localizationConfiguration, $apivalk->getLocalizationConfiguration());
     }
 
     public function testRun(): void

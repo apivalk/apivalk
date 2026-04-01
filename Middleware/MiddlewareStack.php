@@ -6,6 +6,7 @@ namespace apivalk\apivalk\Middleware;
 
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 
 class MiddlewareStack
 {
@@ -28,8 +29,15 @@ class MiddlewareStack
         }
 
         $response = $next($request);
+
+        if ($request->getRateLimitResult() instanceof RateLimitResult) {
+            $response->addHeaders($request->getRateLimitResult()->toHeaderArray());
+        }
+
         $response->addHeaders(
-            $request->getRateLimitResult() !== null ? $request->getRateLimitResult()->toHeaderArray() : []
+            [
+                'Content-Language' => $request->getLocale()->getTag(),
+            ]
         );
 
         return $response;

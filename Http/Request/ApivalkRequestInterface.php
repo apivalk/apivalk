@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
@@ -39,4 +40,8 @@ interface ApivalkRequestInterface
     public function setRateLimitResult(RateLimitResult $rateLimitResult): void;
 
     public function getRateLimitResult(): ?RateLimitResult;
+
+    public function getLocale(): Locale;
+
+    public function setLocale(Locale $locale): void;
 }

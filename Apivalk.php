@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk;
 
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
@@ -23,6 +24,8 @@ class Apivalk
         if ($apivalkConfiguration->getExceptionHandler() !== null) {
             set_exception_handler($apivalkConfiguration->getExceptionHandler());
         }
+
+        $this->configuration->getRouter()->setApivalk($this);
     }
 
     public function run(): AbstractApivalkResponse
@@ -53,5 +56,10 @@ class Apivalk
     public function getLogger(): LoggerInterface
     {
         return $this->configuration->getLogger();
+    }
+
+    public function getLocalizationConfiguration(): LocalizationConfiguration
+    {
+        return $this->configuration->getLocalizationConfiguration();
     }
 }

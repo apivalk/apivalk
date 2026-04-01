@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk;
 
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Renderer\JsonRenderer;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
@@ -26,13 +28,16 @@ class ApivalkConfiguration
     private $container;
     /** @var LoggerInterface */
     private $logger;
+    /** @var LocalizationConfiguration */
+    private $localizationConfiguration;
 
     public function __construct(
         AbstractRouter $router,
         ?RendererInterface $renderer = null,
         ?callable $exceptionHandler = null,
         ?ContainerInterface $container = null,
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger = null,
+        ?LocalizationConfiguration $localizationConfiguration = null
     ) {
         $this->router = $router;
         $this->middlewareStack = new MiddlewareStack();
@@ -40,6 +45,12 @@ class ApivalkConfiguration
         $this->exceptionHandler = $exceptionHandler;
         $this->container = $container;
         $this->logger = $logger ?? new NullLogger();
+
+        if ($localizationConfiguration === null) {
+            $this->localizationConfiguration = new LocalizationConfiguration(Locale::en());
+        } else {
+            $this->localizationConfiguration = $localizationConfiguration;
+        }
     }
 
     public function getMiddlewareStack(): MiddlewareStack
@@ -70,5 +81,10 @@ class ApivalkConfiguration
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
+    }
+
+    public function getLocalizationConfiguration(): LocalizationConfiguration
+    {
+        return $this->localizationConfiguration;
     }
 }

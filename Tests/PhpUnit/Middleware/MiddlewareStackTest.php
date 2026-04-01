@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use apivalk\apivalk\Http\i18n\Locale;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Middleware\MiddlewareInterface;
@@ -30,9 +31,11 @@ class MiddlewareStackTest extends TestCase
             ->method('getRateLimitResult')
             ->willReturn(null);
 
+        $request->method('getLocale')->willReturn(new Locale('en'));
+
         $response->expects($this->once())
             ->method('addHeaders')
-            ->with([]);
+            ->with(['Content-Language' => 'en']);
 
         $result = $stack->handle($request, $controller);
 
@@ -79,17 +82,18 @@ class MiddlewareStackTest extends TestCase
             });
 
         $request->method('getRateLimitResult')->willReturn(null);
+        $request->method('getLocale')->willReturn(new Locale('en'));
 
         $result = $stack->handle($request, $controller);
 
         $this->assertSame($response, $result);
         $this->assertEquals([
-            'middleware1_before',
-            'middleware2_before',
-            'controller',
-            'middleware2_after',
-            'middleware1_after'
-        ], $executionOrder);
+                                'middleware1_before',
+                                'middleware2_before',
+                                'controller',
+                                'middleware2_after',
+                                'middleware1_after'
+                            ], $executionOrder);
     }
 
     public function testHandleAddsRateLimitHeaders(): void
@@ -100,14 +104,17 @@ class MiddlewareStackTest extends TestCase
         $controller = $this->createMock(AbstractApivalkController::class);
 
         $rateLimitResult = new RateLimitResult('test', 100, 50, 60, 123456789);
-        $expectedHeaders = $rateLimitResult->toHeaderArray();
 
+        $request->method('getLocale')->willReturn(new Locale('en'));
         $request->method('getRateLimitResult')->willReturn($rateLimitResult);
         $controller->method('__invoke')->willReturn($response);
 
-        $response->expects($this->once())
+        $response->expects($this->exactly(2))
             ->method('addHeaders')
-            ->with($expectedHeaders);
+            ->withConsecutive(
+                [$rateLimitResult->toHeaderArray()],
+                [['Content-Language' => 'en']]
+            );
 
         $stack->handle($request, $controller);
     }
