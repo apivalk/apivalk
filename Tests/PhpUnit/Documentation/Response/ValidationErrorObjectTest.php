@@ -14,15 +14,31 @@ class ValidationErrorObjectTest extends TestCase
     public function testErrorApivalkObject(): void
     {
         $object = new ValidationErrorObject();
+
         $this->assertEquals('error', $object->getPropertyName());
         $this->assertEquals('Error', $object->getMessage());
+        $this->assertEquals('Error', $object->getPropertyDescription());
         $this->assertEquals('error', $object->getErrorKey());
 
-        $object->populate('email', new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED));
-        $this->assertEquals('This field is required.', $object->getMessage());
-        $this->assertEquals('email', $object->getParameter());
-        $this->assertEquals(ValidatorResult::FIELD_IS_REQUIRED, $object->getErrorKey());
+        $error = ValidationErrorObject::create('email', 'This field is required.', ValidatorResult::FIELD_IS_REQUIRED);
+        $this->assertEquals('This field is required.', $error->getMessage());
+        $this->assertEquals('email', $error->getParameter());
+        $this->assertEquals(ValidatorResult::FIELD_IS_REQUIRED, $error->getErrorKey());
 
-        $this->assertInstanceOf(AbstractPropertyCollection::class, $object->getPropertyCollection());
+        $this->assertInstanceOf(AbstractPropertyCollection::class, $error->getPropertyCollection());
+    }
+
+    public function testWithoutValidatorResult(): void
+    {
+        $validationErrorObject = ValidationErrorObject::create('test', 'testMsg', 'testKey');
+
+        $this->assertEquals('error', $validationErrorObject->getPropertyName());
+        $this->assertEquals('Error', $validationErrorObject->getPropertyDescription());
+
+        $this->assertEquals('test', $validationErrorObject->getParameter());
+        $this->assertEquals('testMsg', $validationErrorObject->getMessage());
+        $this->assertEquals('testKey', $validationErrorObject->getErrorKey());
+
+        $this->assertinstanceOf(AbstractPropertyCollection::class, $validationErrorObject->getPropertyCollection());
     }
 }
