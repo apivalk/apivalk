@@ -62,6 +62,12 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     
     // Access uploaded files (returns File object)
     $image = $request->file()->get('avatar');
+
+    // Access populated ordering (as defined in Route)
+    foreach ($request->ordering()->all() as $order) {
+        $field = $order->getField();
+        $isAsc = $order->isAsc();
+    }
 }
 ```
 
@@ -73,6 +79,14 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 $name = $request->body()->name;
 $userId = $request->path()->id;
 ```
+
+## Automatic Query Documentation
+
+When a route has [ordering defined](/routing/route#ordering), the framework automatically documents the `order_by` query parameter in your OpenAPI specification. This includes:
+
+- **Regex Validation**: Ensuring that only allowed fields and correct sorting prefixes (`+` or `-`) are used.
+- **Example list**: A generated example showcasing the allowed ordering fields.
+- **Allowed values**: A comprehensive list of fields that can be used for sorting.
 
 ## Validation
 

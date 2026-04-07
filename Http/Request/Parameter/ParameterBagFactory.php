@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Http\Request\Parameter;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 final class ParameterBagFactory
 {
@@ -45,6 +45,16 @@ final class ParameterBagFactory
                     $key,
                     self::typeCastValueByProperty($value, $properties[$key]),
                     $value
+                )
+            );
+        }
+
+        if ($_GET['order_by'] !== null) {
+            $queryBag->set(
+                new Parameter(
+                    'order_by',
+                    $_GET['order_by'],
+                    $_GET['order_by']
                 )
             );
         }

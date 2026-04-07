@@ -13,6 +13,8 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteJsonSerializer;
 
 class Router extends AbstractRouter
 {

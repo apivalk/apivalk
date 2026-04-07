@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI;
 
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
 use apivalk\apivalk\Apivalk;
-use apivalk\apivalk\Router\AbstractRouter;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Router\Route\Route;
+use PHPUnit\Framework\TestCase;
 
 class OpenAPIGeneratorTest extends TestCase
 {
@@ -21,7 +21,8 @@ class OpenAPIGeneratorTest extends TestCase
         $route = new Route('/test', new GetMethod());
         
         if (!class_exists('TestControllerForOpenAPI')) {
-            eval('
+            eval(
+            '
                 class TestRequestForOpenAPI extends apivalk\apivalk\Http\Request\AbstractApivalkRequest {
                     public static function getDocumentation(): apivalk\apivalk\Documentation\ApivalkRequestDocumentation {
                         return new apivalk\apivalk\Documentation\ApivalkRequestDocumentation();
@@ -37,10 +38,11 @@ class OpenAPIGeneratorTest extends TestCase
                     };
                     return $response;
                 }
-                public static function getRoute(): \apivalk\apivalk\Router\Route { return new \apivalk\apivalk\Router\Route("/test", new \apivalk\apivalk\Http\Method\GetMethod()); }
+                public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/test", new \apivalk\apivalk\Http\Method\GetMethod()); }
                 public static function getRequestClass(): string { return "TestRequestForOpenAPI"; }
                 public static function getResponseClasses(): array { return []; }
-            }');
+            }'
+            );
         }
         $controllerClass = 'TestControllerForOpenAPI';
 

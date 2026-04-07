@@ -17,6 +17,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +61,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
             {
             }
 
@@ -126,6 +127,11 @@ class RequestValidationMiddlewareTest extends TestCase
 
             public function setLocale(Locale $locale): void
             {
+            }
+
+            public function ordering(): OrderBag
+            {
+                return new OrderBag();
             }
         };
 
@@ -179,7 +185,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
             {
             }
 
@@ -246,6 +252,11 @@ class RequestValidationMiddlewareTest extends TestCase
 
             public function setLocale(Locale $locale): void
             {
+            }
+
+            public function ordering(): OrderBag
+            {
+                return new OrderBag();
             }
         };
 

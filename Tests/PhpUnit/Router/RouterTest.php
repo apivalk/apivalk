@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
-use apivalk\apivalk\Router\RouteJsonSerializer;
-use apivalk\apivalk\Router\RouteRegexFactory;
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Router\Router;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
-use apivalk\apivalk\Util\ClassLocator;
-use apivalk\apivalk\Router\AbstractRouter;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
+use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteJsonSerializer;
+use apivalk\apivalk\Router\Route\RouteRegexFactory;
+use apivalk\apivalk\Router\Router;
+use apivalk\apivalk\Util\ClassLocator;
+use PHPUnit\Framework\TestCase;
 
 class RouterTest extends TestCase
 {
@@ -98,7 +98,7 @@ class RouterTest extends TestCase
 
                 class TestControllerForRouterTest extends apivalk\apivalk\Http\Controller\AbstractApivalkController {
                 public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return new apivalk\apivalk\Http\Response\NotFoundApivalkResponse(); }
-                public static function getRoute(): \apivalk\apivalk\Router\Route { return new \apivalk\apivalk\Router\Route("/", new \apivalk\apivalk\Http\Method\GetMethod()); }
+                public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/", new \apivalk\apivalk\Http\Method\GetMethod()); }
                 public static function getRequestClass(): string { return "TestRequestForRouterTest"; }
                 public static function getResponseClasses(): array { return []; }
             }'

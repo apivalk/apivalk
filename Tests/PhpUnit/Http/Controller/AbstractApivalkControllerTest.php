@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Controller;
 
-use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
+use PHPUnit\Framework\TestCase;
 
 class AbstractApivalkControllerTest extends TestCase
 {

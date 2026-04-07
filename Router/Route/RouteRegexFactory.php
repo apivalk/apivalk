@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router;
+namespace apivalk\apivalk\Router\Route;
 
 class RouteRegexFactory
 {

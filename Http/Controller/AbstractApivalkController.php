@@ -6,7 +6,7 @@ namespace apivalk\apivalk\Http\Controller;
 
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 abstract class AbstractApivalkController
 {

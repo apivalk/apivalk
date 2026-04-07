@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Router;
 
 use apivalk\apivalk\Http\Method\GetMethod;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Router\RouteRegexFactory;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteRegexFactory;
 use PHPUnit\Framework\TestCase;
 
 class RouteRegexFactoryTest extends TestCase

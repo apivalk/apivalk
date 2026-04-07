@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
-use apivalk\apivalk\Router\RouteJsonSerializer;
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Http\Method\GetMethod;
-use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteJsonSerializer;
 use apivalk\apivalk\Security\RouteAuthorization;
+use PHPUnit\Framework\TestCase;
 
 class RouteTest extends TestCase
 {

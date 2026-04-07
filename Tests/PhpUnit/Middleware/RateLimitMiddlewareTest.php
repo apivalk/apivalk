@@ -11,8 +11,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\TooManyRequestsApivalkResponse;
 use apivalk\apivalk\Middleware\RateLimitMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
 
 class RateLimitMiddlewareTest extends TestCase

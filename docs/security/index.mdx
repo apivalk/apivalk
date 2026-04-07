@@ -24,7 +24,7 @@ The security layer consists of four main pillars:
 ## Quick Example: Private Route
 
 ```php
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 $route = Route::get('/admin/settings')->description('Admin Settings')->authorization(new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read']))
@@ -85,8 +85,7 @@ $configuration->addMiddleware(new SecurityMiddleware());
 Here is how you would define routes with different security requirements:
 
 ```php
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Security\RouteAuthorization;
+use apivalk\apivalk\Router\Route\Route;use apivalk\apivalk\Security\RouteAuthorization;
 
 // PRIVATE: Requires 'write:orders' scope
 $privateRoute = Route::post('/orders')->description('Create order')->authorization(new RouteAuthorization('BearerAuth', ['order'], ['order:create']))
