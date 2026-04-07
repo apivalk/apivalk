@@ -104,4 +104,4 @@ public static function getRoute(): Route
 }
 ```
 
-The framework's automated discovery system then picks up these definitions and registers them with the router.
+The `ordering()` method also defines the **default sorting** for the route. If a user does not provide an `order_by` query parameter, the `ordering()` bag on the request object will be automatically populated with these defined values.

@@ -62,35 +62,43 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         $this->ip = IpResolver::getClientIp();
         $this->orderBag = new OrderBag();
 
-        $this->populateOrderBag();
+        $this->populateOrderBag($route);
     }
 
-    private function populateOrderBag(): void
+    private function populateOrderBag(Route $route): void
     {
+        foreach ($route->getOrderings() as $ordering) {
+            if (!$this->orderBag->has($ordering->getField())) {
+                $this->orderBag->set($ordering);
+            }
+        }
+
         $orderBy = $this->queryParameterBag->get('order_by');
 
-        if ($orderBy !== null) {
-            foreach (explode(',', $orderBy->getRawValue()) as $curOrderByField) {
-                $curOrderByField = trim($curOrderByField);
+        if ($orderBy === null) {
+            return;
+        }
 
-                if ($curOrderByField === '') {
-                    continue;
-                }
+        foreach (explode(',', $orderBy->getRawValue()) as $curOrderByField) {
+            $curOrderByField = trim($curOrderByField);
 
-                if ($curOrderByField[0] !== '+' && $curOrderByField[0] !== '-') {
-                    $direction = '+';
-                    $field = $curOrderByField;
-                } else {
-                    $direction = $curOrderByField[0];
-                    $field = substr($curOrderByField, 1);
-                }
-
-                if ($field === '') {
-                    continue;
-                }
-
-                $this->orderBag->set($direction === '-' ? Order::desc($field) : Order::asc($field));
+            if ($curOrderByField === '') {
+                continue;
             }
+
+            if ($curOrderByField[0] !== '+' && $curOrderByField[0] !== '-') {
+                $direction = '+';
+                $field = $curOrderByField;
+            } else {
+                $direction = $curOrderByField[0];
+                $field = substr($curOrderByField, 1);
+            }
+
+            if ($field === '') {
+                continue;
+            }
+
+            $this->orderBag->set($direction === '-' ? Order::desc($field) : Order::asc($field));
         }
     }
 
