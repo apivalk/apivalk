@@ -4,17 +4,61 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
-use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SingleSchemaObject;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use PHPUnit\Framework\TestCase;
+
+class TestProperty extends AbstractProperty
+{
+    /** @var array<string, mixed> */
+    private $documentationArray;
+
+    /**
+     * @param array<string, mixed> $documentationArray
+     */
+    public function __construct(
+        string $propertyName,
+        ?string $propertyDescription,
+        bool $required,
+        array $documentationArray
+    ) {
+        parent::__construct($propertyName, $propertyDescription);
+        $this->isRequired = $required;
+        $this->documentationArray = $documentationArray;
+    }
+
+    public function getDocumentationArray(): array
+    {
+        return $this->documentationArray;
+    }
+
+    public function getType(): string
+    {
+        return 'string';
+    }
+
+    public function getPhpType(): string
+    {
+        return 'string';
+    }
+}
 
 class ParameterObjectTest extends TestCase
 {
     public function testToArray(): void
     {
-        $schema = new SingleSchemaObject('id', 'integer');
-        $parameter = new ParameterObject('id', 'path', 'User ID', true, $schema);
-        
+        $property = new TestProperty(
+            'id',
+            'User ID',
+            true,
+            [
+                'type' => 'integer',
+                'required' => ['id'],
+            ]
+        );
+
+        $parameter = new ParameterObject('path', $property);
+
         $expected = [
             'name' => 'id',
             'in' => 'path',
@@ -22,8 +66,8 @@ class ParameterObjectTest extends TestCase
             'required' => true,
             'schema' => [
                 'type' => 'integer',
-                'required' => ['id']
-            ]
+                'required' => ['id'],
+            ],
         ];
 
         $this->assertEquals($expected, $parameter->toArray());
@@ -31,14 +75,25 @@ class ParameterObjectTest extends TestCase
 
     public function testToArrayMinimal(): void
     {
-        $parameter = new ParameterObject('id', 'query');
-        
+        $property = new TestProperty(
+            'id',
+            '',
+            true,
+            [
+                'type' => 'string',
+            ]
+        );
+
+        $parameter = new ParameterObject('query', $property);
+
         $expected = [
             'name' => 'id',
             'in' => 'query',
-            'description' => null,
+            'description' => '',
             'required' => true,
-            'schema' => null
+            'schema' => [
+                'type' => 'string',
+            ],
         ];
 
         $this->assertEquals($expected, $parameter->toArray());

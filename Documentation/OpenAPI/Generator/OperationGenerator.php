@@ -6,13 +6,15 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
+use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\TooManyRequestsApivalkResponse;
 use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 class OperationGenerator
 {
@@ -32,6 +34,11 @@ class OperationGenerator
 
         foreach ($requestDocumentation->getQueryProperties() as $pathProperty) {
             $parameters[] = $parameterGenerator->generate($pathProperty, 'query');
+        }
+
+        $orderProperty = $this->getOrderProperty($route);
+        if ($orderProperty !== null) {
+            $parameters[] = $parameterGenerator->generate($orderProperty, 'query');
         }
 
         $responses = [];
@@ -75,5 +82,45 @@ class OperationGenerator
             $responses,
             $route->getRouteAuthorization()
         );
+    }
+
+    private function getOrderProperty(Route $route): ?StringProperty
+    {
+        if (\count($route->getOrderings()) === 0) {
+            return null;
+        }
+
+        $fields = [];
+
+        foreach ($route->getOrderings() as $ordering) {
+            $fields[] = preg_quote($ordering->getField(), '/');
+        }
+
+        $group = implode('|', $fields);
+
+        $regex = \sprintf(
+            '^([+-](%s))(,([+-](%s)))*$',
+            $group,
+            $group
+        );
+
+        $orderProperty = new StringProperty(
+            'order_by',
+            'Comma-separated list of fields prefixed with + (asc) or - (desc)'
+        );
+
+        $exampleParts = [];
+        foreach ($fields as $index => $field) {
+            $prefix = $index === 0 ? '+' : '-';
+            $exampleParts[] = $prefix . $field;
+        }
+
+        $example = implode(',', $exampleParts);
+
+        $orderProperty->setPattern($regex);
+        $orderProperty->setIsRequired(false);
+        $orderProperty->setExample($example);
+
+        return $orderProperty;
     }
 }

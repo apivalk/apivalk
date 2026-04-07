@@ -4,38 +4,37 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+
 /**
  * Class ParameterObject
  *
- * @see     https://swagger.io/specification/#parameter-object
- *
- * @package apivalk\apivalk\Documentation\OpenAPI\Object
+ * @see https://swagger.io/specification/#parameter-object
  */
 class ParameterObject implements ObjectInterface
 {
     /** @var string */
     private $name;
+
     /** @var string */
     private $in;
+
     /** @var string|null */
     private $description;
+
     /** @var bool */
     private $required;
-    /** @var SingleSchemaObject|null */
-    private $singleSchemaObject;
 
-    public function __construct(
-        string $name,
-        string $in,
-        ?string $description = null,
-        bool $required = true,
-        ?SingleSchemaObject $singleSchemaObject = null
-    ) {
-        $this->name = $name;
+    /** @var AbstractProperty */
+    private $property;
+
+    public function __construct(string $in, AbstractProperty $property)
+    {
+        $this->name = $property->getPropertyName();
         $this->in = $in;
-        $this->description = $description;
-        $this->required = $required;
-        $this->singleSchemaObject = $singleSchemaObject;
+        $this->description = $property->getPropertyDescription();
+        $this->required = $property->isRequired();
+        $this->property = $property;
     }
 
     public function getName(): string
@@ -58,15 +57,24 @@ class ParameterObject implements ObjectInterface
         return $this->required;
     }
 
+    public function getProperty(): ?AbstractProperty
+    {
+        return $this->property;
+    }
+
     public function toArray(): array
     {
-        return [
-            'name' => $this->name,
-            'in' => $this->in,
-            'description' => $this->description,
-            'required' => $this->required,
-            'schema' => $this->singleSchemaObject instanceof SingleSchemaObject ? $this->singleSchemaObject->toArray()
-                : null,
-        ];
+        return array_filter(
+            [
+                'name' => $this->name,
+                'in' => $this->in,
+                'description' => $this->description,
+                'required' => $this->required,
+                'schema' => $this->property->getDocumentationArray(),
+            ],
+            static function ($value) {
+                return $value !== null;
+            }
+        );
     }
 }

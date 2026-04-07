@@ -11,10 +11,10 @@ In Apivalk, request data is populated into bags. While you can access data using
 
 The `DocBlockGenerator` automates the creation of this metadata. It performs the following steps for every Request class in your project:
 
-1. **Discovery**: Scans your API directories for classes extending `AbstractApivalkRequest`.
-2. **Extraction**: Executes the `getRequestDocumentation()` method on the associated Controller to find all defined properties.
-3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation.
-4. **Rewrite**: Updates the original Request class file with `@property` tags pointing to these Shape classes.
+1. **Discovery**: Scans your API directories for classes extending `AbstractApivalkController`.
+2. **Extraction**: Executes the `getRequestClass()` and `getRoute()` methods on the Controller to find the associated Request class and its properties.
+3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`, `GetUserOrderingShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation and route-defined ordering.
+4. **Rewrite**: Updates the original Request class file with `@method` tags pointing to these Shape classes.
 
 ## Example Result
 
@@ -30,9 +30,10 @@ After running `DocBlockGenerator`, it is automatically updated to:
 
 ```php
 /**
- * @property GetUserBodyShape $body
- * @property GetUserQueryShape $query
- * @property GetUserPathShape $path
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserQueryShape query()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserPathShape path()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserBodyShape body()
+ * @method \apivalk\apivalk\Router\Route\Order\OrderBag|Shape\GetUserOrderingShape ordering()
  */
 class GetUserRequest extends AbstractApivalkRequest {
     // Still empty, but now with IDE support!
@@ -59,5 +60,5 @@ $generator->run(
 
 * `DocBlockGenerator`: The main entry point that iterates over classes.
 * `DocBlockRequestGenerator`: Converts an `AbstractApivalkRequest` into a `DocBlockRequest` data object.
-* `DocBlockRequest`: Holds the metadata for the three shapes (Body, Query, Path).
+* `DocBlockRequest`: Holds the metadata for the four shapes (Body, Query, Path, Ordering).
 * `DocBlockShape`: Generates the PHP code for the Shape classes.

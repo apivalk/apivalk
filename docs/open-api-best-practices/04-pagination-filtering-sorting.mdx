@@ -52,11 +52,13 @@ Example response snippet:
 
 ### Sorting
 
-Use '+' (ASC) or '-' (DESC) as a prefix for each field. If not specified, default is ASC.
+Use '+' (ASC) or '-' (DESC) as a prefix for each field. If not specified, default is ASC. Multiple fields can be separated by a comma.
 
 ```http
 GET /users?order_by=+id,-price
 ```
+
+In Apivalk, this `order_by` parameter automatically populates the `ordering()` bag on the request object, based on the fields allowed in the `Route` definition.
 
 ### Filtering
 

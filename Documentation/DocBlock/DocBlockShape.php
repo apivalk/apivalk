@@ -10,6 +10,8 @@ class DocBlockShape
 {
     /** @var AbstractProperty[] */
     private $properties = [];
+    /** @var array<string, string> - example: ["status" => array, "message" => string] */
+    private $customFields = [];
     /** @var string */
     private $type;
     /** @var string */
@@ -24,6 +26,11 @@ class DocBlockShape
     public function addProperty(AbstractProperty $property): void
     {
         $this->properties[] = $property;
+    }
+
+    public function addCustomField(string $fieldName, string $fieldType): void
+    {
+        $this->customFields[$fieldName] = $fieldType;
     }
 
     public function getClassName(): string
@@ -70,11 +77,20 @@ PHP;
             }
 
             $propertiesString[] = \sprintf(
-                '@property-read %s $%s',
+                '@property-read %s $%s %s',
                 $property->isRequired()
                     ? $type
                     : \sprintf('%s|null', $type),
-                $property->getPropertyName()
+                $property->getPropertyName(),
+                $property->getPropertyDescription()
+            );
+        }
+
+        foreach ($this->customFields as $fieldName => $fieldType) {
+            $propertiesString[] = \sprintf(
+                '@property-read %s $%s',
+                $fieldType,
+                $fieldName
             );
         }
 

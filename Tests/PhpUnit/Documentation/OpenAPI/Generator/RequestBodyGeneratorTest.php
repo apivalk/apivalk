@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Documentation\OpenAPI\Generator\RequestBodyGenerator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Documentation\OpenAPI\Generator\RequestBodyGenerator;
+use apivalk\apivalk\Router\Route\Route;
+use PHPUnit\Framework\TestCase;
 
 class RequestBodyGeneratorTest extends TestCase
 {

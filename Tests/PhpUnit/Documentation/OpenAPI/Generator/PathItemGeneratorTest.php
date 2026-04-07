@@ -11,7 +11,8 @@ use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -127,6 +128,11 @@ class PathItemTestRequest implements ApivalkRequestInterface
 
     public function setLocale(Locale $locale): void
     {
+    }
+
+    public function ordering(): OrderBag
+    {
+        return new OrderBag();
     }
 }
 

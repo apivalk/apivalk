@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 class RequestBodyGenerator
 {

@@ -7,7 +7,8 @@ namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -50,5 +51,6 @@ class AbstractApivalkRequestTest extends TestCase
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->body());
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->path());
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\File\FileBag::class, $request->file());
+        $this->assertInstanceOf(OrderBag::class, $request->ordering());
     }
 }

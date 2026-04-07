@@ -11,7 +11,7 @@ use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\UnauthorizedApivalkResponse;
 use apivalk\apivalk\Middleware\SecurityMiddleware;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use apivalk\apivalk\Security\RouteAuthorization;

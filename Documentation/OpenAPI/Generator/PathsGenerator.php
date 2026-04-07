@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 class PathsGenerator
 {

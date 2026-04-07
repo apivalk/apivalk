@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Parameter;
 
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Property\NumberProperty;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
+use apivalk\apivalk\Router\Route\Route;
+use PHPUnit\Framework\TestCase;
 
 class ParameterBagFactoryTest extends TestCase
 {
