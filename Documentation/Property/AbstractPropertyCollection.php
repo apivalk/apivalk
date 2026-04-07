@@ -7,6 +7,8 @@ namespace apivalk\apivalk\Documentation\Property;
 abstract class AbstractPropertyCollection implements \IteratorAggregate
 {
     /** @var string */
+    public const MODE_LIST = 'list';
+    /** @var string */
     public const MODE_EDIT = 'edit';
     /** @var string */
     public const MODE_VIEW = 'view';

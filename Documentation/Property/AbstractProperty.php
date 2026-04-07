@@ -38,8 +38,6 @@ abstract class AbstractProperty
     ) {
         $this->propertyName = $propertyName;
         $this->propertyDescription = $propertyDescription;
-
-        $this->addValidator(ValidatorFactory::create($this));
     }
 
     final public function getPropertyName(): string
@@ -83,8 +81,17 @@ abstract class AbstractProperty
         return $this;
     }
 
+    /** @return array<int, AbstractValidator> */
     final public function getValidators(): array
     {
         return $this->validators;
+    }
+
+    /** Init's the property. Should be done everytime before properties are used. */
+    final public function init(): self
+    {
+        $this->addValidator(ValidatorFactory::create($this));
+
+        return $this;
     }
 }

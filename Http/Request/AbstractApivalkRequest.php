@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\File\FileBagFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use apivalk\apivalk\Util\IpResolver;
@@ -36,12 +39,18 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $ip;
     /** @var RateLimitResult|null */
     private $rateLimitResult;
+    /** @var Locale */
+    private $locale;
+    /** @var OrderBag */
+    private $orderBag;
 
     abstract public static function getDocumentation(): ApivalkRequestDocumentation;
 
     public function populate(Route $route): void
     {
         $documentation = static::getDocumentation();
+
+        // ToDo: Write Populator Logic/Strategy for this, it gets messy by now
 
         $this->method = $route->getMethod();
         $this->headerBag = ParameterBagFactory::createHeaderBag();
@@ -51,6 +60,46 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         $this->fileBag = FileBagFactory::create();
         $this->authIdentity = new GuestAuthIdentity([]);
         $this->ip = IpResolver::getClientIp();
+        $this->orderBag = new OrderBag();
+
+        $this->populateOrderBag($route);
+    }
+
+    private function populateOrderBag(Route $route): void
+    {
+        foreach ($route->getOrderings() as $ordering) {
+            if (!$this->orderBag->has($ordering->getField())) {
+                $this->orderBag->set($ordering);
+            }
+        }
+
+        $orderBy = $this->queryParameterBag->get('order_by');
+
+        if ($orderBy === null) {
+            return;
+        }
+
+        foreach (explode(',', $orderBy->getRawValue()) as $curOrderByField) {
+            $curOrderByField = trim($curOrderByField);
+
+            if ($curOrderByField === '') {
+                continue;
+            }
+
+            if ($curOrderByField[0] !== '+' && $curOrderByField[0] !== '-') {
+                $direction = '+';
+                $field = $curOrderByField;
+            } else {
+                $direction = $curOrderByField[0];
+                $field = substr($curOrderByField, 1);
+            }
+
+            if ($field === '') {
+                continue;
+            }
+
+            $this->orderBag->set($direction === '-' ? Order::desc($field) : Order::asc($field));
+        }
     }
 
     public function getMethod(): MethodInterface
@@ -88,6 +137,11 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         return $this->fileBag;
     }
 
+    public function ordering(): OrderBag
+    {
+        return $this->orderBag;
+    }
+
     public function getAuthIdentity(): AbstractAuthIdentity
     {
         return $this->authIdentity;
@@ -106,5 +160,15 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     public function getRateLimitResult(): ?RateLimitResult
     {
         return $this->rateLimitResult;
+    }
+
+    public function getLocale(): Locale
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(Locale $locale): void
+    {
+        $this->locale = $locale;
     }
 }

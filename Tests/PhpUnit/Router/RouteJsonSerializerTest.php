@@ -6,8 +6,8 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Router\RouteJsonSerializer;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteJsonSerializer;
 use PHPUnit\Framework\TestCase;
 
 class RouteJsonSerializerTest extends TestCase

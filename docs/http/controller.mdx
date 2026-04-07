@@ -20,7 +20,7 @@ namespace App\Http\Controller\Pet;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Http\Method\GetMethod;
 use App\Http\Request\Pet\GetPetRequest;
 use App\Http\Response\Pet\GetPetResponse;
@@ -50,6 +50,19 @@ class GetPetController extends AbstractApivalkController
     {
         // $request is already populated and validated!
         $id = $request->path()->id;
+
+        // Access populated ordering filters.
+        // The ordering bag is always populated: if the user does not provide order_by,
+        // it contains the default sorting from the route.
+        foreach ($request->ordering()->all() as $order) {
+            $field = $order->getField();
+            $direction = $order->getDirection();
+        }
+
+        // or directly access populated filters.
+        // If the user did not pass order_by=+status or -status, the magic getter returns
+        // the default Order object for status if it was defined on the route.
+        $isAsc = $request->ordering()->status->isAsc();
 
         $pet = $this->petRepository->find($id);
 

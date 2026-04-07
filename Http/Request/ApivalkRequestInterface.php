@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 interface ApivalkRequestInterface
@@ -30,6 +32,8 @@ interface ApivalkRequestInterface
 
     public function path(): ParameterBag;
 
+    public function ordering(): OrderBag;
+
     public function file(): FileBag;
 
     public function getAuthIdentity(): AbstractAuthIdentity;
@@ -39,4 +43,8 @@ interface ApivalkRequestInterface
     public function setRateLimitResult(RateLimitResult $rateLimitResult): void;
 
     public function getRateLimitResult(): ?RateLimitResult;
+
+    public function getLocale(): Locale;
+
+    public function setLocale(Locale $locale): void;
 }

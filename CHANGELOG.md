@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/apivalk/apivalk/compare/v1.5.0...v1.6.0) (2026-04-07)
+
+
+### Features
+
+* add localization support with `Locale`, `LocalizationConfiguration`, and request-specific locale resolution ([#77](https://github.com/apivalk/apivalk/issues/77)) ([686fa53](https://github.com/apivalk/apivalk/commit/686fa53b163b287cc16d1c029703b00afd5dad0e)), closes [#55](https://github.com/apivalk/apivalk/issues/55)
+* enhance `ValidationErrorObject` creation and simplify usage ([#76](https://github.com/apivalk/apivalk/issues/76)) ([1b4b55b](https://github.com/apivalk/apivalk/commit/1b4b55b5c943cb7d919849207f9d8a4d437099e9)), closes [#69](https://github.com/apivalk/apivalk/issues/69)
+* include route-specific sorting logic in `AbstractApivalkRequest` ([#84](https://github.com/apivalk/apivalk/issues/84)) ([073709b](https://github.com/apivalk/apivalk/commit/073709bf9e8adc5b7b2f7f28fd692ee839c54673)), closes [#83](https://github.com/apivalk/apivalk/issues/83)
+* introduce ordering support for routes ([#82](https://github.com/apivalk/apivalk/issues/82)) ([ff78f74](https://github.com/apivalk/apivalk/commit/ff78f74fb3145a3190bf7bdcde404d80d4e89211)), closes [#45](https://github.com/apivalk/apivalk/issues/45)
+
+
+### Bug Fixes
+
+* refactor and expand `SecurityMiddlewareTest` for enhanced coverage ([0780ee8](https://github.com/apivalk/apivalk/commit/0780ee86d16107b59ba6fc45703aac262cace97a)), closes [#70](https://github.com/apivalk/apivalk/issues/70)
+
+## [1.5.0](https://github.com/apivalk/apivalk/compare/v1.3.2...v1.5.0) (2026-02-04)
+
+## [1.4.0](https://github.com/apivalk/apivalk/compare/v1.3.1...v1.4.0) (2026-02-01)
+
+
+### Features
+
+* add composer for dev and fix vulnerability ([325c5d8](https://github.com/apivalk/apivalk/commit/325c5d8cf5428bf6084ca157e316465f4770fe26))
+* extend Route with HTTP methods, summary, and fluent API ([5eee0a9](https://github.com/apivalk/apivalk/commit/5eee0a9f653d401b89ad42b33a5e8e3e611714be)), closes [#47](https://github.com/apivalk/apivalk/issues/47)
+* refactor security and authorization to improve scope handling ([ee1afd2](https://github.com/apivalk/apivalk/commit/ee1afd2fa8a7244fd46af9d63046605d4a7b3127))
+* replace `ErrorObject` with `ValidationErrorObject` for enhanced validation handling ([0fb13e8](https://github.com/apivalk/apivalk/commit/0fb13e8df9dea7b1580e4f097152c317560b5752)), closes [#54](https://github.com/apivalk/apivalk/issues/54)
+
 ## [1.4.0](https://github.com/apivalk/apivalk/compare/v1.3.1...v1.4.0) (2026-02-01)
 
 

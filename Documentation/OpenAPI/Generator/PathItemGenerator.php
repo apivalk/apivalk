@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
-use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Method\DeleteMethod;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 
 class PathItemGenerator
 {

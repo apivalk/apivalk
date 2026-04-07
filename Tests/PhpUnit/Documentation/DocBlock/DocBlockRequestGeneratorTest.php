@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
+use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\DocBlock\DocBlockRequestGenerator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
@@ -27,12 +28,14 @@ class DocBlockRequestGeneratorTest extends TestCase
     {
         $generator = new DocBlockRequestGenerator();
         $request = new TestRequest();
+        $route = Route::get('test');
 
-        $docBlockRequest = $generator->generate($request);
+        $docBlockRequest = $generator->generate($request, $route);
 
         $this->assertEquals('TestRequestBodyShape', $docBlockRequest->getBodyShape()->getClassName());
         $this->assertEquals('TestRequestPathShape', $docBlockRequest->getPathShape()->getClassName());
         $this->assertEquals('TestRequestQueryShape', $docBlockRequest->getQueryShape()->getClassName());
+        $this->assertEquals('TestRequestOrderingShape', $docBlockRequest->getOrderingShape()->getClassName());
 
         $bodyString = $docBlockRequest->getBodyShape()->toString('App\\Shape');
         $this->assertStringContainsString('@property-read string $name', $bodyString);
@@ -42,5 +45,7 @@ class DocBlockRequestGeneratorTest extends TestCase
 
         $pathString = $docBlockRequest->getPathShape()->toString('App\\Shape');
         $this->assertStringContainsString('@property-read string $slug', $pathString);
+
+        $orderingString = $docBlockRequest->getOrderingShape()->toString('App\\Shape');
     }
 }

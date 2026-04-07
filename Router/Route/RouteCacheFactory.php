@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router;
+namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Router\AbstractRouter;
 
 class RouteCacheFactory
 {

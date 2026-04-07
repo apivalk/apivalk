@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\DocBlock;
 
-use apivalk\apivalk\Util\ClassLocator;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Util\ClassLocator;
 
 class DocBlockGenerator
 {
@@ -21,23 +22,37 @@ class DocBlockGenerator
 
         foreach ($classLocator->find() as $class) {
             $className = $class['className'];
-            $filePath = $class['path'];
 
-            if (!is_subclass_of($className, ApivalkRequestInterface::class)) {
+            if (!is_subclass_of($className, AbstractApivalkController::class)) {
                 continue;
             }
 
             try {
-                /** @var AbstractApivalkRequest $request */
-                $request = new $className();
+                /** @var class-string<AbstractApivalkController> $className */
+                $requestClass = $className::getRequestClass();
+                $route = $className::getRoute();
 
-                $docBlockRequest = $generator->generate($request);
+                if (!is_subclass_of($requestClass, ApivalkRequestInterface::class)) {
+                    continue;
+                }
+
+                $reflection = new \ReflectionClass($requestClass);
+                $filePath = $reflection->getFileName();
+
+                if (!$filePath) {
+                    continue;
+                }
+
+                /** @var AbstractApivalkRequest $request */
+                $request = new $requestClass();
+
+                $docBlockRequest = $generator->generate($request, $route);
 
                 $this->rewriteRequestFileWithDocblocks($filePath, $docBlockRequest);
 
-                echo "✔ DocBlocks & Shapes generated for {$className}\n";
+                echo "✔ DocBlocks & Shapes generated for {$requestClass} (from {$className})\n";
             } catch (\Throwable $e) {
-                echo "⚠ Error in class {$className}: {$e->getMessage()}\n";
+                echo "⚠ Error in controller {$className}: {$e->getMessage()}\n";
             }
         }
     }
@@ -106,6 +121,14 @@ class DocBlockGenerator
             ) ===
             false) {
             throw new \RuntimeException('Failed to write body shape file');
+        }
+
+        if (file_put_contents(
+                $filenames['ordering'],
+                $docBlockRequest->getOrderingShape()->toString($shapeNamespace)
+            ) ===
+            false) {
+            throw new \RuntimeException('Failed to write ordering shape file');
         }
     }
 }

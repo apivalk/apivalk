@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router;
+namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\DeleteMethod;
@@ -12,6 +12,7 @@ use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+use apivalk\apivalk\Router\Route\Order\Order;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 class Route
@@ -30,6 +31,8 @@ class Route
     private $tags;
     /** @var null|RateLimitInterface */
     private $rateLimit;
+    /** @var Order[] */
+    private $orderings;
 
     /**
      * @param string                  $url
@@ -39,6 +42,7 @@ class Route
      * @param TagObject[]             $tags
      * @param RouteAuthorization|null $routeAuthorization
      * @param RateLimitInterface|null $rateLimit
+     * @param Order[]|null            $orderings
      */
     public function __construct(
         string $url,
@@ -47,7 +51,8 @@ class Route
         ?string $summary = null,
         ?array $tags = null,
         ?RouteAuthorization $routeAuthorization = null,
-        ?RateLimitInterface $rateLimit = null
+        ?RateLimitInterface $rateLimit = null,
+        ?array $orderings = null
     ) {
         $this->url = $url;
         $this->method = $method;
@@ -56,6 +61,7 @@ class Route
         $this->tags = $tags ?? [];
         $this->routeAuthorization = $routeAuthorization;
         $this->rateLimit = $rateLimit;
+        $this->orderings = $orderings ?? [];
     }
 
     public static function get(string $url): self
@@ -109,6 +115,16 @@ class Route
         return $this;
     }
 
+    /**
+     * @param Order[] $orderings
+     */
+    public function ordering(array $orderings): self
+    {
+        $this->orderings = $orderings;
+
+        return $this;
+    }
+
     public function description(string $description): self
     {
         $this->description = $description;
@@ -157,5 +173,13 @@ class Route
     public function getRateLimit(): ?RateLimitInterface
     {
         return $this->rateLimit;
+    }
+
+    /**
+     * @return Order[]
+     */
+    public function getOrderings(): array
+    {
+        return $this->orderings;
     }
 }

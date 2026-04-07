@@ -13,8 +13,10 @@ class BadValidationApivalkResponseTest extends TestCase
 {
     public function testResponse(): void
     {
-        $error = new ValidationErrorObject();
-        $error->populate('email', new ValidatorResult(false, ValidatorResult::VALUE_DOES_NOT_MATCH_PATTERN));
+        $error = ValidationErrorObject::createByValidatorResult(
+            'email',
+            new ValidatorResult(false, ValidatorResult::VALUE_DOES_NOT_MATCH_PATTERN)
+        );
 
         $response = new BadValidationApivalkResponse([$error]);
 

@@ -7,10 +7,12 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -117,6 +119,20 @@ class PathsTestRequest implements ApivalkRequestInterface
 
     public function setRateLimitResult(RateLimitResult $rateLimitResult): void
     {
+    }
+
+    public function getLocale(): Locale
+    {
+        return Locale::en();
+    }
+
+    public function setLocale(Locale $locale): void
+    {
+    }
+
+    public function ordering(): OrderBag
+    {
+        return new OrderBag();
     }
 }
 

@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\RateLimit;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitContext;
-use apivalk\apivalk\Router\Route;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use PHPUnit\Framework\TestCase;
 

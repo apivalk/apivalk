@@ -6,12 +6,15 @@ namespace apivalk\apivalk\Router;
 
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\LocaleResolver;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteJsonSerializer;
 
 class Router extends AbstractRouter
 {
@@ -87,6 +90,7 @@ class Router extends AbstractRouter
         $requestClass = $controllerClass::getRequestClass();
 
         $request = new $requestClass();
+        $request->setLocale(LocaleResolver::resolve($this->getApivalk()->getLocalizationConfiguration()));
         $request->populate($route);
 
         return $request;

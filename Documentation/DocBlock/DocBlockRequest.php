@@ -12,15 +12,19 @@ class DocBlockRequest
     private $pathShape;
     /** @var DocBlockShape */
     private $queryShape;
+    /** @var DocBlockShape */
+    private $orderingShape;
 
     public function __construct(
         DocBlockShape $bodyShape,
         DocBlockShape $pathShape,
-        DocBlockShape $queryShape
+        DocBlockShape $queryShape,
+        DocBlockShape $orderingShape
     ) {
         $this->bodyShape = $bodyShape;
         $this->pathShape = $pathShape;
         $this->queryShape = $queryShape;
+        $this->orderingShape = $orderingShape;
     }
 
     public function getBodyShape(): DocBlockShape
@@ -38,6 +42,11 @@ class DocBlockRequest
         return $this->queryShape;
     }
 
+    public function getOrderingShape(): DocBlockShape
+    {
+        return $this->orderingShape;
+    }
+
     public function getRequestDocBlockOnly(string $shapeNamespace): string
     {
         $string = <<<'PHP'
@@ -45,15 +54,17 @@ class DocBlockRequest
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{QUERY_SHAPE_CLASS}} query()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{PATH_SHAPE_CLASS}} path()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{BODY_SHAPE_CLASS}} body()
+ * @method \apivalk\apivalk\Router\Route\Order\OrderBag|\{{ORDERING_SHAPE_CLASS}} ordering()
  */
 PHP;
 
         return str_replace(
-            ['{{QUERY_SHAPE_CLASS}}', '{{PATH_SHAPE_CLASS}}', '{{BODY_SHAPE_CLASS}}'],
+            ['{{QUERY_SHAPE_CLASS}}', '{{PATH_SHAPE_CLASS}}', '{{BODY_SHAPE_CLASS}}', '{{ORDERING_SHAPE_CLASS}}'],
             [
                 $shapeNamespace . '\\' . $this->queryShape->getClassName(),
                 $shapeNamespace . '\\' . $this->pathShape->getClassName(),
                 $shapeNamespace . '\\' . $this->bodyShape->getClassName(),
+                $shapeNamespace . '\\' . $this->orderingShape->getClassName(),
             ],
             $string
         );
@@ -70,6 +81,7 @@ PHP;
             'path' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->pathShape->getClassName()),
             'query' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->queryShape->getClassName()),
             'body' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->bodyShape->getClassName()),
+            'ordering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->orderingShape->getClassName()),
         ];
     }
 }

@@ -22,11 +22,26 @@ class ValidationErrorObject extends AbstractObjectProperty
         parent::__construct('error', 'Error');
     }
 
-    public function populate(string $parameter, ValidatorResult $validatorResult): void
+    public static function create(string $parameter, string $message, string $errorKey): self
     {
-        $this->errorKey = $validatorResult->getErrorKey();
-        $this->message = $validatorResult->getLocalizedErrorMessage();
-        $this->parameter = $parameter;
+        $errorObject = new self();
+
+        $errorObject->parameter = $parameter;
+        $errorObject->errorKey = $errorKey;
+        $errorObject->message = $message;
+
+        return $errorObject;
+    }
+
+    public static function createByValidatorResult(string $parameter, ValidatorResult $validatorResult): self
+    {
+        $errorObject = new self();
+
+        $errorObject->parameter = $parameter;
+        $errorObject->errorKey = $validatorResult->getErrorKey();
+        $errorObject->message = $validatorResult->getLocalizedErrorMessage();
+
+        return $errorObject;
     }
 
     public function getErrorKey(): string

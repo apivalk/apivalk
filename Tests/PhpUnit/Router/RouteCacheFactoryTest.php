@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
-use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Router\RouteCacheFactory;
-use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
-use apivalk\apivalk\Util\ClassLocator;
-use apivalk\apivalk\Router\Route;
-use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteCacheFactory;
+use apivalk\apivalk\Util\ClassLocator;
+use PHPUnit\Framework\TestCase;
 
 class RouteCacheFactoryTest extends TestCase
 {

@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router;
+namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+use apivalk\apivalk\Router\Route\Order\Order;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 class RouteJsonSerializer
@@ -60,6 +61,13 @@ class RouteJsonSerializer
             ];
         }
 
+        $orderings = $route->getOrderings();
+        if (\count($orderings) > 0) {
+            foreach ($orderings as $curOrdering) {
+                $orderingsData[] = ['field' => $curOrdering->getField(), 'asc' => $curOrdering->isAsc()];
+            }
+        }
+
         return [
             'url' => $route->getUrl(),
             'method' => $route->getMethod()->getName(),
@@ -68,6 +76,7 @@ class RouteJsonSerializer
             'tags' => $tags,
             'routeAuthorization' => $routeAuthorizationData ?? null,
             'rateLimit' => $rateLimitData ?? null,
+            'orderings' => $orderingsData ?? null,
         ];
     }
 
@@ -110,6 +119,18 @@ class RouteJsonSerializer
             );
         }
 
+        $orderings = [];
+        $orderingsData = $jsonArray['orderings'] ?? null;
+        if ($orderingsData !== null) {
+            foreach ($orderingsData as $ordering) {
+                if ($ordering['asc']) {
+                    $orderings[] = Order::asc($ordering['field']);
+                } else {
+                    $orderings[] = Order::desc($ordering['field']);
+                }
+            }
+        }
+
         return new Route(
             $jsonArray['url'],
             MethodFactory::create($jsonArray['method']),
@@ -117,7 +138,8 @@ class RouteJsonSerializer
             $jsonArray['summary'] ?? null,
             $tags,
             $routeAuthorization,
-            $rateLimit
+            $rateLimit,
+            $orderings
         );
     }
 }

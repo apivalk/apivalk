@@ -9,6 +9,7 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
@@ -16,6 +17,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
+use apivalk\apivalk\Router\Route\Order\OrderBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -59,7 +61,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
             {
             }
 
@@ -116,6 +118,20 @@ class RequestValidationMiddlewareTest extends TestCase
 
             public function setRateLimitResult(RateLimitResult $rateLimitResult): void
             {
+            }
+
+            public function getLocale(): Locale
+            {
+                return Locale::en();
+            }
+
+            public function setLocale(Locale $locale): void
+            {
+            }
+
+            public function ordering(): OrderBag
+            {
+                return new OrderBag();
             }
         };
 
@@ -169,7 +185,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
             {
             }
 
@@ -227,6 +243,20 @@ class RequestValidationMiddlewareTest extends TestCase
 
             public function setRateLimitResult(RateLimitResult $rateLimitResult): void
             {
+            }
+
+            public function getLocale(): Locale
+            {
+                return Locale::en();
+            }
+
+            public function setLocale(Locale $locale): void
+            {
+            }
+
+            public function ordering(): OrderBag
+            {
+                return new OrderBag();
             }
         };
 

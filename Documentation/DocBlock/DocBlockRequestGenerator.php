@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\DocBlock;
 
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Route;
 
 final class DocBlockRequestGenerator
 {
-    public function generate(AbstractApivalkRequest $abstractApivalkRequest): DocBlockRequest
+    public function generate(AbstractApivalkRequest $abstractApivalkRequest, Route $route): DocBlockRequest
     {
         $documentation = $abstractApivalkRequest::getDocumentation();
 
@@ -17,6 +19,7 @@ final class DocBlockRequestGenerator
         $bodyShape = new DocBlockShape($requestName, 'Body');
         $pathShape = new DocBlockShape($requestName, 'Path');
         $queryShape = new DocBlockShape($requestName, 'Query');
+        $orderingShape = new DocBlockShape($requestName, 'Ordering');
 
         foreach ($documentation->getBodyProperties() as $property) {
             $bodyShape->addProperty($property);
@@ -30,10 +33,15 @@ final class DocBlockRequestGenerator
             $queryShape->addProperty($property);
         }
 
+        foreach ($route->getOrderings() as $ordering) {
+            $orderingShape->addCustomField($ordering->getField(), '\\' . Order::class);
+        }
+
         return new DocBlockRequest(
             $bodyShape,
             $pathShape,
-            $queryShape
+            $queryShape,
+            $orderingShape
         );
     }
 }
