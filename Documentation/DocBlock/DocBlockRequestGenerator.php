@@ -34,7 +34,7 @@ final class DocBlockRequestGenerator
         }
 
         foreach ($route->getOrderings() as $ordering) {
-            $orderingShape->addCustomField($ordering->getField(), '\\' . Order::class . '|null');
+            $orderingShape->addCustomField($ordering->getField(), '\\' . Order::class);
         }
 
         return new DocBlockRequest(
