@@ -62,8 +62,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             }
 
             if ($parameter === null && $property->isRequired()) {
-                $error = new ValidationErrorObject();
-                $error->populate(
+                $error = ValidationErrorObject::createByValidatorResult(
                     $property->getPropertyName(),
                     new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
                 );
@@ -78,8 +77,8 @@ class RequestValidationMiddleware implements MiddlewareInterface
                 $validatorResult = $validator->validate($parameter);
 
                 if (!$validatorResult->isSuccess()) {
-                    $error = new ValidationErrorObject();
-                    $error->populate($property->getPropertyName(), $validatorResult);
+                    $error =
+                        ValidationErrorObject::createByValidatorResult($property->getPropertyName(), $validatorResult);
 
                     $this->errors[] = $error;
                 }
