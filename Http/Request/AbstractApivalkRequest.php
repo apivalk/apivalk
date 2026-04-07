@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\File\FileBagFactory;
@@ -36,6 +37,8 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $ip;
     /** @var RateLimitResult|null */
     private $rateLimitResult;
+    /** @var Locale */
+    private $locale;
 
     abstract public static function getDocumentation(): ApivalkRequestDocumentation;
 
@@ -106,5 +109,15 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     public function getRateLimitResult(): ?RateLimitResult
     {
         return $this->rateLimitResult;
+    }
+
+    public function getLocale(): Locale
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(Locale $locale): void
+    {
+        $this->locale = $locale;
     }
 }

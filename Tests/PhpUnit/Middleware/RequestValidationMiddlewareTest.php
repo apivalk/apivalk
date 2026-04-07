@@ -9,6 +9,7 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
@@ -115,6 +116,15 @@ class RequestValidationMiddlewareTest extends TestCase
             }
 
             public function setRateLimitResult(RateLimitResult $rateLimitResult): void
+            {
+            }
+
+            public function getLocale(): Locale
+            {
+                return Locale::en();
+            }
+
+            public function setLocale(Locale $locale): void
             {
             }
         };
@@ -226,6 +236,15 @@ class RequestValidationMiddlewareTest extends TestCase
             }
 
             public function setRateLimitResult(RateLimitResult $rateLimitResult): void
+            {
+            }
+
+            public function getLocale(): Locale
+            {
+                return Locale::en();
+            }
+
+            public function setLocale(Locale $locale): void
             {
             }
         };

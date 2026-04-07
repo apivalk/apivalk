@@ -139,6 +139,7 @@ class RouterTest extends TestCase
         $middlewareStack->method('handle')->willReturn($expectedResponse);
 
         $router = new Router($this->classLocator, $cache, $this->controllerFactory);
+        $router->setApivalk($this->createMock(\apivalk\apivalk\Apivalk::class));
         $response = $router->dispatch($middlewareStack);
 
         $this->assertSame($expectedResponse, $response);

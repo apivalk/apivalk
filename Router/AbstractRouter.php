@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router;
 
+use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactory;
@@ -19,6 +20,8 @@ abstract class AbstractRouter
     private $classLocator;
     /** @var CacheInterface */
     private $cache;
+    /** @var Apivalk */
+    private $apivalk;
 
     public const CACHE_INDEX_KEY = 'apivalk.router.index';
     public const CACHE_ROUTE_KEY = 'apivalk.router.route';
@@ -60,5 +63,15 @@ abstract class AbstractRouter
     public function getControllerFactory(): ApivalkControllerFactoryInterface
     {
         return $this->controllerFactory;
+    }
+
+    public function setApivalk(Apivalk $apivalk): void
+    {
+        $this->apivalk = $apivalk;
+    }
+
+    public function getApivalk(): Apivalk
+    {
+        return $this->apivalk;
     }
 }

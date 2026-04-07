@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit;
 
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\ApivalkConfiguration;
 use apivalk\apivalk\Router\AbstractRouter;
-use apivalk\apivalk\Util\ClassLocator;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use Psr\Container\ContainerInterface;
@@ -23,6 +24,7 @@ class ApivalkConfigurationTest extends TestCase
         $exceptionHandler = function() {};
         $container = $this->createMock(ContainerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
+        $localizationConfiguration = new LocalizationConfiguration(Locale::en());
 
         $config = new ApivalkConfiguration(
             $router,
@@ -38,6 +40,7 @@ class ApivalkConfigurationTest extends TestCase
         $this->assertSame($container, $config->getContainer());
         $this->assertSame($logger, $config->getLogger());
         $this->assertInstanceOf(MiddlewareStack::class, $config->getMiddlewareStack());
+        $this->assertEquals($localizationConfiguration->getDefaultLocale(), $config->getLocalizationConfiguration()->getDefaultLocale());
     }
 
     public function testDefaults(): void

@@ -6,6 +6,7 @@ namespace apivalk\apivalk\Router;
 
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\LocaleResolver;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -87,6 +88,7 @@ class Router extends AbstractRouter
         $requestClass = $controllerClass::getRequestClass();
 
         $request = new $requestClass();
+        $request->setLocale(LocaleResolver::resolve($this->getApivalk()->getLocalizationConfiguration()));
         $request->populate($route);
 
         return $request;
