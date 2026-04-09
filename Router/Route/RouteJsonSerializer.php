@@ -32,7 +32,11 @@ class RouteJsonSerializer
      *          name: string,
      *          maxAttempts: int,
      *          windowSeconds: int
-     *      }|null
+     *      }|null,
+     *     orderings: array<int, array{
+     *            field: string,
+     *            asc: bool
+     *        }>|null
      * }
      */
     public static function serialize(Route $route): array
