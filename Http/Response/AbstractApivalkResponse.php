@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Response;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Http\Response\Pagination\PaginationResponseInterface;
 
 abstract class AbstractApivalkResponse
 {
@@ -99,8 +100,8 @@ abstract class AbstractApivalkResponse
 
     /** @var array */
     private $headers = [];
-    /** @var null|ResponsePagination */
-    private $responsePagination;
+    /** @var null|PaginationResponseInterface */
+    private $paginationResponse;
 
     abstract public static function getDocumentation(): ApivalkResponseDocumentation;
 
@@ -126,18 +127,18 @@ abstract class AbstractApivalkResponse
         return $this->headers;
     }
 
-    public function addPagination(ResponsePagination $pagination): void
+    public function setPaginationResponse(PaginationResponseInterface $paginationResponse): void
     {
-        $this->responsePagination = $pagination;
+        $this->paginationResponse = $paginationResponse;
     }
 
     public function hasPagination(): bool
     {
-        return $this->responsePagination !== null;
+        return $this->paginationResponse !== null;
     }
 
-    public function getResponsePagination(): ?ResponsePagination
+    public function getPaginationResponse(): ?PaginationResponseInterface
     {
-        return $this->responsePagination;
+        return $this->paginationResponse;
     }
 }

@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
 use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
 
 class SchemaObjectTest extends TestCase
 {
@@ -15,7 +16,7 @@ class SchemaObjectTest extends TestCase
         $prop = new StringProperty('name', 'User name');
         $prop->setIsRequired(true);
 
-        $schema = new SchemaObject('object', true, [$prop], true);
+        $schema = new SchemaObject('object', true, [$prop], Pagination::page());
         
         $result = $schema->toArray();
 
@@ -28,6 +29,6 @@ class SchemaObjectTest extends TestCase
         $this->assertEquals('object', $schema->getType());
         $this->assertTrue($schema->isRequired());
         $this->assertCount(1, $schema->getProperties());
-        $this->assertTrue($schema->hasPagination());
+        $this->assertNotNull($schema->getPagination());
     }
 }

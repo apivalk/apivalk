@@ -8,6 +8,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
 use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 class RouteJsonSerializer
@@ -32,11 +33,15 @@ class RouteJsonSerializer
      *          name: string,
      *          maxAttempts: int,
      *          windowSeconds: int
-     *      }|null,
+     *     }|null,
      *     orderings: array<int, array{
      *            field: string,
      *            asc: bool
-     *        }>|null
+     *        }>|null,
+     *     pagination: array{
+     *          type: string,
+     *          maxLimit: int
+     *     }|null
      * }
      */
     public static function serialize(Route $route): array
@@ -72,6 +77,14 @@ class RouteJsonSerializer
             }
         }
 
+        $pagination = $route->getPagination();
+        if ($pagination !== null) {
+            $paginationData = [
+                'type' => $pagination->getType(),
+                'maxLimit' => $pagination->getMaxLimit(),
+            ];
+        }
+
         return [
             'url' => $route->getUrl(),
             'method' => $route->getMethod()->getName(),
@@ -81,6 +94,7 @@ class RouteJsonSerializer
             'routeAuthorization' => $routeAuthorizationData ?? null,
             'rateLimit' => $rateLimitData ?? null,
             'orderings' => $orderingsData ?? null,
+            'pagination' => $paginationData ?? null,
         ];
     }
 
@@ -135,6 +149,13 @@ class RouteJsonSerializer
             }
         }
 
+        $pagination = null;
+        $paginationData = $jsonArray['pagination'] ?? null;
+        if ($paginationData !== null) {
+            $pagination = new Pagination($paginationData['type']);
+            $pagination->setMaxLimit($paginationData['maxLimit']);
+        }
+
         return new Route(
             $jsonArray['url'],
             MethodFactory::create($jsonArray['method']),
@@ -143,7 +164,8 @@ class RouteJsonSerializer
             $tags,
             $routeAuthorization,
             $rateLimit,
-            $orderings
+            $orderings,
+            $pagination
         );
     }
 }
