@@ -12,6 +12,7 @@ use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
@@ -133,6 +134,11 @@ class PathItemTestRequest implements ApivalkRequestInterface
     public function ordering(): OrderBag
     {
         return new OrderBag();
+    }
+
+    public function paginator()
+    {
+        return new Pagination('page');
     }
 }
 
