@@ -34,6 +34,11 @@ interface ApivalkRequestInterface
 
     public function ordering(): OrderBag;
 
+    /**
+     * @return mixed|null
+     */
+    public function paginator();
+
     public function file(): FileBag;
 
     public function getAuthIdentity(): AbstractAuthIdentity;

@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Http\Renderer;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Http\Renderer\JsonRenderer;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\ResponsePagination;
+use apivalk\apivalk\Http\Response\Pagination\PaginationResponseInterface;
 
 class JsonRendererTest extends TestCase
 {
@@ -31,7 +31,7 @@ class JsonRendererTest extends TestCase
 
     public function testRenderWithPagination(): void
     {
-        $pagination = $this->createMock(ResponsePagination::class);
+        $pagination = $this->createMock(PaginationResponseInterface::class);
         $pagination->method('toArray')->willReturn(['page' => 1, 'total_pages' => 10]);
 
         $response = new class($pagination) extends AbstractApivalkResponse {
@@ -41,7 +41,7 @@ class JsonRendererTest extends TestCase
             public static function getStatusCode(): int { return 200; }
             public function toArray(): array { return ['data' => []]; }
             public function getHeaders(): array { return []; }
-            public function getResponsePagination(): ?ResponsePagination { return $this->pagination; }
+            public function getPaginationResponse(): ?PaginationResponseInterface { return $this->pagination; }
         };
 
         $renderer = new JsonRenderer();
