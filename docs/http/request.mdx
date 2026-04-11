@@ -82,18 +82,15 @@ $name = $request->body()->name;
 $userId = $request->path()->id;
 ```
 
-## Automatic Request Documentation
+## Automatic Query Documentation
 
-When a route has [ordering defined](/routing/route#ordering) or [pagination enabled](/http/pagination), the framework automatically documents the corresponding query parameters (`order_by`, `page`, `limit`, `offset`, or `cursor`) in your OpenAPI specification.
+When a route has [ordering defined](/routing/route#ordering), the framework automatically documents the `order_by` query parameter in your OpenAPI specification. This includes:
 
-This includes:
-- **Validation**: Ensuring that only allowed values and correct formats are used.
-- **Example generation**: Showcasing correct usage for sorting and pagination.
-- **Default values**: Reflecting the configuration defined on the route (e.g., `setMaxLimit`).
+- **Regex Validation**: Ensuring that only allowed fields and correct sorting prefixes (`+` or `-`) are used.
+- **Example list**: A generated example showcasing the allowed ordering fields.
+- **Allowed values**: A comprehensive list of fields that can be used for sorting.
 
-Additionally:
-- The `ordering()` bag is automatically populated with default values if the user does not provide an `order_by` parameter.
-- The `paginator()` object is automatically created and accessible if pagination is enabled.
+Additionally, the framework ensures that the `ordering()` bag is never empty if ordering is defined on the route. If a user does not provide an `order_by` parameter, the bag is automatically post-populated with the default sorting defined in the route's `ordering()` method.
 
 ## Validation
 

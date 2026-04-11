@@ -6,7 +6,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Http\Response;
 
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\Pagination\PaginationResponseInterface;
+use apivalk\apivalk\Http\Response\ResponsePagination;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 
 class AbstractApivalkResponseTest extends TestCase
@@ -24,9 +24,9 @@ class AbstractApivalkResponseTest extends TestCase
         $this->assertEquals(['X-Test' => 'Value'], $response->getHeaders());
 
         $this->assertFalse($response->hasPagination());
-        $pagination = $this->createMock(PaginationResponseInterface::class);
-        $response->setPaginationResponse($pagination);
+        $pagination = $this->createMock(ResponsePagination::class);
+        $response->addPagination($pagination);
         $this->assertTrue($response->hasPagination());
-        $this->assertSame($pagination, $response->getPaginationResponse());
+        $this->assertSame($pagination, $response->getResponsePagination());
     }
 }

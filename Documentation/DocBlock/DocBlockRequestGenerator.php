@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\DocBlock;
 
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
-use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
-use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
 use apivalk\apivalk\Router\Route\Order\Order;
-use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 
 final class DocBlockRequestGenerator
@@ -41,27 +37,11 @@ final class DocBlockRequestGenerator
             $orderingShape->addCustomField($ordering->getField(), '\\' . Order::class);
         }
 
-        $paginatorClass = null;
-        if ($route->getPagination() !== null) {
-            switch ($route->getPagination()->getType()) {
-                case Pagination::TYPE_CURSOR:
-                    $paginatorClass = CursorPaginator::class;
-                    break;
-                case Pagination::TYPE_OFFSET:
-                    $paginatorClass = OffsetPaginator::class;
-                    break;
-                case Pagination::TYPE_PAGE:
-                    $paginatorClass = PagePaginator::class;
-                    break;
-            }
-        }
-
         return new DocBlockRequest(
             $bodyShape,
             $pathShape,
             $queryShape,
-            $orderingShape,
-            $paginatorClass
+            $orderingShape
         );
     }
 }

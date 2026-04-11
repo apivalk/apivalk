@@ -14,21 +14,17 @@ class DocBlockRequest
     private $queryShape;
     /** @var DocBlockShape */
     private $orderingShape;
-    /** @var string|null */
-    private $paginatorClass;
 
     public function __construct(
         DocBlockShape $bodyShape,
         DocBlockShape $pathShape,
         DocBlockShape $queryShape,
-        DocBlockShape $orderingShape,
-        ?string $paginatorClass
+        DocBlockShape $orderingShape
     ) {
         $this->bodyShape = $bodyShape;
         $this->pathShape = $pathShape;
         $this->queryShape = $queryShape;
         $this->orderingShape = $orderingShape;
-        $this->paginatorClass = $paginatorClass;
     }
 
     public function getBodyShape(): DocBlockShape
@@ -59,24 +55,16 @@ class DocBlockRequest
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{PATH_SHAPE_CLASS}} path()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{BODY_SHAPE_CLASS}} body()
  * @method \apivalk\apivalk\Router\Route\Order\OrderBag|\{{ORDERING_SHAPE_CLASS}} ordering()
- * @method \{{PAGINATOR_CLASS}} paginator()
  */
 PHP;
 
         return str_replace(
-            [
-                '{{QUERY_SHAPE_CLASS}}',
-                '{{PATH_SHAPE_CLASS}}',
-                '{{BODY_SHAPE_CLASS}}',
-                '{{ORDERING_SHAPE_CLASS}}',
-                '{{PAGINATOR_CLASS}}'
-            ],
+            ['{{QUERY_SHAPE_CLASS}}', '{{PATH_SHAPE_CLASS}}', '{{BODY_SHAPE_CLASS}}', '{{ORDERING_SHAPE_CLASS}}'],
             [
                 $shapeNamespace . '\\' . $this->queryShape->getClassName(),
                 $shapeNamespace . '\\' . $this->pathShape->getClassName(),
                 $shapeNamespace . '\\' . $this->bodyShape->getClassName(),
                 $shapeNamespace . '\\' . $this->orderingShape->getClassName(),
-                $this->paginatorClass !== null ? $this->paginatorClass . '|null' : 'null',
             ],
             $string
         );

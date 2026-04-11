@@ -13,7 +13,6 @@ use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
 use apivalk\apivalk\Router\Route\Order\Order;
-use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 class Route
@@ -34,8 +33,6 @@ class Route
     private $rateLimit;
     /** @var Order[] */
     private $orderings;
-    /** @var Pagination|null */
-    private $pagination;
 
     /**
      * @param string                  $url
@@ -55,8 +52,7 @@ class Route
         ?array $tags = null,
         ?RouteAuthorization $routeAuthorization = null,
         ?RateLimitInterface $rateLimit = null,
-        ?array $orderings = null,
-        ?Pagination $pagination = null
+        ?array $orderings = null
     ) {
         $this->url = $url;
         $this->method = $method;
@@ -66,7 +62,6 @@ class Route
         $this->routeAuthorization = $routeAuthorization;
         $this->rateLimit = $rateLimit;
         $this->orderings = $orderings ?? [];
-        $this->pagination = $pagination;
     }
 
     public static function get(string $url): self
@@ -130,13 +125,6 @@ class Route
         return $this;
     }
 
-    public function pagination(Pagination $pagination): self
-    {
-        $this->pagination = $pagination;
-
-        return $this;
-    }
-
     public function description(string $description): self
     {
         $this->description = $description;
@@ -193,10 +181,5 @@ class Route
     public function getOrderings(): array
     {
         return $this->orderings;
-    }
-
-    public function getPagination(): ?Pagination
-    {
-        return $this->pagination;
     }
 }

@@ -9,12 +9,13 @@ description: How to paginate, sort, and filter collections consistently.
 
 ### Pagination
 
-#### Page pagination
+#### Offset or page pagination
 
-Use `page` and `limit`:
+Use limit and offset or page:
 
 ```http
-GET /users?page=2&limit=50
+GET /users?limit=50&offset=100
+GET /users?page=2
 ```
 
 Example response snippet:
@@ -22,31 +23,9 @@ Example response snippet:
 ```json
 {
   "pagination": {
-    "page": 2,
-    "page_size": 50,
-    "has_more": true,
-    "total_pages": 10
-  }
-}
-```
-
-#### Offset pagination
-
-Use `offset` and `limit`:
-
-```http
-GET /users?offset=100&limit=50
-```
-
-Example response snippet:
-
-```json
-{
-  "pagination": {
-    "offset": 100,
-    "limit": 50,
-    "has_more": true,
-    "total": 500
+    "page": 1,
+    "total_pages": 1,
+    "page_size": 10
   }
 }
 ```
@@ -54,6 +33,7 @@ Example response snippet:
 #### Cursor pagination
 
 ```http
+GET /users?cursor=base64EncodedCursor
 GET /users?cursor=base64EncodedCursor&limit=100
 ```
 
@@ -62,10 +42,10 @@ Example response snippet:
 ```json
 {
   "pagination": {
-    "limit": 100,
-    "current_cursor": "base64EncodedCursor",
-    "next_cursor": "anotherBase64EncodedCursor",
-    "has_more": true
+    "cursor": {
+      "next": "string",
+      "prev": "string"
+    }
   }
 }
 ```

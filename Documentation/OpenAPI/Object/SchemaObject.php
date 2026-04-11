@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Http\Response\Pagination\CursorPaginationPaginationResponse;
-use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationPaginationResponse;
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
-use apivalk\apivalk\Router\Route\Pagination\Pagination;
 
 /**
  * Class SchemaObject
@@ -25,19 +21,19 @@ class SchemaObject implements ObjectInterface
     private $required;
     /** @var AbstractProperty[] */
     private $properties;
-    /** @var Pagination|null */
-    private $pagination;
+    /** @var bool */
+    private $hasPagination;
 
     public function __construct(
         string $type,
         bool $required = true,
         array $properties = [],
-        ?Pagination $pagination = null
+        bool $hasPagination = false
     ) {
         $this->type = $type;
         $this->required = $required;
         $this->properties = $properties;
-        $this->pagination = $pagination;
+        $this->hasPagination = $hasPagination;
     }
 
     public function getType(): string
@@ -55,9 +51,9 @@ class SchemaObject implements ObjectInterface
         return $this->properties;
     }
 
-    public function getPagination(): ?Pagination
+    public function hasPagination(): bool
     {
-        return $this->pagination;
+        return $this->hasPagination;
     }
 
     public function toArray(): array
@@ -72,32 +68,25 @@ class SchemaObject implements ObjectInterface
             }
         }
 
-        if ($this->getPagination() !== null) {
-            $paginationProperties = [];
-
-            switch ($this->pagination->getType()) {
-                case Pagination::TYPE_PAGE:
-                    $paginationProperties = PagePaginationPaginationResponse::getResponseDocumentationProperties();
-                    break;
-                case Pagination::TYPE_OFFSET:
-                    $paginationProperties = OffsetPaginationPaginationResponse::getResponseDocumentationProperties();
-                    break;
-                case Pagination::TYPE_CURSOR:
-                    $paginationProperties = CursorPaginationPaginationResponse::getResponseDocumentationProperties();
-                    break;
-            }
-
-            $paginationPropertiesArray = [];
-
-            foreach ($paginationProperties as $paginationProperty) {
-                $paginationPropertiesArray[$paginationProperty->getPropertyName()] =
-                    $paginationProperty->getDocumentationArray();
-            }
-
+        // ToDo: Improve at some point
+        if ($this->hasPagination) {
             $properties['pagination'] = [
-                'type' => 'object',
-                'properties' => $paginationPropertiesArray,
-                'description' => 'Pagination',
+                'type' => 'array',
+                'items' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'page' => [
+                            'type' => 'integer',
+                        ],
+                        'total_pages' => [
+                            'type' => 'integer',
+                        ],
+                        'page_size' => [
+                            'type' => 'integer',
+                        ]
+                    ]
+                ],
+                'description' => 'Pagination information',
             ];
         }
 

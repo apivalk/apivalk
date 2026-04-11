@@ -21,9 +21,9 @@ final class JsonRenderer implements RendererInterface
 
         http_response_code($response->getStatusCode());
 
-        $paginationResponse = $response->getPaginationResponse();
-        if ($paginationResponse !== null) {
-            $responseArray['pagination'] = $paginationResponse->toArray();
+        $responsePagination = $response->getResponsePagination();
+        if ($responsePagination !== null) {
+            $responseArray['pagination'] = $responsePagination->toArray();
         }
 
         echo json_encode($responseArray);

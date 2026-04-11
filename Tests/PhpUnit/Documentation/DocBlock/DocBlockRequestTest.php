@@ -17,7 +17,7 @@ class DocBlockRequestTest extends TestCase
         $queryShape = new DocBlockShape('User', 'Query');
         $orderingShape = new DocBlockShape('User', 'Ordering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape);
 
         $this->assertSame($bodyShape, $request->getBodyShape());
         $this->assertSame($pathShape, $request->getPathShape());
@@ -32,7 +32,7 @@ class DocBlockRequestTest extends TestCase
         $queryShape = new DocBlockShape('User', 'Query');
         $orderingShape = new DocBlockShape('User', 'Ordering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape);
 
         $docBlock = $request->getRequestDocBlockOnly('App\\Api\\Shape');
 
@@ -57,7 +57,7 @@ class DocBlockRequestTest extends TestCase
         $queryShape = new DocBlockShape('User', 'Query');
         $orderingShape = new DocBlockShape('User', 'Ordering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape);
 
         $this->assertEquals('App\\Api\\Shape', $request->getShapeNamespace('App\\Api'));
     }
@@ -69,7 +69,7 @@ class DocBlockRequestTest extends TestCase
         $queryShape = new DocBlockShape('User', 'Query');
         $orderingShape = new DocBlockShape('User', 'Ordering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape);
 
         $filenames = $request->getShapeFilenames('src/Api');
 

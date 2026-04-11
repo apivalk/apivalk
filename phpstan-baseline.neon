@@ -442,6 +442,11 @@ parameters:
 			path: Http/Response/NotFoundApivalkResponse.php
 
 		-
+			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\ResponsePagination\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Http/Response/ResponsePagination.php
+
+		-
 			message: "#^Method apivalk\\\\apivalk\\\\Http\\\\Response\\\\TooManyRequestsApivalkResponse\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Http/Response/TooManyRequestsApivalkResponse.php

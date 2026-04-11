@@ -9,16 +9,11 @@ use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\File\FileBagFactory;
-use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
-use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
-use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
-use apivalk\apivalk\Http\Request\Pagination\PaginatorFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route\Order\Order;
 use apivalk\apivalk\Router\Route\Order\OrderBag;
-use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
@@ -48,8 +43,6 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $locale;
     /** @var OrderBag */
     private $orderBag;
-    /** @var CursorPaginator|PagePaginator|OffsetPaginator|null */
-    private $paginator;
 
     abstract public static function getDocumentation(): ApivalkRequestDocumentation;
 
@@ -70,7 +63,6 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         $this->orderBag = new OrderBag();
 
         $this->populateOrderBag($route);
-        $this->createPaginator($route);
     }
 
     private function populateOrderBag(Route $route): void
@@ -107,25 +99,6 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
             }
 
             $this->orderBag->set($direction === '-' ? Order::desc($field) : Order::asc($field));
-        }
-    }
-
-    private function createPaginator(Route $route): void
-    {
-        $pagination = $route->getPagination();
-
-        if ($pagination !== null) {
-            switch ($pagination->getType()) {
-                case Pagination::TYPE_OFFSET:
-                    $this->paginator = PaginatorFactory::offset($this, $pagination->getMaxLimit());
-                    break;
-                case Pagination::TYPE_CURSOR:
-                    $this->paginator = PaginatorFactory::cursor($this, $pagination->getMaxLimit());
-                    break;
-                case Pagination::TYPE_PAGE:
-                    $this->paginator = PaginatorFactory::page($this, $pagination->getMaxLimit());
-                    break;
-            }
         }
     }
 
@@ -167,14 +140,6 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     public function ordering(): OrderBag
     {
         return $this->orderBag;
-    }
-
-    /**
-     * @return mixed|null
-     */
-    public function paginator()
-    {
-        return $this->paginator;
     }
 
     public function getAuthIdentity(): AbstractAuthIdentity

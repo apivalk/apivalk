@@ -89,18 +89,6 @@ The following headers are automatically added:
 
 If the rate limit is exceeded (429 Too Many Requests), the `Retry-After` header is also included.
 
-## Pagination
-
-If a route has [pagination enabled](/http/pagination), you can attach a pagination response object to your response. This will automatically inject the `pagination` metadata into the JSON output and the OpenAPI documentation.
-
-```php
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
-
-$response->setPaginationResponse(
-    new PagePaginationPaginationResponse($page, $limit, $hasMore, $totalPages)
-);
-```
-
 ## Rendering
 
 The `JsonRenderer` is the default renderer. It takes the array from `toArray()` and converts it to a JSON string, handling headers and status codes automatically.
