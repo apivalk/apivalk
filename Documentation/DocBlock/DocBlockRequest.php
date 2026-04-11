@@ -13,7 +13,9 @@ class DocBlockRequest
     /** @var DocBlockShape */
     private $queryShape;
     /** @var DocBlockShape */
-    private $orderingShape;
+    private $sortingShape;
+    /** @var DocBlockShape */
+    private $filteringShape;
     /** @var string|null */
     private $paginatorClass;
 
@@ -21,13 +23,15 @@ class DocBlockRequest
         DocBlockShape $bodyShape,
         DocBlockShape $pathShape,
         DocBlockShape $queryShape,
-        DocBlockShape $orderingShape,
+        DocBlockShape $sortingShape,
+        DocBlockShape $filteringShape,
         ?string $paginatorClass
     ) {
         $this->bodyShape = $bodyShape;
         $this->pathShape = $pathShape;
         $this->queryShape = $queryShape;
-        $this->orderingShape = $orderingShape;
+        $this->sortingShape = $sortingShape;
+        $this->filteringShape = $filteringShape;
         $this->paginatorClass = $paginatorClass;
     }
 
@@ -46,9 +50,14 @@ class DocBlockRequest
         return $this->queryShape;
     }
 
-    public function getOrderingShape(): DocBlockShape
+    public function getSortingShape(): DocBlockShape
     {
-        return $this->orderingShape;
+        return $this->sortingShape;
+    }
+
+    public function getFilteringShape(): DocBlockShape
+    {
+        return $this->filteringShape;
     }
 
     public function getRequestDocBlockOnly(string $shapeNamespace): string
@@ -58,7 +67,8 @@ class DocBlockRequest
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{QUERY_SHAPE_CLASS}} query()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{PATH_SHAPE_CLASS}} path()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\{{BODY_SHAPE_CLASS}} body()
- * @method \apivalk\apivalk\Router\Route\Order\OrderBag|\{{ORDERING_SHAPE_CLASS}} ordering()
+ * @method \apivalk\apivalk\Router\Route\Sort\SortBag|\{{SORTING_SHAPE_CLASS}} sorting()
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|\{{FILTERING_SHAPE_CLASS}} filtering()
  * @method \{{PAGINATOR_CLASS}} paginator()
  */
 PHP;
@@ -68,14 +78,16 @@ PHP;
                 '{{QUERY_SHAPE_CLASS}}',
                 '{{PATH_SHAPE_CLASS}}',
                 '{{BODY_SHAPE_CLASS}}',
-                '{{ORDERING_SHAPE_CLASS}}',
+                '{{SORTING_SHAPE_CLASS}}',
+                '{{FILTERING_SHAPE_CLASS}}',
                 '{{PAGINATOR_CLASS}}'
             ],
             [
                 $shapeNamespace . '\\' . $this->queryShape->getClassName(),
                 $shapeNamespace . '\\' . $this->pathShape->getClassName(),
                 $shapeNamespace . '\\' . $this->bodyShape->getClassName(),
-                $shapeNamespace . '\\' . $this->orderingShape->getClassName(),
+                $shapeNamespace . '\\' . $this->sortingShape->getClassName(),
+                $shapeNamespace . '\\' . $this->filteringShape->getClassName(),
                 $this->paginatorClass !== null ? $this->paginatorClass . '|null' : 'null',
             ],
             $string
@@ -93,7 +105,8 @@ PHP;
             'path' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->pathShape->getClassName()),
             'query' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->queryShape->getClassName()),
             'body' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->bodyShape->getClassName()),
-            'ordering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->orderingShape->getClassName()),
+            'sorting' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->sortingShape->getClassName()),
+            'filtering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->filteringShape->getClassName()),
         ];
     }
 }

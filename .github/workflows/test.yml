@@ -34,7 +34,7 @@ jobs:
         run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer install --no-interaction --prefer-dist
 
       - name: Run PHPStan
-        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer phpstan --error-format=github --memory-limit=1G
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer phpstan --error-format=github --memory-limit=3G
 
       - name: Run PHPUnit
         run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer test

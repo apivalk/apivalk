@@ -105,7 +105,7 @@ PHP;
         $this->assertFileExists($this->tempDir . '/Request/Shape/' . $uniqueRequestClassName . 'PathShape.php');
         $this->assertFileExists($this->tempDir . '/Request/Shape/' . $uniqueRequestClassName . 'QueryShape.php');
         $this->assertFileExists($this->tempDir . '/Request/Shape/' . $uniqueRequestClassName . 'BodyShape.php');
-        $this->assertFileExists($this->tempDir . '/Request/Shape/' . $uniqueRequestClassName . 'OrderingShape.php');
+        $this->assertFileExists($this->tempDir . '/Request/Shape/' . $uniqueRequestClassName . 'SortingShape.php');
     }
 
     public function testRunInvalidDirectory(): void

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router\Route\Order;
+namespace apivalk\apivalk\Router\Route\Sort;
 
-class Order
+class Sort
 {
     /** @var bool */
     private $asc = true;

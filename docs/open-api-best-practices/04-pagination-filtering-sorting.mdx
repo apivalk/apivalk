@@ -78,20 +78,11 @@ Use '+' (ASC) or '-' (DESC) as a prefix for each field. If not specified, defaul
 GET /users?order_by=+id,-price
 ```
 
-In Apivalk, this `order_by` parameter automatically populates the `ordering()` bag on the request object, based on the fields allowed in the `Route` definition.
+In Apivalk, this `order_by` parameter automatically populates the `sorting()` bag on the request object, based on the fields allowed in the `Route` definition.
 
 ### Filtering
 
-Filtering allows clients to narrow down results by specifying conditions on fields.
-
-Two supported approaches:
-
-- Basic filters: simple key-value pairs, useful for direct or indirect matching in smaller or performance-sensitive APIs
-- Advanced filters: a filter parameter allowing multiple field expressions
-
-#### Basic filtering
-
-Use flat key-value parameters.
+Filtering allows clients to narrow down results by specifying conditions on fields using flat key-value parameters.
 
 Example: retrieve all plugs with phase AC:
 
@@ -99,29 +90,10 @@ Example: retrieve all plugs with phase AC:
 GET /plugs?phase=AC
 ```
 
-Basic filters may also use parameter names that are not directly bound to object fields.
+Filters may also use parameter names that are not directly bound to object fields.
 
 Example:
 
 ```http
 GET /orders?min_price=200
-```
-
-#### Advanced filtering
-
-Use the `filter` parameter (inspired by JSON:API).
-
-```http
-GET /users?filter[email]=@example.com&filter[id]=5
-```
-
-Notes:
-
-- Advanced filters must always be bound to actual fields on the resource
-- Operators (`=, LIKE, <, >, etc.`) are decided by the API implementation and must be documented
-
-#### Combining basic and advanced filters
-
-```http
-GET /orders?filter[status]=active&min_gross=200
 ```

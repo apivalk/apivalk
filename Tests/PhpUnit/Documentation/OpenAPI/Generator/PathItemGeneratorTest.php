@@ -11,7 +11,7 @@ use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
@@ -131,9 +131,14 @@ class PathItemTestRequest implements ApivalkRequestInterface
     {
     }
 
-    public function ordering(): OrderBag
+    public function sorting(): SortBag
     {
-        return new OrderBag();
+        return new SortBag();
+    }
+
+    public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+    {
+        return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
     }
 
     public function paginator()
@@ -157,6 +162,7 @@ class PathItemGeneratorTest extends TestCase
         $route->method('getDescription')->willReturn('desc');
         $route->method('getTags')->willReturn([]);
         $route->method('getRouteAuthorization')->willReturn(null);
+        $route->method('getFilters')->willReturn([]);
 
         $routes = [
             ['route' => $route, 'controllerClass' => PathItemTestController::class]

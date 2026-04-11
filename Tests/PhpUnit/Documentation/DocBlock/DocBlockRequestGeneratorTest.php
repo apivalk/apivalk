@@ -35,7 +35,7 @@ class DocBlockRequestGeneratorTest extends TestCase
         $this->assertEquals('TestRequestBodyShape', $docBlockRequest->getBodyShape()->getClassName());
         $this->assertEquals('TestRequestPathShape', $docBlockRequest->getPathShape()->getClassName());
         $this->assertEquals('TestRequestQueryShape', $docBlockRequest->getQueryShape()->getClassName());
-        $this->assertEquals('TestRequestOrderingShape', $docBlockRequest->getOrderingShape()->getClassName());
+        $this->assertEquals('TestRequestSortingShape', $docBlockRequest->getSortingShape()->getClassName());
 
         $bodyString = $docBlockRequest->getBodyShape()->toString('App\\Shape');
         $this->assertStringContainsString('@property-read string $name', $bodyString);
@@ -46,6 +46,6 @@ class DocBlockRequestGeneratorTest extends TestCase
         $pathString = $docBlockRequest->getPathShape()->toString('App\\Shape');
         $this->assertStringContainsString('@property-read string $slug', $pathString);
 
-        $orderingString = $docBlockRequest->getOrderingShape()->toString('App\\Shape');
+        $orderingString = $docBlockRequest->getSortingShape()->toString('App\\Shape');
     }
 }

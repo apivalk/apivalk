@@ -15,14 +15,16 @@ class DocBlockRequestTest extends TestCase
         $bodyShape = new DocBlockShape('User', 'Body');
         $pathShape = new DocBlockShape('User', 'Path');
         $queryShape = new DocBlockShape('User', 'Query');
-        $orderingShape = new DocBlockShape('User', 'Ordering');
+        $sortingShape = new DocBlockShape('User', 'Sorting');
+        $filteringShape = new DocBlockShape('User', 'Filtering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $sortingShape, $filteringShape, null);
 
         $this->assertSame($bodyShape, $request->getBodyShape());
         $this->assertSame($pathShape, $request->getPathShape());
         $this->assertSame($queryShape, $request->getQueryShape());
-        $this->assertSame($orderingShape, $request->getOrderingShape());
+        $this->assertSame($sortingShape, $request->getSortingShape());
+        $this->assertSame($filteringShape, $request->getFilteringShape());
     }
 
     public function testGetRequestDocBlockOnly(): void
@@ -30,9 +32,10 @@ class DocBlockRequestTest extends TestCase
         $bodyShape = new DocBlockShape('User', 'Body');
         $pathShape = new DocBlockShape('User', 'Path');
         $queryShape = new DocBlockShape('User', 'Query');
-        $orderingShape = new DocBlockShape('User', 'Ordering');
+        $sortingShape = new DocBlockShape('User', 'Sorting');
+        $filteringShape = new DocBlockShape('User', 'Filtering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $sortingShape, $filteringShape, null);
 
         $docBlock = $request->getRequestDocBlockOnly('App\\Api\\Shape');
 
@@ -48,6 +51,10 @@ class DocBlockRequestTest extends TestCase
             '@method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\\App\\Api\\Shape\\UserBodyShape body()',
             $docBlock
         );
+        $this->assertStringContainsString(
+            '@method \apivalk\apivalk\Router\Route\Filter\FilterBag|\\App\\Api\\Shape\\UserFilteringShape filtering()',
+            $docBlock
+        );
     }
 
     public function testGetShapeNamespace(): void
@@ -55,9 +62,10 @@ class DocBlockRequestTest extends TestCase
         $bodyShape = new DocBlockShape('User', 'Body');
         $pathShape = new DocBlockShape('User', 'Path');
         $queryShape = new DocBlockShape('User', 'Query');
-        $orderingShape = new DocBlockShape('User', 'Ordering');
+        $sortingShape = new DocBlockShape('User', 'Sorting');
+        $filteringShape = new DocBlockShape('User', 'Filtering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $sortingShape, $filteringShape, null);
 
         $this->assertEquals('App\\Api\\Shape', $request->getShapeNamespace('App\\Api'));
     }
@@ -67,15 +75,17 @@ class DocBlockRequestTest extends TestCase
         $bodyShape = new DocBlockShape('User', 'Body');
         $pathShape = new DocBlockShape('User', 'Path');
         $queryShape = new DocBlockShape('User', 'Query');
-        $orderingShape = new DocBlockShape('User', 'Ordering');
+        $sortingShape = new DocBlockShape('User', 'Sorting');
+        $filteringShape = new DocBlockShape('User', 'Filtering');
 
-        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $orderingShape, null);
+        $request = new DocBlockRequest($bodyShape, $pathShape, $queryShape, $sortingShape, $filteringShape, null);
 
         $filenames = $request->getShapeFilenames('src/Api');
 
         $this->assertEquals('src/Api/Shape/UserPathShape.php', $filenames['path']);
         $this->assertEquals('src/Api/Shape/UserQueryShape.php', $filenames['query']);
         $this->assertEquals('src/Api/Shape/UserBodyShape.php', $filenames['body']);
-        $this->assertEquals('src/Api/Shape/UserOrderingShape.php', $filenames['ordering']);
+        $this->assertEquals('src/Api/Shape/UserSortingShape.php', $filenames['sorting']);
+        $this->assertEquals('src/Api/Shape/UserFilteringShape.php', $filenames['filtering']);
     }
 }

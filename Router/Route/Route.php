@@ -12,7 +12,8 @@ use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
 
@@ -32,8 +33,10 @@ class Route
     private $tags;
     /** @var null|RateLimitInterface */
     private $rateLimit;
-    /** @var Order[] */
-    private $orderings;
+    /** @var Sort[] */
+    private $sortings;
+    /** @var AbstractFilter[] */
+    private $filters;
     /** @var Pagination|null */
     private $pagination;
 
@@ -45,7 +48,9 @@ class Route
      * @param TagObject[]             $tags
      * @param RouteAuthorization|null $routeAuthorization
      * @param RateLimitInterface|null $rateLimit
-     * @param Order[]|null            $orderings
+     * @param Sort[]|null             $sortings
+     * @param Pagination|null         $pagination
+     * @param AbstractFilter[]|null  $filters
      */
     public function __construct(
         string $url,
@@ -55,8 +60,9 @@ class Route
         ?array $tags = null,
         ?RouteAuthorization $routeAuthorization = null,
         ?RateLimitInterface $rateLimit = null,
-        ?array $orderings = null,
-        ?Pagination $pagination = null
+        ?array $sortings = null,
+        ?Pagination $pagination = null,
+        ?array $filters = null
     ) {
         $this->url = $url;
         $this->method = $method;
@@ -65,8 +71,9 @@ class Route
         $this->tags = $tags ?? [];
         $this->routeAuthorization = $routeAuthorization;
         $this->rateLimit = $rateLimit;
-        $this->orderings = $orderings ?? [];
+        $this->sortings = $sortings ?? [];
         $this->pagination = $pagination;
+        $this->filters = $filters ?? [];
     }
 
     public static function get(string $url): self
@@ -121,11 +128,11 @@ class Route
     }
 
     /**
-     * @param Order[] $orderings
+     * @param Sort[] $orderings
      */
-    public function ordering(array $orderings): self
+    public function sorting(array $orderings): self
     {
-        $this->orderings = $orderings;
+        $this->sortings = $orderings;
 
         return $this;
     }
@@ -133,6 +140,16 @@ class Route
     public function pagination(Pagination $pagination): self
     {
         $this->pagination = $pagination;
+
+        return $this;
+    }
+
+    /**
+     * @param AbstractFilter[] $filters
+     */
+    public function filtering(array $filters): self
+    {
+        $this->filters = $filters;
 
         return $this;
     }
@@ -188,15 +205,23 @@ class Route
     }
 
     /**
-     * @return Order[]
+     * @return Sort[]
      */
-    public function getOrderings(): array
+    public function getSortings(): array
     {
-        return $this->orderings;
+        return $this->sortings;
     }
 
     public function getPagination(): ?Pagination
     {
         return $this->pagination;
+    }
+
+    /**
+     * @return AbstractFilter[]
+     */
+    public function getFilters(): array
+    {
+        return $this->filters;
     }
 }

@@ -52,7 +52,9 @@ class ParameterBagFactoryTest extends TestCase
         $_GET['name'] = 'John';
         $_GET['age'] = '25'; // Not in documentation
 
-        $bag = ParameterBagFactory::createQueryBag($doc);
+        $route = $this->createMock(Route::class);
+
+        $bag = ParameterBagFactory::createQueryBag($route, $doc);
         $this->assertEquals('John', $bag->name);
         $this->assertNull($bag->age);
     }

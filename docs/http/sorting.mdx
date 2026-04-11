@@ -1,0 +1,70 @@
+---
+title: "Sorting"
+description: "Apivalk provides built-in support for route-level sorting, allowing clients to specify how the results should be sorted."
+---
+
+## Route Configuration
+
+To enable sorting for a specific route, you use the `sorting()` method on the `Route` object. This defines which fields can be used for sorting in the request.
+
+```php
+use apivalk\apivalk\Router\Route\Sort\Sort;
+use apivalk\apivalk\Router\Route\Route;
+
+public static function getRoute(): Route
+{
+    return Route::get('/pets')
+        ->sorting([
+            new Sort('id'),
+            new Sort('name'),
+            new Sort('created_at'),
+        ]);
+}
+```
+
+By default, an `Sort` object just defines that a field is "sortable".
+
+---
+
+## Usage in Controller
+
+When a route has sorting enabled, you can access the resolved sortings from the request via the `sorting()` method, which returns an `SortBag`.
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $sorting = $request->sorting();
+    
+    // Check if a specific field was sorted by the client
+    if ($sorting->has('name')) {
+        $nameSort = $sorting->name; // returns Sort|null
+        $direction = $nameSort->isAsc() ? 'ASC' : 'DESC';
+        // apply to your query...
+    }
+    
+    // Iterate over all provided sortings
+    foreach ($sorting as $field => $sort) {
+        $direction = $sort->isAsc() ? 'ASC' : 'DESC';
+        // ...
+    }
+    
+    // ...
+}
+```
+
+---
+
+## Client-Side Usage
+
+Apivalk supports sorting using the `order_by` query parameter. Clients can specify multiple fields and their sort direction using `+` (ascending, default) or `-` (descending) prefixes, separated by commas.
+
+**Example: sort by name ascending and then by id descending**
+`GET /pets?order_by=name,-id`
+
+---
+
+## OpenAPI Documentation
+
+When you configure sortings on a route, Apivalk automatically generates the corresponding OpenAPI documentation:
+- An `order_by` query parameter of type `string`.
+- The documentation describes the supported fields and the usage of `+`/`-` prefixes.

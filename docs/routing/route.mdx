@@ -13,8 +13,9 @@ A `Route` instance contains the following information:
 * **Tags**: A collection of `TagObject` instances used for grouping endpoints in documentation.
 * **Security Requirements**: A `RouteAuthorization` instance defining the authentication and authorization needed for the route.
 * **Rate Limit**: An optional `RateLimitInterface` implementation defining the rate limiting rules for the endpoint.
-* **Ordering**: A collection of `Order` instances defining allowed sorting fields for the endpoint.
+* **Sorting**: A collection of `Sort` instances defining allowed sorting fields for the endpoint.
 * **Pagination**: A `Pagination` instance defining the pagination strategy (Page, Offset, or Cursor).
+* **Filtering**: A collection of `AbstractFilter` instances defining allowed filtering fields for the endpoint.
 
 ## Path Parameters
 
@@ -87,25 +88,25 @@ public static function getRoute(): Route
 
 For more details on available rate limiting strategies, see the [Rate Limit](/routing/rate-limit) documentation.
 
-## Ordering
+## Sorting
 
-You can define which fields are allowed for sorting by using the `ordering()` method. This takes an array of `Order` objects:
+You can define which fields are allowed for sorting by using the `sorting()` method. This takes an array of `Sort` objects:
 
 ```php
-use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 
 public static function getRoute(): Route
 {
     return Route::get('/v1/users')
                   ->description('List users')
-                  ->ordering([
-                      Order::asc('id'),
-                      Order::desc('created_at')
+                  ->sorting([
+                      Sort::asc('id'),
+                      Sort::desc('created_at')
                   ]);
 }
 ```
 
-The `ordering()` method also defines the **default sorting** for the route. If a user does not provide an `order_by` query parameter, the `ordering()` bag on the request object will be automatically populated with these defined values.
+The `sorting()` method also defines the **default sorting** for the route. If a user does not provide an `order_by` query parameter, the `sorting()` bag on the request object will be automatically populated with these defined values.
 
 ## Pagination
 
@@ -123,3 +124,26 @@ public static function getRoute(): Route
 ```
 
 When pagination is enabled, the framework automatically handles the `page`, `limit`, `offset`, or `cursor` query parameters and includes them in the OpenAPI documentation. See the [Pagination](/http/pagination) guide for more details.
+
+## Filtering
+
+You can define which fields are allowed for filtering by using the `filtering()` method. This takes an array of `AbstractFilter` objects:
+
+```php
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+
+public static function getRoute(): Route
+{
+    return Route::get('/v1/users')
+                  ->description('List users')
+                  ->filtering([
+                      StringFilter::equals(new StringProperty('status', 'Filter by status (equals)')),
+                      StringFilter::in(new StringProperty('type', 'Filter by type (in)')),
+                      DateFilter::greaterThan((new StringProperty('created_at', 'Filter by creation date (greater than)'))->setFormat(StringProperty::FORMAT_DATE))
+                  ]);
+}
+```
+
+The `filtering()` method also defines the **allowed filters** for the route. Only configured filters will be automatically resolved from the query string and documented in OpenAPI. See the [Filtering](/http/filtering) guide for more details.

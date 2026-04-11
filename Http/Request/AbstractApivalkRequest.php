@@ -16,8 +16,10 @@ use apivalk\apivalk\Http\Request\Pagination\PaginatorFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Order\Order;
-use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
+use apivalk\apivalk\Router\Route\Sort\Sort;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
@@ -46,8 +48,10 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $rateLimitResult;
     /** @var Locale */
     private $locale;
-    /** @var OrderBag */
-    private $orderBag;
+    /** @var SortBag */
+    private $sortBag;
+    /** @var FilterBag */
+    private $filterBag;
     /** @var CursorPaginator|PagePaginator|OffsetPaginator|null */
     private $paginator;
 
@@ -61,23 +65,25 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
 
         $this->method = $route->getMethod();
         $this->headerBag = ParameterBagFactory::createHeaderBag();
-        $this->queryParameterBag = ParameterBagFactory::createQueryBag($documentation);
+        $this->queryParameterBag = ParameterBagFactory::createQueryBag($route, $documentation);
         $this->pathParameterBag = ParameterBagFactory::createPathBag($route, $documentation);
         $this->bodyParameterBag = ParameterBagFactory::createBodyBag($documentation);
         $this->fileBag = FileBagFactory::create();
         $this->authIdentity = new GuestAuthIdentity([]);
         $this->ip = IpResolver::getClientIp();
-        $this->orderBag = new OrderBag();
+        $this->sortBag = new SortBag();
+        $this->filterBag = new FilterBag();
 
         $this->populateOrderBag($route);
+        $this->populateFilterBag($route);
         $this->createPaginator($route);
     }
 
     private function populateOrderBag(Route $route): void
     {
-        foreach ($route->getOrderings() as $ordering) {
-            if (!$this->orderBag->has($ordering->getField())) {
-                $this->orderBag->set($ordering);
+        foreach ($route->getSortings() as $ordering) {
+            if (!$this->sortBag->has($ordering->getField())) {
+                $this->sortBag->set($ordering);
             }
         }
 
@@ -106,7 +112,23 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
                 continue;
             }
 
-            $this->orderBag->set($direction === '-' ? Order::desc($field) : Order::asc($field));
+            $this->sortBag->set($direction === '-' ? Sort::desc($field) : Sort::asc($field));
+        }
+    }
+
+    private function populateFilterBag(Route $route): void
+    {
+        foreach ($route->getFilters() as $filter) {
+            $field = $filter->getField();
+            $queryParameter = $this->queryParameterBag->get($field);
+
+            $clonedFilter = clone $filter;
+            if ($queryParameter !== null) {
+                $clonedFilter->setValue(
+                    ParameterBagFactory::typeCastValueByProperty($queryParameter->getRawValue(), $filter->getProperty())
+                );
+            }
+            $this->filterBag->set($clonedFilter);
         }
     }
 
@@ -164,9 +186,14 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         return $this->fileBag;
     }
 
-    public function ordering(): OrderBag
+    public function sorting(): SortBag
     {
-        return $this->orderBag;
+        return $this->sortBag;
+    }
+
+    public function filtering(): FilterBag
+    {
+        return $this->filterBag;
     }
 
     /**
