@@ -26,30 +26,44 @@ final class ParameterBagFactory
         return $headerBag;
     }
 
-    public static function createQueryBag(ApivalkRequestDocumentation $documentation): ParameterBag
+    public static function createQueryBag(Route $route, ApivalkRequestDocumentation $documentation): ParameterBag
     {
         $properties = $documentation->getQueryProperties();
         $queryBag = new ParameterBag();
 
         foreach ($_GET as $key => $value) {
-            if (!isset($properties[$key])) {
-                continue;
-            }
-
             if ($value === null) {
                 continue;
             }
 
-            $queryBag->set(
-                new Parameter(
-                    $key,
-                    self::typeCastValueByProperty($value, $properties[$key]),
-                    $value
-                )
-            );
+            if (isset($properties[$key])) {
+                $queryBag->set(
+                    new Parameter(
+                        $key,
+                        self::typeCastValueByProperty($value, $properties[$key]),
+                        $value
+                    )
+                );
+
+                continue;
+            }
+
+            foreach ($route->getFilters() as $filter) {
+                if ($filter->getField() === $key) {
+                    $queryBag->set(
+                        new Parameter(
+                            $key,
+                            self::typeCastValueByProperty($value, $filter->getProperty()),
+                            $value
+                        )
+                    );
+
+                    continue 2;
+                }
+            }
         }
 
-        if ($_GET['order_by'] !== null) {
+        if (isset($_GET['order_by']) && $_GET['order_by'] !== null) {
             $queryBag->set(
                 new Parameter(
                     'order_by',

@@ -14,8 +14,8 @@ It provides a formal definition of the successful response (HTTP 200/201), which
 You add properties to the response using instances of `AbstractProperty` (e.g., `StringProperty`, `NumberProperty`, or reusable response objects).
 
 ```php
-$doc->addProperty(new StringProperty('id'));
-$doc->addProperty(new StringProperty('name'));
+$doc->addProperty(new StringProperty('id', 'The unique identifier of the resource'));
+$doc->addProperty(new StringProperty('name', 'The human-readable name'));
 ```
 
 ### Response Description

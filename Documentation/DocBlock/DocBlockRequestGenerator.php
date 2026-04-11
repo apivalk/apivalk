@@ -8,7 +8,8 @@ use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
 use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
-use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
 
@@ -23,7 +24,8 @@ final class DocBlockRequestGenerator
         $bodyShape = new DocBlockShape($requestName, 'Body');
         $pathShape = new DocBlockShape($requestName, 'Path');
         $queryShape = new DocBlockShape($requestName, 'Query');
-        $orderingShape = new DocBlockShape($requestName, 'Ordering');
+        $sortingShape = new DocBlockShape($requestName, 'Sorting');
+        $filteringShape = new DocBlockShape($requestName, 'Filtering');
 
         foreach ($documentation->getBodyProperties() as $property) {
             $bodyShape->addProperty($property);
@@ -37,8 +39,12 @@ final class DocBlockRequestGenerator
             $queryShape->addProperty($property);
         }
 
-        foreach ($route->getOrderings() as $ordering) {
-            $orderingShape->addCustomField($ordering->getField(), '\\' . Order::class);
+        foreach ($route->getSortings() as $ordering) {
+            $sortingShape->addCustomField($ordering->getField(), '\\' . Sort::class);
+        }
+
+        foreach ($route->getFilters() as $filter) {
+            $filteringShape->addCustomField($filter->getField(), '\\' . \get_class($filter));
         }
 
         $paginatorClass = null;
@@ -60,7 +66,8 @@ final class DocBlockRequestGenerator
             $bodyShape,
             $pathShape,
             $queryShape,
-            $orderingShape,
+            $sortingShape,
+            $filteringShape,
             $paginatorClass
         );
     }

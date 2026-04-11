@@ -7,7 +7,11 @@ namespace apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Router\Route\Order\Order;
+use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
 
@@ -34,14 +38,24 @@ class RouteJsonSerializer
      *          maxAttempts: int,
      *          windowSeconds: int
      *     }|null,
-     *     orderings: array<int, array{
+     *     sortings: array<int, array{
      *            field: string,
      *            asc: bool
      *        }>|null,
      *     pagination: array{
      *          type: string,
      *          maxLimit: int
-     *     }|null
+     *     }|null,
+     *     filters: array<int, array{
+     *          class: class-string<AbstractFilter>,
+     *          type: string,
+     *          property: array{
+     *              class: class-string<AbstractProperty>,
+     *              name: string,
+     *              description: string,
+     *              format: string|null
+     *          }
+     *     }>|null
      * }
      */
     public static function serialize(Route $route): array
@@ -70,7 +84,7 @@ class RouteJsonSerializer
             ];
         }
 
-        $orderings = $route->getOrderings();
+        $orderings = $route->getSortings();
         if (\count($orderings) > 0) {
             foreach ($orderings as $curOrdering) {
                 $orderingsData[] = ['field' => $curOrdering->getField(), 'asc' => $curOrdering->isAsc()];
@@ -85,6 +99,23 @@ class RouteJsonSerializer
             ];
         }
 
+        $filters = $route->getFilters();
+        if (\count($filters) > 0) {
+            foreach ($filters as $filter) {
+                $property = $filter->getProperty();
+                $filtersData[] = [
+                    'class' => \get_class($filter),
+                    'type' => $filter->getType(),
+                    'property' => [
+                        'class' => \get_class($property),
+                        'name' => $property->getPropertyName(),
+                        'description' => $property->getPropertyDescription(),
+                        'format' => ($property instanceof StringProperty || $property instanceof NumberProperty) ? $property->getFormat() : null,
+                    ],
+                ];
+            }
+        }
+
         return [
             'url' => $route->getUrl(),
             'method' => $route->getMethod()->getName(),
@@ -93,8 +124,9 @@ class RouteJsonSerializer
             'tags' => $tags,
             'routeAuthorization' => $routeAuthorizationData ?? null,
             'rateLimit' => $rateLimitData ?? null,
-            'orderings' => $orderingsData ?? null,
+            'sortings' => $orderingsData ?? null,
             'pagination' => $paginationData ?? null,
+            'filters' => $filtersData ?? null,
         ];
     }
 
@@ -138,13 +170,13 @@ class RouteJsonSerializer
         }
 
         $orderings = [];
-        $orderingsData = $jsonArray['orderings'] ?? null;
+        $orderingsData = $jsonArray['sortings'] ?? null;
         if ($orderingsData !== null) {
             foreach ($orderingsData as $ordering) {
                 if ($ordering['asc']) {
-                    $orderings[] = Order::asc($ordering['field']);
+                    $orderings[] = Sort::asc($ordering['field']);
                 } else {
-                    $orderings[] = Order::desc($ordering['field']);
+                    $orderings[] = Sort::desc($ordering['field']);
                 }
             }
         }
@@ -156,6 +188,29 @@ class RouteJsonSerializer
             $pagination->setMaxLimit($paginationData['maxLimit']);
         }
 
+        $filters = [];
+        $filtersData = $jsonArray['filters'] ?? null;
+        if ($filtersData !== null) {
+            foreach ($filtersData as $filterData) {
+                $propertyData = $filterData['property'];
+                $propertyClass = $propertyData['class'];
+
+                if ($propertyClass === StringProperty::class) {
+                    $property = new StringProperty($propertyData['name'], $propertyData['description']);
+                    if ($propertyData['format'] !== null) {
+                        $property->setFormat($propertyData['format']);
+                    }
+                } elseif ($propertyClass === NumberProperty::class) {
+                    $property = new NumberProperty($propertyData['name'], $propertyData['description'], $propertyData['format']);
+                } else {
+                    $property = new $propertyClass($propertyData['name'], $propertyData['description']);
+                }
+
+                $filterClass = $filterData['class'];
+                $filters[] = new $filterClass($filterData['type'], $property);
+            }
+        }
+
         return new Route(
             $jsonArray['url'],
             MethodFactory::create($jsonArray['method']),
@@ -165,7 +220,8 @@ class RouteJsonSerializer
             $routeAuthorization,
             $rateLimit,
             $orderings,
-            $pagination
+            $pagination,
+            $filters
         );
     }
 }

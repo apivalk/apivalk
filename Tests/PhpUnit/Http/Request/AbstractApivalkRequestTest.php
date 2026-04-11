@@ -7,13 +7,36 @@ namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+use apivalk\apivalk\Router\Route\Filter\NumberFilter;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
 use PHPUnit\Framework\TestCase;
 
 class AbstractApivalkRequestTest extends TestCase
 {
+    public function testPopulateWithFilters(): void
+    {
+        $_GET['id'] = '123';
+        
+        $request = new class extends AbstractApivalkRequest {
+            public static function getDocumentation(): ApivalkRequestDocumentation
+            {
+                return new ApivalkRequestDocumentation();
+            }
+        };
+
+        $filter = NumberFilter::greaterThan(new NumberProperty('id'));
+        $route = Route::get('/test')
+            ->filtering([$filter]);
+
+        $request->populate($route);
+
+        $this->assertEquals(123, $request->filtering()->id->getValue());
+        $this->assertInstanceOf(NumberFilter::class, $request->filtering()->get('id'));
+    }
+
     public function testGettersAndSetters(): void
     {
         $request = new class extends AbstractApivalkRequest {
@@ -51,6 +74,7 @@ class AbstractApivalkRequestTest extends TestCase
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->body());
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->path());
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\File\FileBag::class, $request->file());
-        $this->assertInstanceOf(OrderBag::class, $request->ordering());
+        $this->assertInstanceOf(SortBag::class, $request->sorting());
+        $this->assertInstanceOf(\apivalk\apivalk\Router\Route\Filter\FilterBag::class, $request->filtering());
     }
 }

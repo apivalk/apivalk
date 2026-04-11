@@ -7,7 +7,6 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\ArrayProperty;
 use apivalk\apivalk\Documentation\Property\NumberProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -46,6 +45,12 @@ class OperationGenerator
 
         foreach ($this->getPaginationProperties($route) as $paginationProperty) {
             $parameters[] = $parameterGenerator->generate($paginationProperty, 'query');
+        }
+
+        foreach ($this->getFilterProperties($route) as $filterProperty) {
+            $filterProperty->setIsRequired(false);
+
+            $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
         }
 
         $responses = [];
@@ -178,13 +183,13 @@ class OperationGenerator
 
     private function getOrderProperty(Route $route): ?StringProperty
     {
-        if (\count($route->getOrderings()) === 0) {
+        if (\count($route->getSortings()) === 0) {
             return null;
         }
 
         $fields = [];
 
-        foreach ($route->getOrderings() as $ordering) {
+        foreach ($route->getSortings() as $ordering) {
             $fields[] = preg_quote($ordering->getField(), '/');
         }
 
@@ -211,8 +216,26 @@ class OperationGenerator
 
         $orderProperty->setPattern($regex);
         $orderProperty->setIsRequired(false);
-        $orderProperty->setExample($example);
 
         return $orderProperty;
+    }
+
+    /**
+     * @param Route $route
+     *
+     * @return AbstractProperty[]
+     */
+    private function getFilterProperties(Route $route): array
+    {
+        if (\count($route->getFilters()) === 0) {
+            return [];
+        }
+    
+        $properties = [];
+        foreach ($route->getFilters() as $filter) {
+            $properties[] = $filter->getProperty();
+        }
+    
+        return $properties;
     }
 }

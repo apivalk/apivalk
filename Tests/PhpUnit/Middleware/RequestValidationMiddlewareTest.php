@@ -17,7 +17,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
@@ -130,9 +130,14 @@ class RequestValidationMiddlewareTest extends TestCase
             {
             }
 
-            public function ordering(): OrderBag
+            public function sorting(): SortBag
             {
-                return new OrderBag();
+                return new SortBag();
+            }
+
+            public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+            {
+                return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
             }
 
             public function paginator()
@@ -260,9 +265,14 @@ class RequestValidationMiddlewareTest extends TestCase
             {
             }
 
-            public function ordering(): OrderBag
+            public function sorting(): SortBag
             {
-                return new OrderBag();
+                return new SortBag();
+            }
+
+            public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+            {
+                return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
             }
 
             public function paginator()

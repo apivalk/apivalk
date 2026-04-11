@@ -50,7 +50,9 @@
               "http/index",
               "http/controller",
               "http/request",
-              "http/response"
+              "http/response",
+              "http/pagination",
+              "http/filtering"
             ]
           },
           {

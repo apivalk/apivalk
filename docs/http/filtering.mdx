@@ -1,0 +1,122 @@
+---
+title: "Filtering"
+description: "Apivalk provides built-in support for route-level filtering, allowing clients to narrow down results by specifying conditions on fields."
+---
+
+## Route Configuration
+
+To enable filtering for a specific route, you use the `filtering()` method on the `Route` object. This automatically handles the documentation and request parameter resolution.
+
+```php
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Filter\NumberFilter;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\NumberProperty;
+
+public static function getRoute(): Route
+{
+    return Route::get('/contracts')
+        ->filtering([
+            StringFilter::equals(new StringProperty('status', 'Filter by status (equals)')),
+            StringFilter::in(new StringProperty('type', 'Filter by type (in)')),
+            NumberFilter::greaterThan(new NumberProperty('amount', 'Minimum amount', NumberProperty::FORMAT_DOUBLE)),
+            NumberFilter::lessThan(new NumberProperty('id', 'Filter by ID (less than)')),
+            DateFilter::greaterThan((new StringProperty('created_at', 'Filter by creation date (greater than)'))->setFormat(StringProperty::FORMAT_DATE)),
+            DateTimeFilter::lessThan((new StringProperty('updated_at', 'Filter by update date (less than)'))->setFormat(StringProperty::FORMAT_DATE_TIME)),
+        ]);
+}
+```
+
+### Type-Safe Filtering
+
+Apivalk provides specialized filter classes for different property types. This ensures that the filter values are correctly type-casted when retrieved in your controller.
+
+1.  **StringFilter**: Linked to `StringProperty`. Supports `equals`, `in`, `like`, and `contains`.
+2.  **NumberFilter**: Linked to `NumberProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`.
+3.  **DateFilter**: Linked to `StringProperty` with `date` format. Returns `\DateTime` values.
+4.  **DateTimeFilter**: Linked to `StringProperty` with `date-time` format. Returns `\DateTime` values.
+
+Benefits:
+-   **OpenAPI Accuracy**: The documentation reflects the correct data type (e.g., `number`, `integer`, `string`).
+-   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, or `float`).
+-   **Detailed Documentation**: You can add custom descriptions, examples, and constraints to your filters.
+
+```php
+NumberFilter::equals((new NumberProperty('id', 'Filter by ID (equals)'))->setFormat(NumberProperty::FORMAT_INT64))
+```
+
+### Supported Filter Types
+
+#### StringFilter
+- `StringFilter::equals(StringProperty $property)`: Exact match for a single string.
+- `StringFilter::in(StringProperty $property)`: Match against a list of strings.
+- `StringFilter::like(StringProperty $property)`: Partial string matching (e.g., `prefix%`).
+- `StringFilter::contains(StringProperty $property)`: Match if a string contains another.
+
+#### NumberFilter
+- `NumberFilter::equals(NumberProperty $property)`: Exact numeric match.
+- `NumberFilter::in(NumberProperty $property)`: Match against a list of numbers.
+- `NumberFilter::greaterThan(NumberProperty $property)`: Numeric comparison.
+- `NumberFilter::lessThan(NumberProperty $property)`: Numeric comparison.
+
+#### DateFilter
+- `DateFilter::equals(StringProperty $property)`: Exact date match.
+- `DateFilter::in(StringProperty $property)`: Match against a list of dates.
+- `DateFilter::greaterThan(StringProperty $property)`: Date comparison.
+- `DateFilter::lessThan(StringProperty $property)`: Date comparison.
+
+#### DateTimeFilter
+- `DateTimeFilter::equals(StringProperty $property)`: Exact date-time match.
+- `DateTimeFilter::in(StringProperty $property)`: Match against a list of date-times.
+- `DateTimeFilter::greaterThan(StringProperty $property)`: Date-time comparison.
+- `DateTimeFilter::lessThan(StringProperty $property)`: Date-time comparison.
+
+---
+
+## Usage in Controller
+
+When a route has filtering enabled, you can access the resolved filters from the request via the `filtering()` method.
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $filters = $request->filtering();
+    
+    // Check if a specific filter was provided by the client
+    if ($filters->has('status')) {
+        $type = $filters->status->getType(); // for example contains, so you know you do str_contains for example
+        $status = $filters->status->getValue();
+        // apply to your query...
+    }
+    
+    // Iterate over all provided filters
+    foreach ($filters as $field => $filter) {
+        $type = $filter->getType();
+        $value = $filter->getValue();
+        // ...
+    }
+    
+    // ...
+}
+```
+
+---
+
+## Client-Side Usage
+
+Apivalk supports filtering using flat key-value parameters in the query string. This is ideal for simple, direct matching.
+
+**Example: retrieve all active contracts**
+`GET /contracts?status=active`
+
+---
+
+## OpenAPI Documentation
+
+When you configure filters on a route, Apivalk automatically generates the corresponding OpenAPI documentation:
+- Individual query parameters for each filter.
+- Descriptions including the supported match type (e.g., `equals`, `in`).
+- Type information based on the configured properties (e.g., `integer`, `string`, `number`).

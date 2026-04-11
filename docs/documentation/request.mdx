@@ -20,7 +20,7 @@ The class separates properties into three distinct bags:
 Used for data sent in the request body (JSON, XML, or Form Data).
 
 ```php
-$doc->addBodyProperty(new StringProperty('username'));
+$doc->addBodyProperty(new StringProperty('username', 'The unique username'));
 ```
 
 ### 2. Query Properties
@@ -28,7 +28,7 @@ $doc->addBodyProperty(new StringProperty('username'));
 Used for data sent in the URL query string (e.g., `?search=term`).
 
 ```php
-$doc->addQueryProperty(new StringProperty('search'));
+$doc->addQueryProperty(new StringProperty('search', 'Search term for filtering results'));
 ```
 
 ### 3. Path Properties
@@ -36,7 +36,7 @@ $doc->addQueryProperty(new StringProperty('search'));
 Used for data embedded in the URL path (e.g., `/users/{id}`).
 
 ```php
-$doc->addPathProperty(new NumberProperty('id'));
+$doc->addPathProperty(new NumberProperty('id', 'The unique identifier of the resource'));
 ```
 
 ## Helper Methods

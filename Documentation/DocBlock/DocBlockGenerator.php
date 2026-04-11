@@ -124,11 +124,19 @@ class DocBlockGenerator
         }
 
         if (file_put_contents(
-                $filenames['ordering'],
-                $docBlockRequest->getOrderingShape()->toString($shapeNamespace)
+                $filenames['sorting'],
+                $docBlockRequest->getSortingShape()->toString($shapeNamespace)
             ) ===
             false) {
-            throw new \RuntimeException('Failed to write ordering shape file');
+            throw new \RuntimeException('Failed to write sorting shape file');
+        }
+
+        if (file_put_contents(
+                $filenames['filtering'],
+                $docBlockRequest->getFilteringShape()->toString($shapeNamespace)
+            ) ===
+            false) {
+            throw new \RuntimeException('Failed to write filtering shape file');
         }
     }
 }

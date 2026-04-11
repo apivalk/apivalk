@@ -13,7 +13,7 @@ The `DocBlockGenerator` automates the creation of this metadata. It performs the
 
 1. **Discovery**: Scans your API directories for classes extending `AbstractApivalkController`.
 2. **Extraction**: Executes the `getRequestClass()` and `getRoute()` methods on the Controller to find the associated Request class and its properties.
-3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`, `GetUserOrderingShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation and route-defined ordering.
+3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`, `GetUserSortingShape`, `GetUserFilteringShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation and route-defined sorting/filtering.
 4. **Rewrite**: Updates the original Request class file with `@method` tags pointing to these Shape classes.
 
 ## Example Result
@@ -33,7 +33,9 @@ After running `DocBlockGenerator`, it is automatically updated to:
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserQueryShape query()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserPathShape path()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserBodyShape body()
- * @method \apivalk\apivalk\Router\Route\Order\OrderBag|Shape\GetUserOrderingShape ordering()
+ * @method \apivalk\apivalk\Router\Route\Sort\SortBag|Shape\GetUserSortingShape sorting()
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|Shape\GetUserFilteringShape filtering()
+ * @method \apivalk\apivalk\Router\Route\Pagination\Paginator|null paginator()
  */
 class GetUserRequest extends AbstractApivalkRequest {
     // Still empty, but now with IDE support!
@@ -60,5 +62,5 @@ $generator->run(
 
 * `DocBlockGenerator`: The main entry point that iterates over classes.
 * `DocBlockRequestGenerator`: Converts an `AbstractApivalkRequest` into a `DocBlockRequest` data object.
-* `DocBlockRequest`: Holds the metadata for the four shapes (Body, Query, Path, Ordering).
+* `DocBlockRequest`: Holds the metadata for the shapes (Body, Query, Path, Sorting, Filtering).
 * `DocBlockShape`: Generates the PHP code for the Shape classes.

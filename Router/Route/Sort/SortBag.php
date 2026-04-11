@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace apivalk\apivalk\Router\Route\Order;
+namespace apivalk\apivalk\Router\Route\Sort;
 
 /**
- * @implements \IteratorAggregate<string, Order>
+ * @implements \IteratorAggregate<string, Sort>
  */
-class OrderBag implements \IteratorAggregate, \Countable
+class SortBag implements \IteratorAggregate, \Countable
 {
-    /** @var Order[] */
+    /** @var Sort[] */
     private $orders = [];
 
-    public function set(Order $order): void
+    public function set(Sort $order): void
     {
         $this->orders[$order->getField()] = $order;
     }
@@ -22,13 +22,13 @@ class OrderBag implements \IteratorAggregate, \Countable
         return isset($this->orders[$field]);
     }
 
-    public function get(string $field): ?Order
+    public function get(string $field): ?Sort
     {
         return $this->orders[$field] ?? null;
     }
 
     /**
-     * @return \Iterator<int|string, Order>
+     * @return \Iterator<int|string, Sort>
      */
     public function getIterator(): \Iterator
     {
@@ -43,14 +43,14 @@ class OrderBag implements \IteratorAggregate, \Countable
     /**
      * Magic getter to direct access values of an order bag.
      *
-     * $orderBag->status is the same as $oderBag->get('status')
+     * $sortBag->status is the same as $oderBag->get('status')
      *
      * In requests, you can access it like this:
-     * $request->ordering()->status -> Order|null
+     * $request->sorting()->status -> Sort|null
      *
-     * @return Order|null
+     * @return Sort|null
      */
-    public function __get(string $key): ?Order
+    public function __get(string $key): ?Sort
     {
         $order = $this->get($key);
         if ($order === null) {

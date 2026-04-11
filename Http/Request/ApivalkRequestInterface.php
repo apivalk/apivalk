@@ -10,7 +10,8 @@ use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Order\OrderBag;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
@@ -32,7 +33,9 @@ interface ApivalkRequestInterface
 
     public function path(): ParameterBag;
 
-    public function ordering(): OrderBag;
+    public function sorting(): SortBag;
+
+    public function filtering(): FilterBag;
 
     /**
      * @return mixed|null

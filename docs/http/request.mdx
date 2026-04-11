@@ -63,12 +63,12 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     // Access uploaded files (returns File object)
     $image = $request->file()->get('avatar');
 
-    // Access populated ordering (as defined in Route).
-    // Note: The ordering bag is always populated. If the user does not provide an order_by parameter,
+    // Access populated sorting (as defined in Route).
+    // Note: The sorting bag is always populated. If the user does not provide an order_by parameter,
     // the bag will contain the default sorting defined on the route.
-    foreach ($request->ordering()->all() as $order) {
-        $field = $order->getField();
-        $isAsc = $order->isAsc();
+    foreach ($request->sorting()->all() as $sort) {
+        $field = $sort->getField();
+        $isAsc = $sort->isAsc();
     }
 }
 ```
@@ -84,7 +84,7 @@ $userId = $request->path()->id;
 
 ## Automatic Request Documentation
 
-When a route has [ordering defined](/routing/route#ordering) or [pagination enabled](/http/pagination), the framework automatically documents the corresponding query parameters (`order_by`, `page`, `limit`, `offset`, or `cursor`) in your OpenAPI specification.
+When a route has [sorting defined](/routing/route#sorting) or [pagination enabled](/http/pagination), the framework automatically documents the corresponding query parameters (`order_by`, `page`, `limit`, `offset`, or `cursor`) in your OpenAPI specification.
 
 This includes:
 - **Validation**: Ensuring that only allowed values and correct formats are used.
@@ -92,7 +92,7 @@ This includes:
 - **Default values**: Reflecting the configuration defined on the route (e.g., `setMaxLimit`).
 
 Additionally:
-- The `ordering()` bag is automatically populated with default values if the user does not provide an `order_by` parameter.
+- The `sorting()` bag is automatically populated with default values if the user does not provide an `order_by` parameter.
 - The `paginator()` object is automatically created and accessible if pagination is enabled.
 
 ## Validation
