@@ -56,11 +56,15 @@ class ResponseObject implements ObjectInterface
 
     public function toArray(): array
     {
+        $headers = array_map(static function ($headerObject) {
+            return $headerObject->toArray();
+        }, $this->headers);
+
         return [
             $this->statusCode => array_filter(
                 [
                     'description' => $this->description ?? '',
-                    'headers' => $this->headers,
+                    'headers' => $headers,
                     'content' => $this->content !== null ? array_filter($this->content->toArray()) : null,
                 ]
             )

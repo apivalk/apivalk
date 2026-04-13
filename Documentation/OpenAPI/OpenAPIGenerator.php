@@ -16,6 +16,8 @@ class OpenAPIGenerator
     private $apivalk;
     /** @var OpenAPI */
     private $openApi;
+    /** @var bool */
+    private $documentLocaleHeaders;
 
     public const FORMAT_JSON = 'json';
 
@@ -24,15 +26,18 @@ class OpenAPIGenerator
      * @param InfoObject|null       $infoObject
      * @param ServerObject[]        $servers
      * @param ComponentsObject|null $componentsObject
+     * @param bool                  $documentLocaleHeaders
      */
     public function __construct(
         Apivalk $apivalk,
         ?InfoObject $infoObject = null,
         array $servers = [],
-        ?ComponentsObject $componentsObject = null
+        ?ComponentsObject $componentsObject = null,
+        bool $documentLocaleHeaders = true
     ) {
         $this->apivalk = $apivalk;
         $this->openApi = new OpenAPI();
+        $this->documentLocaleHeaders = $documentLocaleHeaders;
 
         if ($infoObject !== null) {
             $this->openApi->setInfo($infoObject);
@@ -60,7 +65,7 @@ class OpenAPIGenerator
 
     private function generatePaths(): void
     {
-        $pathsGenerator = new PathsGenerator();
+        $pathsGenerator = new PathsGenerator($this->documentLocaleHeaders);
         $routeMapping = [];
 
         foreach ($this->apivalk->getRouter()->getRoutes() as $route) {

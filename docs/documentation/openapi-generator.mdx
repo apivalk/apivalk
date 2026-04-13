@@ -165,6 +165,42 @@ $generator = new OpenAPIGenerator(
 );
 ```
 
+## Automated Headers
+
+### Locale Headers (Accept-Language / Content-Language)
+
+By default, the generator documents localization headers on every operation:
+
+- **Request**: An optional `Accept-Language` header parameter (BCP 47 language tag).
+- **Response**: A `Content-Language` header on every response, indicating the resolved locale.
+
+This matches the runtime behavior of the `MiddlewareStack`, which always resolves the locale from the `Accept-Language` header and returns `Content-Language`.
+
+You can disable locale header documentation by passing `false` for the `$documentLocaleHeaders` parameter:
+
+```php
+$generator = new OpenAPIGenerator(
+    $apivalk,
+    $info,
+    [new ServerObject('http://localhost:8080', 'My local server')],
+    $components,
+    false // disable locale headers in the OpenAPI spec
+);
+```
+
+### Rate Limit Headers
+
+When a route has a rate limit defined (via `Route::rateLimit()`), the generator automatically documents the following response headers on every response for that operation:
+
+| Header | Description |
+|---|---|
+| `X-RateLimit-Limit` | Maximum requests allowed in the time window. |
+| `X-RateLimit-Remaining` | Requests remaining in the current window. |
+| `X-RateLimit-Reset` | UTC epoch timestamp when the window resets. |
+| `Retry-After` | UTC epoch timestamp after which the client may retry (present only when the limit is exceeded). |
+
+The header descriptions include the configured window duration from the `RateLimitInterface`. Routes without a rate limit will not have these headers in their documentation.
+
 ## Automated Pagination Envelope
 
 If a response documentation has `setHasResponsePagination(true)`, the generator automatically wraps the properties in a standard pagination envelope containing `data`, `total`, `page`, `limit`, etc.

@@ -19,23 +19,27 @@ class ResponseObjectTest extends TestCase
                 'schema' => ['type' => 'object']
             ]
         ]);
-        
-        $header = $this->createMock(HeaderObject::class);
-        
+
+        $header = new HeaderObject('Test header description');
+
         $response = new ResponseObject(
             200,
             $mediaType,
             'OK',
             ['X-Test' => $header]
         );
-        
+
         $result = $response->toArray();
 
         $this->assertArrayHasKey(200, $result);
         $this->assertEquals('OK', $result[200]['description']);
         $this->assertArrayHasKey('X-Test', $result[200]['headers']);
+        $this->assertEquals(
+            ['description' => 'Test header description', 'required' => false],
+            $result[200]['headers']['X-Test']
+        );
         $this->assertArrayHasKey('content', $result[200]);
-        
+
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('OK', $response->getDescription());
         $this->assertSame($mediaType, $response->getContent());

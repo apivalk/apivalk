@@ -51,7 +51,7 @@ Apivalk provides specialized filter classes for different property types. Each f
 
 Benefits:
 -   **OpenAPI Accuracy**: The documentation reflects the correct data type (e.g., `number`, `integer`, `string`).
--   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, `float`, or `\DateTime`).
+-   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, `float`, or `\DateTime`), or `null` if the filter was not provided by the client.
 -   **Detailed Documentation**: You can add custom descriptions, examples, and constraints to your filters.
 
 ```php

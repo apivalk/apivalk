@@ -16,6 +16,14 @@ use apivalk\apivalk\Router\Route\Route;
 
 class PathItemGenerator
 {
+    /** @var bool */
+    private $documentLocaleHeaders;
+
+    public function __construct(bool $documentLocaleHeaders = true)
+    {
+        $this->documentLocaleHeaders = $documentLocaleHeaders;
+    }
+
     /**
      * @param array<int, array{controllerClass: string, route: Route}> $routes All routes with controller class name that have the same URL pattern but different methods. Example: ['controllerClass' => 'CreateController', 'route' => $createControllerRoute]
      *
@@ -23,7 +31,7 @@ class PathItemGenerator
      */
     public function generate(array $routes): PathItemObject
     {
-        $operationGenerator = new OperationGenerator();
+        $operationGenerator = new OperationGenerator($this->documentLocaleHeaders);
 
         $get = null;
         $put = null;
