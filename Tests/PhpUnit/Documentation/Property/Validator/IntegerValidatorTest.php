@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property\Validator;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Documentation\Property\Validator\NumberValidator;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\Validator\IntegerValidator;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
-class NumberValidatorTest extends TestCase
+class IntegerValidatorTest extends TestCase
 {
-    public function testNumberValidator()
+    public function testIntegerValidator(): void
     {
-        $property = new NumberProperty('test');
-        $validator = new NumberValidator($property);
+        $property = new IntegerProperty('test');
+        $validator = new IntegerValidator($property);
 
         $this->assertTrue($validator->validate(new Parameter('test', 123, 123))->isSuccess());
-        $this->assertTrue($validator->validate(new Parameter('test', '123.45', '123.45'))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', '123', '123'))->isSuccess());
         $this->assertFalse($validator->validate(new Parameter('test', 'abc', 'abc'))->isSuccess());
 
         $property->setMinimumValue(10);
@@ -27,7 +27,7 @@ class NumberValidatorTest extends TestCase
 
         $property->setIsExclusiveMinimum(true);
         $this->assertFalse($validator->validate(new Parameter('test', 10, 10))->isSuccess());
-        $this->assertTrue($validator->validate(new Parameter('test', 10.1, 10.1))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 11, 11))->isSuccess());
 
         $property->setMinimumValue(null)->setIsExclusiveMinimum(false)->setMaximumValue(20);
         $this->assertTrue($validator->validate(new Parameter('test', 20, 20))->isSuccess());
@@ -36,6 +36,6 @@ class NumberValidatorTest extends TestCase
 
         $property->setIsExclusiveMaximum(true);
         $this->assertFalse($validator->validate(new Parameter('test', 20, 20))->isSuccess());
-        $this->assertTrue($validator->validate(new Parameter('test', 19.9, 19.9))->isSuccess());
+        $this->assertTrue($validator->validate(new Parameter('test', 19, 19))->isSuccess());
     }
 }

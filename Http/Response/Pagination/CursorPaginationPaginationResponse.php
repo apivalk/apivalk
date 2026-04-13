@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Response\Pagination;
 
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class CursorPaginationPaginationResponse implements PaginationResponseInterface
@@ -68,10 +68,10 @@ class CursorPaginationPaginationResponse implements PaginationResponseInterface
     {
         $properties = [];
 
-        $limit = new NumberProperty(
+        $limit = new IntegerProperty(
             'limit',
             'Maximum number of items returned in this response.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $limit->setExample('10');
 

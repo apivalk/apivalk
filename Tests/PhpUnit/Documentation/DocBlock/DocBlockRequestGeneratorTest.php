@@ -10,13 +10,13 @@ use apivalk\apivalk\Documentation\DocBlock\DocBlockRequestGenerator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Documentation\Property\StringProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class TestRequest extends AbstractApivalkRequest {
     public static function getDocumentation(): ApivalkRequestDocumentation {
         $doc = new ApivalkRequestDocumentation();
         $doc->addBodyProperty(new StringProperty('name'));
-        $doc->addQueryProperty(new NumberProperty('id'));
+        $doc->addQueryProperty(new IntegerProperty('id'));
         $doc->addPathProperty(new StringProperty('slug'));
         return $doc;
     }
@@ -41,7 +41,7 @@ class DocBlockRequestGeneratorTest extends TestCase
         $this->assertStringContainsString('@property-read string $name', $bodyString);
 
         $queryString = $docBlockRequest->getQueryShape()->toString('App\\Shape');
-        $this->assertStringContainsString('@property-read float $id', $queryString);
+        $this->assertStringContainsString('@property-read int $id', $queryString);
 
         $pathString = $docBlockRequest->getPathShape()->toString('App\\Shape');
         $this->assertStringContainsString('@property-read string $slug', $pathString);

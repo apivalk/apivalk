@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\Property;
 
-class NumberProperty extends AbstractProperty
+class IntegerProperty extends AbstractProperty
 {
-    /** @var string */
-    public const FORMAT_FLOAT = 'float';
-    /** @var string */
-    public const FORMAT_DOUBLE = 'double';
     /** @var string */
     public const FORMAT_INT32 = 'int32';
     /** @var string */
     public const FORMAT_INT64 = 'int64';
 
-    /** @var string|null */
+    /** @var string */
     private $format;
-    /** @var int|float|null */
+    /** @var int|null */
     private $minimumValue;
-    /** @var int|float|null */
+    /** @var int|null */
     private $maximumValue;
     /** @var bool|null */
     private $exclusiveMinimum;
@@ -29,49 +25,31 @@ class NumberProperty extends AbstractProperty
     public function __construct(
         string $propertyName,
         string $propertyDescription = '',
-        ?string $format = null
+        string $format = self::FORMAT_INT64
     ) {
         parent::__construct($propertyName, $propertyDescription);
 
-        if ($format !== null) {
-            $this->setFormat($format);
-        }
+        $this->setFormat($format);
     }
 
     public function getType(): string
     {
-        if ($this->getFormat() === null
-            || $this->getFormat() === self::FORMAT_FLOAT
-            || $this->getFormat() === self::FORMAT_DOUBLE) {
-            return 'number';
-        }
-
         return 'integer';
     }
 
     public function getPhpType(): string
     {
-        if ($this->getFormat() === self::FORMAT_INT32
-            || $this->getFormat() === self::FORMAT_INT64) {
-            return 'int';
-        }
-
-        return 'float';
+        return 'int';
     }
 
-    public function setFormat(?string $format): self
+    public function getFormat(): string
     {
-        if ($format !== null
-            && !\in_array(
-                $format,
-                [
-                    self::FORMAT_FLOAT,
-                    self::FORMAT_DOUBLE,
-                    self::FORMAT_INT32,
-                    self::FORMAT_INT64,
-                ],
-                true
-            )) {
+        return $this->format;
+    }
+
+    public function setFormat(string $format): self
+    {
+        if (!\in_array($format, [self::FORMAT_INT32, self::FORMAT_INT64], true)) {
             throw new \InvalidArgumentException(\sprintf('Invalid format "%s"', $format));
         }
 
@@ -80,20 +58,14 @@ class NumberProperty extends AbstractProperty
         return $this;
     }
 
-    /**
-     * @param float|int $minimumValue
-     */
-    public function setMinimumValue($minimumValue): self
+    public function setMinimumValue(?int $minimumValue): self
     {
         $this->minimumValue = $minimumValue;
 
         return $this;
     }
 
-    /**
-     * @param float|int $maximumValue
-     */
-    public function setMaximumValue($maximumValue): self
+    public function setMaximumValue(?int $maximumValue): self
     {
         $this->maximumValue = $maximumValue;
 
@@ -114,23 +86,12 @@ class NumberProperty extends AbstractProperty
         return $this;
     }
 
-    public function getFormat(): ?string
-    {
-        return $this->format;
-    }
-
-    /**
-     * @return float|int|null
-     */
-    public function getMinimumValue()
+    public function getMinimumValue(): ?int
     {
         return $this->minimumValue;
     }
 
-    /**
-     * @return float|int|null
-     */
-    public function getMaximumValue()
+    public function getMaximumValue(): ?int
     {
         return $this->maximumValue;
     }
@@ -149,11 +110,8 @@ class NumberProperty extends AbstractProperty
     {
         $array = [
             'type' => $this->getType(),
+            'format' => $this->getFormat(),
         ];
-
-        if ($this->getFormat() !== null) {
-            $array['format'] = $this->getFormat();
-        }
 
         if ($this->getMinimumValue() !== null && $this->isExclusiveMinimum() !== null) {
             $array['exclusiveMinimum'] = $this->isExclusiveMinimum();

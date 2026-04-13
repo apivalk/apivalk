@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Http\Response\Pagination;
 
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class OffsetPaginationPaginationResponse implements PaginationResponseInterface
 {
@@ -63,25 +63,25 @@ class OffsetPaginationPaginationResponse implements PaginationResponseInterface
     {
         $properties = [];
 
-        $limit = new NumberProperty(
+        $limit = new IntegerProperty(
             'limit',
             'Maximum number of items returned in this response.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $limit->setExample('10');
 
-        $offset = new NumberProperty(
+        $offset = new IntegerProperty(
             'offset',
             'Number of items skipped before this result set.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $offset->setExample('0');
         $offset->setMinimumValue(0);
 
-        $totalItems = new NumberProperty(
+        $totalItems = new IntegerProperty(
             'total_items',
             'Total number of items available.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $totalItems->setExample('57');
 

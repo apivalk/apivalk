@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use PHPUnit\Framework\TestCase;
 
@@ -59,11 +59,11 @@ class ApivalkRequestDocumentationTest extends TestCase
         $this->assertCount(1, $queryProperties);
         $this->assertArrayHasKey('page', $queryProperties);
 
-        /** @var NumberProperty $pageProperty */
+        /** @var IntegerProperty $pageProperty */
         $pageProperty = $queryProperties['page'];
-        $this->assertInstanceOf(NumberProperty::class, $pageProperty);
+        $this->assertInstanceOf(IntegerProperty::class, $pageProperty);
         $this->assertSame('page', $pageProperty->getPropertyName());
         $this->assertFalse($pageProperty->isRequired());
-        $this->assertSame(NumberProperty::FORMAT_INT32, $pageProperty->getFormat());
+        $this->assertSame(IntegerProperty::FORMAT_INT32, $pageProperty->getFormat());
     }
 }

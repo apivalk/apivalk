@@ -15,7 +15,7 @@ namespace App\Http\Request\Pet;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\StringProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class CreatePetRequest extends AbstractApivalkRequest
 {
@@ -33,7 +33,7 @@ class CreatePetRequest extends AbstractApivalkRequest
         
         // Path parameters (matched from route like /pet/{id})
         $doc->addPathProperty(
-            new NumberProperty('id', 'Internal ID')
+            new IntegerProperty('id', 'Internal ID')
         );
 
         return $doc;

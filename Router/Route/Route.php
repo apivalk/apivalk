@@ -12,7 +12,7 @@ use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -35,7 +35,7 @@ class Route
     private $rateLimit;
     /** @var Sort[] */
     private $sortings;
-    /** @var AbstractFilter[] */
+    /** @var FilterInterface[] */
     private $filters;
     /** @var Pagination|null */
     private $pagination;
@@ -50,7 +50,7 @@ class Route
      * @param RateLimitInterface|null $rateLimit
      * @param Sort[]|null             $sortings
      * @param Pagination|null         $pagination
-     * @param AbstractFilter[]|null  $filters
+     * @param FilterInterface[]|null  $filters
      */
     public function __construct(
         string $url,
@@ -145,7 +145,7 @@ class Route
     }
 
     /**
-     * @param AbstractFilter[] $filters
+     * @param FilterInterface[] $filters
      */
     public function filtering(array $filters): self
     {
@@ -218,7 +218,7 @@ class Route
     }
 
     /**
-     * @return AbstractFilter[]
+     * @return FilterInterface[]
      */
     public function getFilters(): array
     {

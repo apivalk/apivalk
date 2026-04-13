@@ -6,8 +6,9 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\DocBlock\DocBlockShape;
+use apivalk\apivalk\Documentation\Property\DateProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class DocBlockShapeTest extends TestCase
 {
@@ -31,8 +32,7 @@ class DocBlockShapeTest extends TestCase
         $prop1 = new StringProperty('name');
         $prop1->setIsRequired(true);
 
-        $prop2 = new NumberProperty('age');
-        $prop2->setFormat(NumberProperty::FORMAT_INT32);
+        $prop2 = new IntegerProperty('age', '', IntegerProperty::FORMAT_INT32);
         $prop2->setIsRequired(false);
 
         $shape->addProperty($prop1);
@@ -65,10 +65,8 @@ class DocBlockShapeTest extends TestCase
     {
         $shape = new DocBlockShape('User', 'Body');
 
-        // We need a property that returns a namespaced PHP type.
-        // StringProperty returns \DateTime if format is date or date-time.
-        $prop = new StringProperty('createdAt');
-        $prop->setFormat(StringProperty::FORMAT_DATE);
+        // DateProperty returns \DateTime as its PHP type.
+        $prop = new DateProperty('createdAt');
         $prop->setIsRequired(true);
 
         $shape->addProperty($prop);

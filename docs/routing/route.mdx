@@ -15,7 +15,7 @@ A `Route` instance contains the following information:
 * **Rate Limit**: An optional `RateLimitInterface` implementation defining the rate limiting rules for the endpoint.
 * **Sorting**: A collection of `Sort` instances defining allowed sorting fields for the endpoint.
 * **Pagination**: A `Pagination` instance defining the pagination strategy (Page, Offset, or Cursor).
-* **Filtering**: A collection of `AbstractFilter` instances defining allowed filtering fields for the endpoint.
+* **Filtering**: A collection of `FilterInterface` instances defining allowed filtering fields for the endpoint.
 
 ## Path Parameters
 
@@ -127,21 +127,24 @@ When pagination is enabled, the framework automatically handles the `page`, `lim
 
 ## Filtering
 
-You can define which fields are allowed for filtering by using the `filtering()` method. This takes an array of `AbstractFilter` objects:
+You can define which fields are allowed for filtering by using the `filtering()` method. This takes an array of `FilterInterface` instances:
 
 ```php
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\DateProperty;
 
 public static function getRoute(): Route
 {
     return Route::get('/v1/users')
                   ->description('List users')
                   ->filtering([
-                      StringFilter::equals(new StringProperty('status', 'Filter by status (equals)')),
+                      EnumFilter::equals(new EnumProperty('status', 'Filter by status', ['active', 'inactive'])),
                       StringFilter::in(new StringProperty('type', 'Filter by type (in)')),
-                      DateFilter::greaterThan((new StringProperty('created_at', 'Filter by creation date (greater than)'))->setFormat(StringProperty::FORMAT_DATE))
+                      DateFilter::greaterThan(new DateProperty('created_at', 'Filter by creation date (greater than)'))
                   ]);
 }
 ```

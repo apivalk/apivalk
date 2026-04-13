@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\Property\Validator;
 
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
-class NumberValidator extends AbstractValidator
+class FloatValidator extends AbstractValidator
 {
     public function validate(Parameter $parameter): ValidatorResult
     {
@@ -16,19 +16,13 @@ class NumberValidator extends AbstractValidator
             return new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_NUMERIC);
         }
 
-        /** @var NumberProperty $property */
+        $value = (float) $value;
+
+        /** @var FloatProperty $property */
         $property = $this->getProperty();
 
-        $format = $property->getFormat();
         $minimumValue = $property->getMinimumValue();
         $maximumValue = $property->getMaximumValue();
-
-        if ($format === $property::FORMAT_INT32
-            || $format === $property::FORMAT_INT64) {
-            $value = (int)$value;
-        } else {
-            $value = (float)$value;
-        }
 
         if ($minimumValue !== null) {
             $minimumValidation = $property->isExclusiveMinimum() === true

@@ -9,43 +9,53 @@ To enable filtering for a specific route, you use the `filtering()` method on th
 
 ```php
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
-use apivalk\apivalk\Router\Route\Filter\NumberFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\FloatFilter;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Documentation\Property\StringProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\DateTimeProperty;
 
 public static function getRoute(): Route
 {
     return Route::get('/contracts')
         ->filtering([
-            StringFilter::equals(new StringProperty('status', 'Filter by status (equals)')),
-            StringFilter::in(new StringProperty('type', 'Filter by type (in)')),
-            NumberFilter::greaterThan(new NumberProperty('amount', 'Minimum amount', NumberProperty::FORMAT_DOUBLE)),
-            NumberFilter::lessThan(new NumberProperty('id', 'Filter by ID (less than)')),
-            DateFilter::greaterThan((new StringProperty('created_at', 'Filter by creation date (greater than)'))->setFormat(StringProperty::FORMAT_DATE)),
-            DateTimeFilter::lessThan((new StringProperty('updated_at', 'Filter by update date (less than)'))->setFormat(StringProperty::FORMAT_DATE_TIME)),
+            EnumFilter::equals(new EnumProperty('status', 'Filter by status', ['active', 'inactive'])),
+            StringFilter::contains(new StringProperty('name', 'Filter by name (contains)')),
+            FloatFilter::greaterThan(new FloatProperty('amount', 'Minimum amount', FloatProperty::FORMAT_DOUBLE)),
+            IntegerFilter::lessThan(new IntegerProperty('id', 'Filter by ID (less than)')),
+            DateFilter::greaterThan(new DateProperty('created_at', 'Filter by creation date (greater than)')),
+            DateTimeFilter::lessThan(new DateTimeProperty('updated_at', 'Filter by update date (less than)')),
         ]);
 }
 ```
 
 ### Type-Safe Filtering
 
-Apivalk provides specialized filter classes for different property types. This ensures that the filter values are correctly type-casted when retrieved in your controller.
+Apivalk provides specialized filter classes for different property types. Each filter is linked to its corresponding property type, ensuring that filter values are correctly type-cast when retrieved in your controller.
 
 1.  **StringFilter**: Linked to `StringProperty`. Supports `equals`, `in`, `like`, and `contains`.
-2.  **NumberFilter**: Linked to `NumberProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`.
-3.  **DateFilter**: Linked to `StringProperty` with `date` format. Returns `\DateTime` values.
-4.  **DateTimeFilter**: Linked to `StringProperty` with `date-time` format. Returns `\DateTime` values.
+2.  **EnumFilter**: Linked to `EnumProperty`. Supports `equals` and `in`.
+3.  **IntegerFilter**: Linked to `IntegerProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `int` values.
+4.  **FloatFilter**: Linked to `FloatProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `float` values.
+5.  **DateFilter**: Linked to `DateProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `\DateTime` values.
+6.  **DateTimeFilter**: Linked to `DateTimeProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `\DateTime` values.
+7.  **ByteFilter**: Linked to `ByteProperty`. Supports `equals` and `in`.
+8.  **BinaryFilter**: Linked to `BinaryProperty`. Supports `equals` and `in`.
 
 Benefits:
 -   **OpenAPI Accuracy**: The documentation reflects the correct data type (e.g., `number`, `integer`, `string`).
--   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, or `float`).
+-   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, `float`, or `\DateTime`).
 -   **Detailed Documentation**: You can add custom descriptions, examples, and constraints to your filters.
 
 ```php
-NumberFilter::equals((new NumberProperty('id', 'Filter by ID (equals)'))->setFormat(NumberProperty::FORMAT_INT64))
+IntegerFilter::equals(new IntegerProperty('id', 'Filter by ID (equals)', IntegerProperty::FORMAT_INT64))
 ```
 
 ### Supported Filter Types
@@ -56,23 +66,41 @@ NumberFilter::equals((new NumberProperty('id', 'Filter by ID (equals)'))->setFor
 - `StringFilter::like(StringProperty $property)`: Partial string matching (e.g., `prefix%`).
 - `StringFilter::contains(StringProperty $property)`: Match if a string contains another.
 
-#### NumberFilter
-- `NumberFilter::equals(NumberProperty $property)`: Exact numeric match.
-- `NumberFilter::in(NumberProperty $property)`: Match against a list of numbers.
-- `NumberFilter::greaterThan(NumberProperty $property)`: Numeric comparison.
-- `NumberFilter::lessThan(NumberProperty $property)`: Numeric comparison.
+#### EnumFilter
+- `EnumFilter::equals(EnumProperty $property)`: Exact match against allowed values.
+- `EnumFilter::in(EnumProperty $property)`: Match against a list of allowed values.
+
+#### IntegerFilter
+- `IntegerFilter::equals(IntegerProperty $property)`: Exact integer match.
+- `IntegerFilter::in(IntegerProperty $property)`: Match against a list of integers.
+- `IntegerFilter::greaterThan(IntegerProperty $property)`: Integer comparison.
+- `IntegerFilter::lessThan(IntegerProperty $property)`: Integer comparison.
+
+#### FloatFilter
+- `FloatFilter::equals(FloatProperty $property)`: Exact float match.
+- `FloatFilter::in(FloatProperty $property)`: Match against a list of floats.
+- `FloatFilter::greaterThan(FloatProperty $property)`: Float comparison.
+- `FloatFilter::lessThan(FloatProperty $property)`: Float comparison.
 
 #### DateFilter
-- `DateFilter::equals(StringProperty $property)`: Exact date match.
-- `DateFilter::in(StringProperty $property)`: Match against a list of dates.
-- `DateFilter::greaterThan(StringProperty $property)`: Date comparison.
-- `DateFilter::lessThan(StringProperty $property)`: Date comparison.
+- `DateFilter::equals(DateProperty $property)`: Exact date match.
+- `DateFilter::in(DateProperty $property)`: Match against a list of dates.
+- `DateFilter::greaterThan(DateProperty $property)`: Date comparison.
+- `DateFilter::lessThan(DateProperty $property)`: Date comparison.
 
 #### DateTimeFilter
-- `DateTimeFilter::equals(StringProperty $property)`: Exact date-time match.
-- `DateTimeFilter::in(StringProperty $property)`: Match against a list of date-times.
-- `DateTimeFilter::greaterThan(StringProperty $property)`: Date-time comparison.
-- `DateTimeFilter::lessThan(StringProperty $property)`: Date-time comparison.
+- `DateTimeFilter::equals(DateTimeProperty $property)`: Exact date-time match.
+- `DateTimeFilter::in(DateTimeProperty $property)`: Match against a list of date-times.
+- `DateTimeFilter::greaterThan(DateTimeProperty $property)`: Date-time comparison.
+- `DateTimeFilter::lessThan(DateTimeProperty $property)`: Date-time comparison.
+
+#### ByteFilter
+- `ByteFilter::equals(ByteProperty $property)`: Exact byte match.
+- `ByteFilter::in(ByteProperty $property)`: Match against a list of byte values.
+
+#### BinaryFilter
+- `BinaryFilter::equals(BinaryProperty $property)`: Exact binary match.
+- `BinaryFilter::in(BinaryProperty $property)`: Match against a list of binary values.
 
 ---
 
