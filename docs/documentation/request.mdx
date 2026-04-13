@@ -36,7 +36,7 @@ $doc->addQueryProperty(new StringProperty('search', 'Search term for filtering r
 Used for data embedded in the URL path (e.g., `/users/{id}`).
 
 ```php
-$doc->addPathProperty(new NumberProperty('id', 'The unique identifier of the resource'));
+$doc->addPathProperty(new IntegerProperty('id', 'The unique identifier of the resource'));
 ```
 
 ## Helper Methods

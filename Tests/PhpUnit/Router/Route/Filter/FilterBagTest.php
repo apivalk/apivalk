@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\Route\Filter;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
-use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 
 class FilterBagTest extends TestCase
@@ -16,9 +16,9 @@ class FilterBagTest extends TestCase
     {
         $bag = new FilterBag();
         $filter = StringFilter::equals(new StringProperty('status'));
-        
+
         $bag->set($filter);
-        
+
         $this->assertTrue($bag->has('status'));
         $this->assertSame($filter, $bag->get('status'));
         $this->assertSame($filter, $bag->status);
@@ -29,11 +29,11 @@ class FilterBagTest extends TestCase
         $bag = new FilterBag();
         $bag->set(StringFilter::equals(new StringProperty('status')));
         $bag->set(StringFilter::in(new StringProperty('type')));
-        
+
         $this->assertCount(2, $bag);
-        
+
         foreach ($bag as $field => $filter) {
-            $this->assertInstanceOf(AbstractFilter::class, $filter);
+            $this->assertInstanceOf(FilterInterface::class, $filter);
             $this->assertContains($field, ['status', 'type']);
         }
     }

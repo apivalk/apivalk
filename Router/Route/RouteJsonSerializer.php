@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\Property\PropertySerializer;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
-use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
-use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
-use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -47,7 +45,7 @@ class RouteJsonSerializer
      *          maxLimit: int
      *     }|null,
      *     filters: array<int, array{
-     *          class: class-string<AbstractFilter>,
+     *          class: class-string<FilterInterface>,
      *          type: string,
      *          property: array{
      *              class: class-string<AbstractProperty>,
@@ -102,16 +100,10 @@ class RouteJsonSerializer
         $filters = $route->getFilters();
         if (\count($filters) > 0) {
             foreach ($filters as $filter) {
-                $property = $filter->getProperty();
                 $filtersData[] = [
                     'class' => \get_class($filter),
                     'type' => $filter->getType(),
-                    'property' => [
-                        'class' => \get_class($property),
-                        'name' => $property->getPropertyName(),
-                        'description' => $property->getPropertyDescription(),
-                        'format' => ($property instanceof StringProperty || $property instanceof NumberProperty) ? $property->getFormat() : null,
-                    ],
+                    'property' => PropertySerializer::serialize($filter->getProperty()),
                 ];
             }
         }
@@ -192,20 +184,7 @@ class RouteJsonSerializer
         $filtersData = $jsonArray['filters'] ?? null;
         if ($filtersData !== null) {
             foreach ($filtersData as $filterData) {
-                $propertyData = $filterData['property'];
-                $propertyClass = $propertyData['class'];
-
-                if ($propertyClass === StringProperty::class) {
-                    $property = new StringProperty($propertyData['name'], $propertyData['description']);
-                    if ($propertyData['format'] !== null) {
-                        $property->setFormat($propertyData['format']);
-                    }
-                } elseif ($propertyClass === NumberProperty::class) {
-                    $property = new NumberProperty($propertyData['name'], $propertyData['description'], $propertyData['format']);
-                } else {
-                    $property = new $propertyClass($propertyData['name'], $propertyData['description']);
-                }
-
+                $property = PropertySerializer::deserialize($filterData['property']);
                 $filterClass = $filterData['class'];
                 $filters[] = new $filterClass($filterData['type'], $property);
             }

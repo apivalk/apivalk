@@ -7,13 +7,19 @@ description: "The Property System is the core metadata engine of Apivalk. It def
 
 Apivalk provides several built-in property classes:
 
-| Class                    | Description              | PHP Type         | OpenAPI Type          |
-| :----------------------- | :----------------------- | :--------------- | :-------------------- |
-| `StringProperty`         | Textual data             | `string`         | `string`              |
-| `NumberProperty`         | Numeric data (int/float) | `int` or `float` | `number` or `integer` |
-| `BooleanProperty`        | True/False values        | `bool`           | `boolean`             |
-| `ArrayProperty`          | List of items            | `array`          | `array`               |
-| `AbstractObjectProperty` | Nested object structure  | `array`          | `object`              |
+| Class                    | Description                    | PHP Type    | OpenAPI Type |
+| :----------------------- | :----------------------------- | :---------- | :----------- |
+| `StringProperty`         | Plain textual data             | `string`    | `string`     |
+| `EnumProperty`           | String restricted to a set     | `string`    | `string`     |
+| `IntegerProperty`        | Whole numbers                  | `int`       | `integer`    |
+| `FloatProperty`          | Decimal numbers                | `float`     | `number`     |
+| `DateProperty`           | Date values (YYYY-MM-DD)       | `\DateTime` | `string`     |
+| `DateTimeProperty`       | Date-time values (ISO 8601)    | `\DateTime` | `string`     |
+| `ByteProperty`           | Base64-encoded data            | `string`    | `string`     |
+| `BinaryProperty`         | Raw binary data                | `string`    | `string`     |
+| `BooleanProperty`        | True/False values              | `bool`      | `boolean`    |
+| `ArrayProperty`          | List of items                  | `array`     | `array`      |
+| `AbstractObjectProperty` | Nested object structure         | `array`     | `object`     |
 
 ## Base Configuration
 
@@ -29,14 +35,96 @@ All properties share a common set of configuration methods:
 
 * `setMinLength(int)` / `setMaxLength(int)`
 * `setPattern(string)`: Regex validation.
-* `setEnum(array)`: List of allowed values.
-* `setFormat(string)`: e.g., `date`, `date-time`, `email`, `uuid`, `byte` (base64).
 
-### `NumberProperty`
+```php
+$prop = new StringProperty('username', 'The login name');
+$prop->setIsRequired(true)
+     ->setMinLength(5)
+     ->setMaxLength(10)
+     ->setPattern('/^[a-z0-9]+$/');
+```
 
-* `setMinimum(float)` / `setMaximum(float)`
-* `setExclusiveMinimum(bool)` / `setExclusiveMaximum(bool)`
-* `setFormat(string)`: e.g., `int32`, `int64`, `float`, `double`.
+### `EnumProperty`
+
+Restricts a string value to a predefined set of allowed values. The enum values are passed as the third constructor argument.
+
+* `setEnums(array)`: Update the list of allowed values.
+* `setDefault(string)`: Set a default value.
+
+```php
+$prop = new EnumProperty('status', 'Account status', ['active', 'inactive', 'suspended']);
+$prop->setIsRequired(true);
+```
+
+### `IntegerProperty`
+
+For whole numbers. Supports `int32` and `int64` formats (default: `int64`).
+
+* `setMinimumValue(int)` / `setMaximumValue(int)`
+* `setIsExclusiveMinimum(bool)` / `setIsExclusiveMaximum(bool)`
+* `setFormat(string)`: `IntegerProperty::FORMAT_INT32` or `IntegerProperty::FORMAT_INT64`.
+
+```php
+$prop = new IntegerProperty('age', 'User age', IntegerProperty::FORMAT_INT32);
+$prop->setMinimumValue(0)
+     ->setMaximumValue(150);
+```
+
+### `FloatProperty`
+
+For decimal numbers. Supports `float` and `double` formats (default: `double`).
+
+* `setMinimumValue(float)` / `setMaximumValue(float)`
+* `setIsExclusiveMinimum(bool)` / `setIsExclusiveMaximum(bool)`
+* `setFormat(string)`: `FloatProperty::FORMAT_FLOAT` or `FloatProperty::FORMAT_DOUBLE`.
+
+```php
+$prop = new FloatProperty('price', 'Product price', FloatProperty::FORMAT_DOUBLE);
+$prop->setMinimumValue(0.0)
+     ->setIsExclusiveMinimum(true);
+```
+
+### `DateProperty`
+
+Represents a date value in `YYYY-MM-DD` format. Automatically sets the OpenAPI format to `date` and includes a built-in pattern.
+
+* `setDefault(string)`: Set a default date value.
+
+```php
+$prop = new DateProperty('birth_date', 'Date of birth');
+```
+
+### `DateTimeProperty`
+
+Represents a date-time value in ISO 8601 / RFC 3339 format. Automatically sets the OpenAPI format to `date-time` and includes a built-in pattern.
+
+* `setDefault(string)`: Set a default date-time value.
+
+```php
+$prop = new DateTimeProperty('created_at', 'Creation timestamp');
+```
+
+### `ByteProperty`
+
+For base64-encoded data. Automatically sets the OpenAPI format to `byte`.
+
+* `setMinLength(int)` / `setMaxLength(int)`
+* `setPattern(string)`: Regex validation.
+
+```php
+$prop = new ByteProperty('avatar', 'Base64-encoded avatar image');
+```
+
+### `BinaryProperty`
+
+For raw binary data (e.g., file uploads). Automatically sets the OpenAPI format to `binary`.
+
+* `setMinLength(int)` / `setMaxLength(int)`
+* `setPattern(string)`: Regex validation.
+
+```php
+$prop = new BinaryProperty('file', 'Uploaded file content');
+```
 
 ### `ArrayProperty`
 
@@ -50,11 +138,4 @@ All properties share a common set of configuration methods:
 
 When a property is instantiated, it automatically creates a corresponding validator via the `ValidatorFactory`. This validator is used by the `RequestValidationMiddleware` to ensure incoming data matches your definitions.
 
-```php
-// Example: A required, 5-10 char long string matching a pattern
-$prop = new StringProperty('username', 'The login name');
-$prop->setIsRequired(true)
-     ->setMinLength(5)
-     ->setMaxLength(10)
-     ->setPattern('/^[a-z0-9]+$/');
-```
+Each property type has its own dedicated validator (e.g., `StringValidator`, `IntegerValidator`, `FloatValidator`, `EnumValidator`, `DateValidator`, `DateTimeValidator`, `ByteValidator`, `BinaryValidator`), ensuring type-specific validation rules are applied automatically.

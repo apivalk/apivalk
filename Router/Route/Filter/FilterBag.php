@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router\Route\Filter;
 
 /**
- * @implements \IteratorAggregate<string, AbstractFilter>
+ * @implements \IteratorAggregate<string, FilterInterface>
  */
 class FilterBag implements \IteratorAggregate, \Countable
 {
-    /** @var AbstractFilter[] */
+    /** @var FilterInterface[] */
     private $filters = [];
 
-    public function set(AbstractFilter $filter): void
+    public function set(FilterInterface $filter): void
     {
         $this->filters[$filter->getField()] = $filter;
     }
@@ -22,13 +22,19 @@ class FilterBag implements \IteratorAggregate, \Countable
         return isset($this->filters[$field]);
     }
 
-    public function get(string $field): ?AbstractFilter
+    public function get(string $field): ?FilterInterface
     {
         return $this->filters[$field] ?? null;
     }
 
+    /** @return FilterInterface[] */
+    public function all(): array
+    {
+        return $this->filters;
+    }
+
     /**
-     * @return \Iterator<int|string, AbstractFilter>
+     * @return \Iterator<int|string, FilterInterface>
      */
     public function getIterator(): \Iterator
     {
@@ -43,11 +49,11 @@ class FilterBag implements \IteratorAggregate, \Countable
     /**
      * Magic getter for easy access to filters.
      *
-     * $filterBag->status -> AbstractFilter|null
+     * $filterBag->status -> FilterInterface|null
      *
-     * @return AbstractFilter|null
+     * @return FilterInterface|null
      */
-    public function __get(string $key): ?AbstractFilter
+    public function __get(string $key): ?FilterInterface
     {
         return $this->get($key);
     }

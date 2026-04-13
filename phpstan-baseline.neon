@@ -261,29 +261,164 @@ parameters:
 			path: Documentation/Property/BooleanProperty.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\NumberProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: Documentation/Property/NumberProperty.php
-
-		-
 			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Documentation/Property/StringProperty.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:getEnums\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\BinaryProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: Documentation/Property/StringProperty.php
+			path: Documentation/Property/BinaryProperty.php
 
 		-
-			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:setEnums\\(\\) has parameter \\$enums with no value type specified in iterable type array\\.$#"
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\ByteProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: Documentation/Property/StringProperty.php
+			path: Documentation/Property/ByteProperty.php
 
 		-
-			message: "#^Property apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\StringProperty\\:\\:\\$enums type has no value type specified in iterable type array\\.$#"
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\DateProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: Documentation/Property/StringProperty.php
+			path: Documentation/Property/DateProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\DateTimeProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/DateTimeProperty.php
+
+		-
+			message: "#^Property apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\EnumProperty\\:\\:\\$enums type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/EnumProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\EnumProperty\\:\\:setEnums\\(\\) has parameter \\$enums with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/EnumProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\EnumProperty\\:\\:getEnums\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/EnumProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\EnumProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/EnumProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\FloatProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/FloatProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\IntegerProperty\\:\\:getDocumentationArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/IntegerProperty.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serialize\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserialize\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeBase\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeStringProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeStringProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeEnumProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeEnumProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeDateProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeDateProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeDateTimeProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeDateTimeProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeByteProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeByteProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeBinaryProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeBinaryProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeIntegerProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeIntegerProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeFloatProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeFloatProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:serializeBooleanProperty\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
+
+		-
+			message: "#^Method apivalk\\\\apivalk\\\\Documentation\\\\Property\\\\PropertySerializer\\:\\:deserializeBooleanProperty\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Documentation/Property/PropertySerializer.php
 
 
 		-

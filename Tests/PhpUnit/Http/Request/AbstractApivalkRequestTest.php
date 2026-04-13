@@ -10,8 +10,8 @@ use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
-use apivalk\apivalk\Router\Route\Filter\NumberFilter;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use PHPUnit\Framework\TestCase;
 
 class AbstractApivalkRequestTest extends TestCase
@@ -27,14 +27,14 @@ class AbstractApivalkRequestTest extends TestCase
             }
         };
 
-        $filter = NumberFilter::greaterThan(new NumberProperty('id'));
+        $filter = IntegerFilter::greaterThan(new IntegerProperty('id'));
         $route = Route::get('/test')
             ->filtering([$filter]);
 
         $request->populate($route);
 
         $this->assertEquals(123, $request->filtering()->id->getValue());
-        $this->assertInstanceOf(NumberFilter::class, $request->filtering()->get('id'));
+        $this->assertInstanceOf(IntegerFilter::class, $request->filtering()->get('id'));
     }
 
     public function testGettersAndSetters(): void

@@ -52,7 +52,8 @@
               "http/request",
               "http/response",
               "http/pagination",
-              "http/filtering"
+              "http/filtering",
+              "http/sorting"
             ]
           },
           {

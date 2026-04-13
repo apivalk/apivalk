@@ -16,6 +16,9 @@ class Sort
         $this->field = $field;
     }
 
+    /**
+     * Default sort order for this field is ascending
+     */
     public static function asc(string $field): self
     {
         $order = new self($field);
@@ -25,6 +28,9 @@ class Sort
         return $order;
     }
 
+    /**
+     * Default sort order for this field is descending
+     */
     public static function desc(string $field): self
     {
         $order = new self($field);

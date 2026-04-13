@@ -15,14 +15,10 @@ class StringPropertyTest extends TestCase
         $this->assertEquals('string', $property->getType());
         $this->assertEquals('string', $property->getPhpType());
 
-        $property->setFormat(StringProperty::FORMAT_DATE);
-        $this->assertEquals('\DateTime', $property->getPhpType());
-
         $property->setDefault('default-val')
                  ->setMinLength(2)
                  ->setMaxLength(10)
-                 ->setPattern('/^[a-z]+$/')
-                 ->setEnums(['a', 'b']);
+                 ->setPattern('/^[a-z]+$/');
 
         $doc = $property->getDocumentationArray();
         $this->assertEquals('string', $doc['type']);
@@ -30,14 +26,8 @@ class StringPropertyTest extends TestCase
         $this->assertEquals(2, $doc['minLength']);
         $this->assertEquals(10, $doc['maxLength']);
         $this->assertEquals('/^[a-z]+$/', $doc['pattern']);
-        $this->assertEquals(['a', 'b'], $doc['enum']);
         $this->assertEquals('User Name', $doc['description']);
-    }
-
-    public function testStringPropertyInvalidFormat()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $property = new StringProperty('test');
-        $property->setFormat('invalid');
+        $this->assertArrayNotHasKey('format', $doc);
+        $this->assertArrayNotHasKey('enum', $doc);
     }
 }

@@ -17,7 +17,7 @@ abstract class AbstractProperty
     private $isRequired = true;
     /** @var string|null */
     private $example;
-    /** @var AbstractValidator[] */
+    /** @var array<string, AbstractValidator> */
     private $validators = [];
 
     /** Is the swagger type definition of the value. Required for the documentation. */
@@ -76,12 +76,12 @@ abstract class AbstractProperty
 
     final public function addValidator(AbstractValidator $validator): self
     {
-        $this->validators[] = $validator;
+        $this->validators[\get_class($validator)] = $validator;
 
         return $this;
     }
 
-    /** @return array<int, AbstractValidator> */
+    /** @return array<string, AbstractValidator> */
     final public function getValidators(): array
     {
         return $this->validators;

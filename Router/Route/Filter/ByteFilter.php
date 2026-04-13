@@ -5,27 +5,31 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router\Route\Filter;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\ByteProperty;
 
-abstract class AbstractFilter
+class ByteFilter implements FilterInterface
 {
-    public const TYPE_EQUALS = 'equals';
-    public const TYPE_IN = 'in';
-    public const TYPE_LIKE = 'like';
-    public const TYPE_GREATER_THAN = 'greater_than';
-    public const TYPE_LESS_THAN = 'less_than';
-    public const TYPE_CONTAINS = 'contains';
-
     /** @var string */
-    protected $type;
-    /** @var AbstractProperty */
-    protected $property;
-    /** @var mixed */
-    protected $value;
+    private $type;
+    /** @var ByteProperty */
+    private $property;
+    /** @var string|null */
+    private $value;
 
-    public function __construct(string $type, AbstractProperty $property)
+    public function __construct(string $type, ByteProperty $property)
     {
         $this->type = $type;
         $this->property = $property;
+    }
+
+    public static function equals(ByteProperty $property): self
+    {
+        return new self(self::TYPE_EQUALS, $property);
+    }
+
+    public static function in(ByteProperty $property): self
+    {
+        return new self(self::TYPE_IN, $property);
     }
 
     public function getField(): string
@@ -36,6 +40,22 @@ abstract class AbstractFilter
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /** @return ByteProperty */
+    public function getProperty(): AbstractProperty
+    {
+        return $this->property;
+    }
+
+    public function setValue($value): void
+    {
+        $this->value = $value !== null ? (string) $value : null;
+    }
+
+    public function getValue(): ?string
+    {
+        return $this->value;
     }
 
     public function isTypeEquals(): bool
@@ -66,26 +86,5 @@ abstract class AbstractFilter
     public function isTypeLessThan(): bool
     {
         return $this->type === self::TYPE_LESS_THAN;
-    }
-
-    public function getProperty(): AbstractProperty
-    {
-        return $this->property;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function setValue($value): void
-    {
-        $this->value = $value;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
     }
 }

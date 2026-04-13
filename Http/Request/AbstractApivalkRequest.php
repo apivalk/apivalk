@@ -16,7 +16,6 @@ use apivalk\apivalk\Http\Request\Pagination\PaginatorFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Sort\SortBag;

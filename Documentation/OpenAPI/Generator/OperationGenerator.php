@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
@@ -118,13 +118,13 @@ class OperationGenerator
         $properties = [];
         $paginationType = $route->getPagination()->getType();
 
-        $limitProperty = new NumberProperty(
+        $limitProperty = new IntegerProperty(
             'limit',
             \sprintf(
                 'Maximum number of items per page. Maximum value is %s.',
                 $route->getPagination()->getMaxLimit()
             ),
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $limitProperty->setExample('10');
         $limitProperty->setMinimumValue(1);
@@ -135,10 +135,10 @@ class OperationGenerator
 
         switch ($paginationType) {
             case Pagination::TYPE_OFFSET:
-                $offsetProperty = new NumberProperty(
+                $offsetProperty = new IntegerProperty(
                     'offset',
                     'Number of items to skip before starting to collect the result set (>= 0).',
-                    NumberProperty::FORMAT_INT64
+                    IntegerProperty::FORMAT_INT64
                 );
 
                 $offsetProperty->setExample('0');
@@ -163,10 +163,10 @@ class OperationGenerator
                 break;
 
             case Pagination::TYPE_PAGE:
-                $pageProperty = new NumberProperty(
+                $pageProperty = new IntegerProperty(
                     'page',
                     'Page number to retrieve (starting from 1).',
-                    NumberProperty::FORMAT_INT64
+                    IntegerProperty::FORMAT_INT64
                 );
 
                 $pageProperty->setExample('1');

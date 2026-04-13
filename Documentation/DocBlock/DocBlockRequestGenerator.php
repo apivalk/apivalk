@@ -8,7 +8,7 @@ use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
 use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
-use apivalk\apivalk\Router\Route\Filter\AbstractFilter;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;

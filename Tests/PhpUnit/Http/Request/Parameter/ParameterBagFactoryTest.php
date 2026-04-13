@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Parameter;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\DateTimeProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\Route\Route;
@@ -62,7 +64,7 @@ class ParameterBagFactoryTest extends TestCase
     public function testCreatePathBag(): void
     {
         $doc = new ApivalkRequestDocumentation();
-        $doc->addPathProperty(new NumberProperty('id', '', NumberProperty::FORMAT_INT32));
+        $doc->addPathProperty(new IntegerProperty('id', '', IntegerProperty::FORMAT_INT32));
 
         $route = $this->createMock(Route::class);
         $route->method('getUrl')->willReturn('/users/{id}');
@@ -78,7 +80,7 @@ class ParameterBagFactoryTest extends TestCase
     {
         $doc = new ApivalkRequestDocumentation();
         $doc->addBodyProperty(new StringProperty('name'));
-        $doc->addBodyProperty(new NumberProperty('age', '', NumberProperty::FORMAT_INT32));
+        $doc->addBodyProperty(new IntegerProperty('age', '', IntegerProperty::FORMAT_INT32));
 
         $_POST['name'] = 'Jane';
         $_POST['age'] = '30';
@@ -91,7 +93,7 @@ class ParameterBagFactoryTest extends TestCase
 
     public function testTypeCastValue(): void
     {
-        $prop = new NumberProperty('test', '', NumberProperty::FORMAT_INT32);
+        $prop = new IntegerProperty('test', '', IntegerProperty::FORMAT_INT32);
         $this->assertEquals(123, ParameterBagFactory::typeCastValueByProperty('123', $prop));
 
         $prop = new \apivalk\apivalk\Documentation\Property\BooleanProperty('test', '', false);
@@ -103,15 +105,13 @@ class ParameterBagFactoryTest extends TestCase
 
     public function testTypeCastDateTimeValue(): void
     {
-        $prop = new StringProperty('test');
-        $prop->setFormat(StringProperty::FORMAT_DATE);
-
-        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20', $prop);
+        $dateProp = new DateProperty('test');
+        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20', $dateProp);
         $this->assertInstanceOf(\DateTime::class, $result);
         $this->assertEquals('2023-12-20', $result->format('Y-m-d'));
 
-        $prop->setFormat(StringProperty::FORMAT_DATE_TIME);
-        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20T14:00:00+00:00', $prop);
+        $dateTimeProp = new DateTimeProperty('test');
+        $result = ParameterBagFactory::typeCastValueByProperty('2023-12-20T14:00:00+00:00', $dateTimeProp);
         $this->assertInstanceOf(\DateTime::class, $result);
         $this->assertEquals('2023-12-20T14:00:00+00:00', $result->format(\DateTime::ATOM));
     }

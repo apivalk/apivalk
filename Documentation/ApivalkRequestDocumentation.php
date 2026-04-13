@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class ApivalkRequestDocumentation
 {
@@ -48,9 +48,8 @@ class ApivalkRequestDocumentation
 
     public function addPaginationQueryProperties(): void
     {
-        $pageProperty = new NumberProperty('page', 'Page');
+        $pageProperty = new IntegerProperty('page', 'Page', IntegerProperty::FORMAT_INT32);
         $pageProperty->setIsRequired(false);
-        $pageProperty->setFormat(NumberProperty::FORMAT_INT32);
         $pageProperty->setExample('1');
 
         $this->addQueryProperty($pageProperty);

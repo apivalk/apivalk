@@ -6,7 +6,7 @@ namespace apivalk\apivalk\Http\Response\Pagination;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
-use apivalk\apivalk\Documentation\Property\NumberProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class PagePaginationPaginationResponse implements PaginationResponseInterface
 {
@@ -45,24 +45,24 @@ class PagePaginationPaginationResponse implements PaginationResponseInterface
     {
         $properties = [];
 
-        $pageProperty = new NumberProperty(
+        $pageProperty = new IntegerProperty(
             'page',
             'Current page number (starting from 1).',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $pageProperty->setExample('1');
 
-        $totalPagesProperty = new NumberProperty(
+        $totalPagesProperty = new IntegerProperty(
             'total_pages',
             'Total number of available pages.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $totalPagesProperty->setExample('5');
 
-        $pageSizeProperty = new NumberProperty(
+        $pageSizeProperty = new IntegerProperty(
             'page_size',
             'Number of items returned per page.',
-            NumberProperty::FORMAT_INT64
+            IntegerProperty::FORMAT_INT64
         );
         $pageSizeProperty->setExample('10');
 
