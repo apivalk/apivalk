@@ -57,6 +57,10 @@ class UserRateLimit implements RateLimitInterface
 }
 ```
 
+## OpenAPI Documentation
+
+When a route has a rate limit defined, the OpenAPI generator automatically documents `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `Retry-After` response headers on every response for that operation. No manual configuration is needed.
+
 ## Enforcement
 
 Rate limits defined on routes are not enforced automatically. You must add the `RateLimitMiddleware` to your middleware stack to enable enforcement.

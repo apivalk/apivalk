@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\OpenAPI\Object\HeaderObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
@@ -20,6 +21,14 @@ use apivalk\apivalk\Router\Route\Route;
 
 class OperationGenerator
 {
+    /** @var bool */
+    private $documentLocaleHeaders;
+
+    public function __construct(bool $documentLocaleHeaders = true)
+    {
+        $this->documentLocaleHeaders = $documentLocaleHeaders;
+    }
+
     public function generate(
         Route $route,
         ApivalkRequestDocumentation $requestDocumentation,
@@ -53,6 +62,18 @@ class OperationGenerator
             $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
         }
 
+        if ($this->documentLocaleHeaders) {
+            $acceptLanguageProperty = new StringProperty(
+                'Accept-Language',
+                'BCP 47 language tag for content negotiation (e.g. en, de-DE).'
+            );
+            $acceptLanguageProperty->setIsRequired(false);
+            $acceptLanguageProperty->setExample('en');
+            $parameters[] = $parameterGenerator->generate($acceptLanguageProperty, 'header');
+        }
+
+        $responseHeaders = $this->getResponseHeaders($route);
+
         $responses = [];
 
         /** @var AbstractApivalkResponse $responseClass */
@@ -61,34 +82,45 @@ class OperationGenerator
                 $responseGenerator->generate(
                     (int)$responseClass::getStatusCode(),
                     $responseClass::getDocumentation(),
-                    $route
+                    $route,
+                    $responseHeaders
                 );
         }
 
         // Todo: Maybe define the default responses in all operations in apivalk configuration
         $responses[] = $responseGenerator->generate(
             BadValidationApivalkResponse::getStatusCode(),
-            BadValidationApivalkResponse::getDocumentation()
+            BadValidationApivalkResponse::getDocumentation(),
+            null,
+            $responseHeaders
         );
 
         $responses[] = $responseGenerator->generate(
             MethodNotAllowedApivalkResponse::getStatusCode(),
-            MethodNotAllowedApivalkResponse::getDocumentation()
+            MethodNotAllowedApivalkResponse::getDocumentation(),
+            null,
+            $responseHeaders
         );
 
         $responses[] = $responseGenerator->generate(
             NotFoundApivalkResponse::getStatusCode(),
-            NotFoundApivalkResponse::getDocumentation()
+            NotFoundApivalkResponse::getDocumentation(),
+            null,
+            $responseHeaders
         );
 
         $responses[] = $responseGenerator->generate(
             TooManyRequestsApivalkResponse::getStatusCode(),
-            TooManyRequestsApivalkResponse::getDocumentation()
+            TooManyRequestsApivalkResponse::getDocumentation(),
+            null,
+            $responseHeaders
         );
 
         $responses[] = $responseGenerator->generate(
             UnauthorizedApivalkResponse::getStatusCode(),
-            UnauthorizedApivalkResponse::getDocumentation()
+            UnauthorizedApivalkResponse::getDocumentation(),
+            null,
+            $responseHeaders
         );
 
         return new OperationObject(
@@ -230,12 +262,44 @@ class OperationGenerator
         if (\count($route->getFilters()) === 0) {
             return [];
         }
-    
+
         $properties = [];
         foreach ($route->getFilters() as $filter) {
             $properties[] = $filter->getProperty();
         }
-    
+
         return $properties;
+    }
+
+    /**
+     * @return array<string, HeaderObject>
+     */
+    private function getResponseHeaders(Route $route): array
+    {
+        $headers = [];
+
+        if ($this->documentLocaleHeaders) {
+            $headers['Content-Language'] = new HeaderObject('The locale of the response content (BCP 47 language tag).');
+        }
+
+        if ($route->getRateLimit() !== null) {
+            $headers['X-RateLimit-Limit'] = new HeaderObject(
+                \sprintf(
+                    'The maximum number of requests allowed within the time window (%d seconds).',
+                    $route->getRateLimit()->getWindowInSeconds()
+                )
+            );
+            $headers['X-RateLimit-Remaining'] = new HeaderObject(
+                'The number of requests remaining in the current time window.'
+            );
+            $headers['X-RateLimit-Reset'] = new HeaderObject(
+                'The UTC epoch timestamp (in seconds) when the rate limit window resets.'
+            );
+            $headers['Retry-After'] = new HeaderObject(
+                'The UTC epoch timestamp (in seconds) after which the client may retry. Present only when the rate limit has been exceeded.'
+            );
+        }
+
+        return $headers;
     }
 }

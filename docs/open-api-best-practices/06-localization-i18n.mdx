@@ -57,3 +57,7 @@ Must not be localized:
 - Error keys or error codes
 - Enum values
 - IDs, UUIDs, technical identifiers
+
+### OpenAPI documentation
+
+The OpenAPI generator automatically documents an optional `Accept-Language` request header parameter and a `Content-Language` response header on every operation. This can be disabled by passing `documentLocaleHeaders: false` to the `OpenAPIGenerator` constructor.
