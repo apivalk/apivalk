@@ -102,8 +102,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(2)->setMaxLength(100)->setPattern('^[a-zA-Z]+$')->setDefault('John');
 
         $route = $this->createRouteWithFilters([
-            StringFilter::equals($property),
-        ]);
+                                                   StringFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -129,8 +129,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('active');
 
         $route = $this->createRouteWithFilters([
-            EnumFilter::equals($property),
-        ]);
+                                                   EnumFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -153,8 +153,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('2000-01-01');
 
         $route = $this->createRouteWithFilters([
-            DateFilter::equals($property),
-        ]);
+                                                   DateFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -176,8 +176,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('2024-01-01T00:00:00Z');
 
         $route = $this->createRouteWithFilters([
-            DateTimeFilter::equals($property),
-        ]);
+                                                   DateTimeFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -199,8 +199,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(4)->setMaxLength(1024)->setPattern('^[A-Za-z0-9+/=]+$')->setDefault('dGVzdA==');
 
         $route = $this->createRouteWithFilters([
-            ByteFilter::equals($property),
-        ]);
+                                                   ByteFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -225,8 +225,8 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(1)->setMaxLength(2048)->setPattern('^.+$')->setDefault('data');
 
         $route = $this->createRouteWithFilters([
-            BinaryFilter::equals($property),
-        ]);
+                                                   BinaryFilter::equals($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -254,8 +254,8 @@ class RouteJsonSerializerTest extends TestCase
             ->setIsExclusiveMaximum(false);
 
         $route = $this->createRouteWithFilters([
-            IntegerFilter::greaterThan($property),
-        ]);
+                                                   IntegerFilter::greaterThan($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -284,8 +284,8 @@ class RouteJsonSerializerTest extends TestCase
             ->setIsExclusiveMaximum(true);
 
         $route = $this->createRouteWithFilters([
-            FloatFilter::lessThan($property),
-        ]);
+                                                   FloatFilter::lessThan($property),
+                                               ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
 
@@ -299,8 +299,8 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertInstanceOf(FloatProperty::class, $restoredProperty);
         $this->assertEquals('price', $restoredProperty->getPropertyName());
         $this->assertEquals('float', $restoredProperty->getFormat());
-        $this->assertEquals(0.01, $restoredProperty->getMinimumValue(), '', 0.001);
-        $this->assertEquals(9999.99, $restoredProperty->getMaximumValue(), '', 0.001);
+        $this->assertEqualsWithDelta(0.01, $restoredProperty->getMinimumValue(), 0.001);
+        $this->assertEqualsWithDelta(9999.99, $restoredProperty->getMaximumValue(), 0.001);
         $this->assertFalse($restoredProperty->isExclusiveMinimum());
         $this->assertTrue($restoredProperty->isExclusiveMaximum());
     }
