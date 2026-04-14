@@ -9,13 +9,13 @@ A `PropertyCollection` is an iterable container for `AbstractProperty` instances
 
 ## Modes
 
-One of the most powerful features of property collections is the concept of **Modes**. Often, the data you send to an API (CREATE/EDIT) is slightly different from the data you receive (VIEW).
+One of the most powerful features of property collections is the concept of **Modes**. Often, the data you send to an API (CREATE/UPDATE) is slightly different from the data you receive (VIEW).
 
 For example, a `User` object might:
 
 * **VIEW**: Include `id`, `email`, `createdAt`, and `updatedAt`.
 * **CREATE**: Include `email` and `password`, but NOT `id` or timestamps.
-* **EDIT**: Include `email`, but NOT `password` or `id`.
+* **UPDATE**: Include `email`, but NOT `password` or `id`.
 
 By passing a `mode` to the collection's constructor, you can conditionally add properties.
 
@@ -26,7 +26,7 @@ The `AbstractPropertyCollection` class provides the following constants:
 * `MODE_LIST`: Used for data returned in list responses.
 * `MODE_VIEW`: Used for data returned in responses.
 * `MODE_CREATE`: Used for data sent when creating a resource.
-* `MODE_EDIT`: Used for data sent when updating a resource.
+* `MODE_UPDATE`: Used for data sent when updating a resource.
 * `MODE_DELETE`: Used for data related to deletion (rarely used for properties).
 
 ## Implementing a Property Collection

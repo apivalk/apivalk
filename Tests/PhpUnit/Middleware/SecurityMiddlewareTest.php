@@ -134,12 +134,12 @@ class SecurityMiddlewareTest extends TestCase
 
     public function testMissingPermission_returnsForbidden_forAuthenticated(): void
     {
-        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:edit']);
+        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:update']);
         $route = $this->mockRoute($routeAuthorization);
 
         $identity = $this->createMock(AbstractAuthIdentity::class);
         $identity->method('isAuthenticated')->willReturn(true);
-        $identity->method('isPermissionGranted')->with('asset:edit')->willReturn(false);
+        $identity->method('isPermissionGranted')->with('asset:update')->willReturn(false);
 
         $request = $this->createMock(ApivalkRequestInterface::class);
         $request->method('getAuthIdentity')->willReturn($identity);
@@ -157,7 +157,7 @@ class SecurityMiddlewareTest extends TestCase
 
     public function testMissingPermission_returnsUnauthorized_forGuest(): void
     {
-        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:edit']);
+        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:update']);
         $route = $this->mockRoute($routeAuthorization);
 
         $request = $this->createMock(ApivalkRequestInterface::class);

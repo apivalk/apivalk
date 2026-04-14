@@ -9,7 +9,7 @@ abstract class AbstractPropertyCollection implements \IteratorAggregate
     /** @var string */
     public const MODE_LIST = 'list';
     /** @var string */
-    public const MODE_EDIT = 'edit';
+    public const MODE_UPDATE = 'update';
     /** @var string */
     public const MODE_VIEW = 'view';
     /** @var string */
