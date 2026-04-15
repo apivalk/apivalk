@@ -27,22 +27,27 @@ The security layer consists of four main pillars:
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
-$route = Route::get('/admin/settings')->description('Admin Settings')->authorization(new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read']))
+$route = Route::get('/admin/settings')->description('Admin Settings')->routeAuthorization(new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read']))
 ```
 
 In this example, the route requires a security scheme named `BearerAuth` with the `admin:settings` scope and `admin:settings:read` permission.
 
 ### Connection to OpenAPI
 
-When generating documentation using the `OpenAPIGenerator`, the name you use in your `RouteAuthorization` (e.g., `'BearerAuth'`) MUST match the name of a `SecuritySchemeObject` defined in your `ComponentsObject`.
+The first argument of `RouteAuthorization` is the security scheme name. **This name must match the `name` parameter of a `SecuritySchemeObject` in your `ComponentsObject`.** This is how Apivalk connects a route to its security definition in the generated OpenAPI spec, and how Swagger UI knows to show the "Authorize" button for that endpoint.
 
-If the names match, Apivalk will use your full configuration (flows, descriptions, etc.) in the generated Swagger file. This is the best practice for complex setups like OAuth2, as it allows Swagger UI to "just work" with your authentication server.
+```
+ComponentsObject → SecuritySchemeObject('http', 'api', ...)
+                                                  │
+                                                  ▼
+Route → routeAuthorization(new RouteAuthorization('api', [...], [...]))
+```
 
-If they don't match, Apivalk will generate a basic placeholder scheme automatically.
+If the names match, Apivalk uses your full configuration (descriptions, flows, bearer format, etc.) in the generated Swagger file. If they don't match, Apivalk will generate a basic placeholder scheme automatically.
 
 > Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
 
-See the [OpenAPI Generator documentation](/documentation/openapi-generator#security-schemes-and-components) for details on how to configure these components.
+See the [OpenAPI Generator documentation](/documentation/openapi-generator#security-schemes-and-components) for full examples including JWT Bearer, API Key, and OAuth2 setups.
 
 ## Examples: Getting Started with Middleware
 
@@ -88,7 +93,7 @@ Here is how you would define routes with different security requirements:
 use apivalk\apivalk\Router\Route\Route;use apivalk\apivalk\Security\RouteAuthorization;
 
 // PRIVATE: Requires 'write:orders' scope
-$privateRoute = Route::post('/orders')->description('Create order')->authorization(new RouteAuthorization('BearerAuth', ['order'], ['order:create']))
+$privateRoute = Route::post('/orders')->description('Create order')->routeAuthorization(new RouteAuthorization('BearerAuth', ['order'], ['order:create']))
 
 // PUBLIC: No security requirements
 $publicRoute = Route::get('/about')->description('About us');
