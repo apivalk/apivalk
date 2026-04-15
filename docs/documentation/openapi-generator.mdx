@@ -48,51 +48,20 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 // 1. Define API Metadata
 $info = new InfoObject('My nice api', '1.0.0', 'Nice', 'Best API in ze world');
 
-// 2. Define Components (e.g., Security Schemes)
+// 2. Define Components (Security Schemes)
+// The "name" parameter of each SecuritySchemeObject is what you reference
+// in RouteAuthorization on your routes. See "Security Schemes and Components" below.
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    'bearerAuth' => new SecuritySchemeObject(
-        'http',
-        'bearerAuth',
-        'Standard Bearer Authentication',
-        null,
-        'bearer',
-        'JWT',
-        null,
-        null
-    ),
-    'oauth2' => new SecuritySchemeObject(
-        'oauth2',
-        'oauth2',
-        'OAuth2 Authentication',
-        null,
-        null,
-        null,
-        new OAuthFlowsObject(
-            null,
-            new OAuthFlowObject(
-                'https://example.com/api/oauth/authorize',
-                'https://example.com/api/oauth/token',
-                'https://example.com/api/oauth/refresh',
-                [
-                    'read' => 'Read access',
-                    'write' => 'Write access'
-                ]
-            ),
-            null,
-            null
-        ),
-        null
-    ),
-    'fido' => new SecuritySchemeObject(
-        'apiKey',
-        'fido',
-        'FIDO/WebAuthn Authentication',
-        'header',
-        null,
-        null,
-        null,
-        null
+    new SecuritySchemeObject(
+        'http',                        // type
+        'api',                         // name — referenced by RouteAuthorization('api', ...)
+        'OAuth2 Bearer Authorization', // description
+        'header',                      // in
+        'bearer',                      // scheme
+        'JWT',                         // bearerFormat
+        null,                          // flows
+        null                           // openIdConnectUrl
     )
 ]);
 
@@ -116,7 +85,192 @@ echo $json;
 
 The `ComponentsObject` is where you define reusable elements for your OpenAPI specification, such as security schemes, common schemas, or parameters.
 
-### Automatic Security Scheme Generation
+### How Security Schemes Connect to Routes
+
+The key concept: **the `name` you give a `SecuritySchemeObject` is the same `name` you pass to `RouteAuthorization` on your routes.** This is how Apivalk knows which security scheme protects which route, and how Swagger UI knows when to show the "Authorize" button.
+
+```
+SecuritySchemeObject('http', 'api', ...)     ← defines a scheme named "api"
+                                  │
+                                  ▼
+RouteAuthorization('api', ['contract'], ...) ← this route requires the "api" scheme
+```
+
+When the OpenAPI spec is generated, Apivalk matches these names to produce the correct `security` entries per operation. Swagger UI then renders the "Authorize" button and applies the right credentials to the right endpoints.
+
+### End-to-End Example: JWT Bearer
+
+**Step 1: Define the security scheme in your `ComponentsObject`.**
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'http',                        // type
+        'api',                         // name — this is the link to your routes
+        'OAuth2 Bearer Authorization', // description
+        'header',                      // in
+        'bearer',                      // scheme
+        'JWT',                         // bearerFormat
+        null,                          // flows (not needed for http/bearer)
+        null                           // openIdConnectUrl
+    )
+]);
+```
+
+**Step 2: Reference the same name in your route's `RouteAuthorization`.**
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use apivalk\apivalk\Router\RateLimit\IpRateLimit;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+
+public static function getRoute(): Route
+{
+    return Route::post('/rest/v1/contract')
+        ->description('Create a contract')
+        ->rateLimit(new IpRateLimit('ip_rate_limit', 200, 10))
+        ->tags([new TagObject('contract')])
+        ->routeAuthorization(
+            new RouteAuthorization('api', ['contract'], ['contract:create'])
+            //                      ^^^
+            //                      Must match the name from SecuritySchemeObject
+        );
+}
+```
+
+**Step 3: Pass the components to the generator.**
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
+
+$generator = new OpenAPIGenerator(
+    $apivalk,
+    new InfoObject('My nice api', '1.0.0', 'Nice', 'Best API in ze world'),
+    [new ServerObject('http://localhost:8080', 'My local server')],
+    $components // the ComponentsObject from step 1
+);
+```
+
+The generated OpenAPI JSON will contain the security scheme under `components.securitySchemes.api`, and the `/rest/v1/contract` POST operation will have `security: [{"api": ["contract"]}]`. Swagger UI renders this as an "Authorize" button with a JWT bearer input.
+
+### End-to-End Example: Raw API Key Header
+
+Not every API uses JWT. If your API authenticates via a raw API key sent in a custom header (e.g., `X-API-Key`), use the `apiKey` type:
+
+**Step 1: Define the security scheme.**
+
+```php
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'apiKey',              // type
+        'apiKeyAuth',          // name — the link to your routes
+        'API Key Authentication', // description
+        'header',              // in — where the key is sent
+        null,                  // scheme (not used for apiKey type)
+        null,                  // bearerFormat (not used for apiKey type)
+        null,                  // flows
+        null                   // openIdConnectUrl
+    )
+]);
+```
+
+**Step 2: Reference it in your route.**
+
+```php
+public static function getRoute(): Route
+{
+    return Route::get('/rest/v1/reports')
+        ->description('List reports')
+        ->routeAuthorization(
+            new RouteAuthorization('apiKeyAuth', ['reports'], ['reports:read'])
+        );
+}
+```
+
+Swagger UI will show an "Authorize" button that prompts for an API key value, and will send it as the `X-API-Key` header on matching requests.
+
+### End-to-End Example: OAuth2
+
+For OAuth2, you can define full flows (authorization URL, token URL, scopes) so that Swagger UI can perform the OAuth2 flow directly:
+
+**Step 1: Define the security scheme with OAuth2 flows.**
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowObject;
+
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'oauth2',                  // type
+        'oauth2Auth',              // name — the link to your routes
+        'OAuth2 Authentication',   // description
+        null,                      // in (not used for oauth2)
+        null,                      // scheme (not used for oauth2)
+        null,                      // bearerFormat (not used for oauth2)
+        new OAuthFlowsObject(
+            null,                  // implicit flow
+            new OAuthFlowObject(   // authorization code flow
+                'https://example.com/api/oauth/authorize',
+                'https://example.com/api/oauth/token',
+                'https://example.com/api/oauth/refresh',
+                [
+                    'read' => 'Read access',
+                    'write' => 'Write access'
+                ]
+            ),
+            null,                  // client credentials flow
+            null                   // password flow
+        ),
+        null                       // openIdConnectUrl
+    )
+]);
+```
+
+**Step 2: Reference it in your route.**
+
+```php
+public static function getRoute(): Route
+{
+    return Route::get('/rest/v1/users')
+        ->description('List users')
+        ->routeAuthorization(
+            new RouteAuthorization('oauth2Auth', ['user'], ['user:read'])
+        );
+}
+```
+
+### Multiple Security Schemes
+
+You can define multiple security schemes in a single `ComponentsObject` and use different ones on different routes:
+
+```php
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject('http', 'api', 'JWT Bearer', 'header', 'bearer', 'JWT', null, null),
+    new SecuritySchemeObject('apiKey', 'apiKeyAuth', 'API Key', 'header', null, null, null, null),
+]);
+
+// Route using JWT Bearer
+Route::post('/rest/v1/contract')
+    ->description('Create a contract')
+    ->routeAuthorization(new RouteAuthorization('api', ['contract'], ['contract:create']));
+
+// Route using API Key
+Route::get('/rest/v1/status')
+    ->description('Check system status')
+    ->routeAuthorization(new RouteAuthorization('apiKeyAuth', ['status'], ['status:read']));
+```
+
+### Automatic Security Scheme Generation (Fallback)
 
 If you use security requirements in your routes but haven't defined them in the `ComponentsObject`, the `OpenAPIGenerator` will attempt to automatically generate a base authorization part for you:
 
@@ -125,45 +279,9 @@ If you use security requirements in your routes but haven't defined them in the 
 - If the scheme name contains "fido", it defaults to an `apiKey` type in the `header`.
 - Otherwise, it defaults to an `apiKey` type in the `header`.
 
-### Best Practice: Explicit Definition
-
-While automatic generation works for simple cases, it is highly recommended to explicitly define your security schemes when initializing the `OpenAPIGenerator`. 
-
-By defining your own `SecuritySchemeObject` in the `ComponentsObject`, you gain full control over the documentation. This is especially important for complex schemes like **OAuth2**, where you can define `OAuthFlows` (authorization URLs, token URLs, scopes). This allows tools like Swagger UI to provide a functional "Authorize" button that works instantly with your authentication provider.
-
-**Crucially, the name you use in your routes (`RouteAuthorization`) must match the key used in `ComponentsObject::setSecuritySchemes()`.**
+This fallback exists as a convenience, but **it is recommended to define your schemes explicitly** so you have full control over descriptions, flows, and how Swagger UI renders the authorization interface.
 
 > Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
-
-```php
-$components = new ComponentsObject();
-$components->setSecuritySchemes([
-    'BearerAuth' => new SecuritySchemeObject(
-        'http',
-        'BearerAuth', // This name should match the key
-        'Standard JWT Bearer Authentication',
-        null,
-        'bearer',
-        'JWT',
-        null,
-        null
-    )
-]);
-
-// In your route:
-$route = Route::post('/orders')->description('Create order')->authorization('BearerAuth', ['write:orders'])
-```
-
-Passing your custom components to the generator:
-
-```php
-$generator = new OpenAPIGenerator(
-    $apivalk,
-    $info,
-    $servers,
-    $components // Pass your custom components here
-);
-```
 
 ## Automated Headers
 

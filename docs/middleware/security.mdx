@@ -12,7 +12,7 @@ The middleware retrieves the `Route` object from the controller being called and
 ### Authorization Logic
 
 A route can have a `RouteAuthorization` object that defines:
-1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`).
+1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`). This name must match a `SecuritySchemeObject` defined in your `ComponentsObject` so the generated OpenAPI spec correctly links the route to its authentication method. See [Security Schemes and Components](/documentation/openapi-generator#security-schemes-and-components) for full setup examples.
 2. **Scopes**: A list of required scopes.
 3. **Permissions**: A list of required permissions.
 
@@ -29,7 +29,7 @@ use apivalk\apivalk\Security\RouteAuthorization;
 
 $route = Route::get('/admin/dashboard')
                 ->description('Admin Dashboard')
-                ->authorization(new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read']))
+                ->routeAuthorization(new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read']))
 
 ```
 
