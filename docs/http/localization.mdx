@@ -1,0 +1,176 @@
+---
+title: "Localization"
+description: "Apivalk provides built-in locale resolution from the Accept-Language header, with BCP 47 compliant locale handling."
+---
+
+Apivalk includes a localization system that resolves the client's preferred language from the `Accept-Language` HTTP header and makes it available throughout the request lifecycle.
+
+## Configuration
+
+Set up localization via `LocalizationConfiguration` when bootstrapping your application. Pass it as the last argument to `ApivalkConfiguration`.
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
+
+// 1. Create localization config with a default locale
+$localization = new LocalizationConfiguration(Locale::en());
+
+// 2. Add supported locales
+$localization->addSupportedLocale(Locale::en());
+$localization->addSupportedLocale(Locale::de());
+$localization->addSupportedLocale(Locale::deDe());
+$localization->addSupportedLocale(Locale::enUs());
+$localization->addSupportedLocale(Locale::fr());
+
+// 3. Pass to ApivalkConfiguration
+$configuration = new ApivalkConfiguration(
+    $router,
+    null,                    // renderer
+    $exceptionHandler,       // exception handler
+    $container,              // PSR-11 container
+    $logger,                 // PSR-3 logger
+    $localization            // localization configuration
+);
+```
+
+If no `LocalizationConfiguration` is provided, Apivalk defaults to English (`en`).
+
+## The Locale Object
+
+The `Locale` class is a BCP 47 compliant value object. It normalizes locale tags automatically (e.g., `de_DE` becomes `de-DE`).
+
+```php
+use apivalk\apivalk\Http\i18n\Locale;
+
+// Using built-in factory methods
+$locale = Locale::de();      // "de"
+$locale = Locale::deDe();    // "de-DE"
+$locale = Locale::enGb();    // "en-GB"
+
+// Using the constructor directly
+$locale = new Locale('fr-CA');
+
+// Accessing parts
+$locale->getTag();           // "fr-CA"
+$locale->getLanguage();      // "fr" (ISO 639-1, lowercase)
+$locale->getRegion();        // "CA" (ISO 3166-1, uppercase)
+```
+
+### Available Factory Methods
+
+| Method | Tag |
+|---|---|
+| `Locale::en()` | `en` |
+| `Locale::de()` | `de` |
+| `Locale::fr()` | `fr` |
+| `Locale::enUs()` | `en-US` |
+| `Locale::enGb()` | `en-GB` |
+| `Locale::deDe()` | `de-DE` |
+| `Locale::deAt()` | `de-AT` |
+| `Locale::deCh()` | `de-CH` |
+
+For other locales, use the constructor: `new Locale('ja-JP')`.
+
+## Locale Resolution
+
+The `LocaleResolver` automatically resolves the locale from the `Accept-Language` HTTP header. The resolution follows this order:
+
+1. Parse the `Accept-Language` header and sort entries by quality weight (`q` value), then by order of appearance.
+2. For each entry, attempt to match against supported locales:
+   - First try an exact match (e.g., `de-DE` matches `de-DE`).
+   - Then try a language-only fallback (e.g., `de-DE` matches `de`).
+3. If no match is found, fall back to the default locale.
+
+### Example
+
+Given supported locales `en`, `de`, `de-DE` and default `en`:
+
+```http
+Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
+```
+
+Resolution: `de-DE` (exact match on the first entry).
+
+```http
+Accept-Language: fr-FR,fr;q=0.9
+```
+
+Resolution: `en` (no match found, falls back to default).
+
+## Accessing the Locale in Controllers
+
+The resolved locale is available on the request object:
+
+```php
+class MyController extends AbstractApivalkController
+{
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $locale = $request->getLocale();
+
+        $message = $locale->getLanguage() === 'de'
+            ? 'Hallo Welt'
+            : 'Hello World';
+
+        return new OkApivalkResponse(['message' => $message]);
+    }
+}
+```
+
+## HTTP Headers
+
+### Request: Accept-Language
+
+Clients send their preferred language(s) via the standard `Accept-Language` header using BCP 47 language tags:
+
+```http
+Accept-Language: de-DE
+Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Language: en
+```
+
+### Response: Content-Language
+
+Apivalk returns the resolved locale via the `Content-Language` response header:
+
+```http
+Content-Language: de-DE
+```
+
+## OpenAPI Documentation
+
+The [OpenAPI Generator](/documentation/openapi-generator) automatically documents locale headers on every operation:
+
+- **Request**: An optional `Accept-Language` header parameter (BCP 47 language tag).
+- **Response**: A `Content-Language` header on every response, indicating the resolved locale.
+
+This can be disabled by passing `false` for the `$documentLocaleHeaders` parameter:
+
+```php
+$generator = new OpenAPIGenerator(
+    $apivalk,
+    $info,
+    [new ServerObject('http://localhost:8080', 'My local server')],
+    $components,
+    false // disable locale headers in the OpenAPI spec
+);
+```
+
+## What to Localize
+
+Localize human-readable message strings only:
+
+- `message` fields in success and error responses
+- Validation error messages
+- Human-readable descriptions
+
+Do **not** localize:
+
+- Field names or JSON keys
+- Error codes or error keys
+- Enum values
+- IDs, UUIDs, or technical identifiers
+
+See the [API Standards: Localization](/open-api-best-practices/06-localization-i18n) guide for more best practices.

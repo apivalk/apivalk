@@ -20,7 +20,26 @@ The current [Identity](/security/identity) must possess **all** the required sco
 
 ## Route Examples
 
-### Private Route (Authorization Required)
+### Public Route (No Authorization)
+A route that is accessible by anyone. When no `RouteAuthorization` is defined, the middleware passes the request through without any checks.
+
+```php
+$route = Route::get('/about')->description('About page');
+```
+
+### Authenticated Route (Any Valid Token)
+A route that requires the user to be authenticated but does not enforce any specific scopes or permissions. Pass only the security scheme name to `RouteAuthorization`. The middleware will return `401 Unauthorized` for anonymous users but allow any authenticated identity through.
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+
+$route = Route::get('/me/profile')
+    ->description('Get my profile')
+    ->routeAuthorization(new RouteAuthorization('BearerAuth'));
+```
+
+### Scoped Route (Specific Scopes and Permissions)
 A route that requires a logged-in user with specific scopes and permissions.
 
 ```php
@@ -28,20 +47,14 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 $route = Route::get('/admin/dashboard')
-                ->description('Admin Dashboard')
-                ->routeAuthorization(new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read']))
-
+    ->description('Admin Dashboard')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin'], ['admin:dashboard:read'])
+    );
 ```
 
-### Public Route (No Authorization)
-A route that is accessible by anyone.
-
-```php
-$route = Route::get('/about')->description('About page');
-```
-
-### Optional Security (Public with Authorization)
-Currently, optional security (where a route is public but can optionally take a token) is handled by not defining a `RouteAuthorization` on the route, or by custom middleware logic. If a `RouteAuthorization` is present, it will be enforced.
+### Optional Security (Public with Identity)
+If you want a route to be public but also optionally use identity information when a token is provided, leave `RouteAuthorization` as `null`. The `AuthenticationMiddleware` will still populate the identity if a valid token is present — you can check `$request->getAuthIdentity()->isAuthenticated()` in your controller to adapt behavior.
 
 ## Status Codes
 

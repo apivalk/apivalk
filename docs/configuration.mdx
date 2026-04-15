@@ -53,6 +53,32 @@ $config = new ApivalkConfiguration(
 
 When a container is provided, Apivalk will use it to instantiate your controllers. If no container is provided, it will simply use `new $controllerClass()`.
 
+## Localization
+
+You can configure locale support by passing a `LocalizationConfiguration` to `ApivalkConfiguration`. This enables automatic locale resolution from the `Accept-Language` header on every request.
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
+
+$localization = new LocalizationConfiguration(Locale::en());
+$localization->addSupportedLocale(Locale::en());
+$localization->addSupportedLocale(Locale::de());
+$localization->addSupportedLocale(Locale::deDe());
+
+$config = new ApivalkConfiguration(
+    $router,
+    null,              // renderer
+    null,              // exception handler
+    null,              // container
+    null,              // logger
+    $localization      // localization configuration
+);
+```
+
+If no `LocalizationConfiguration` is provided, Apivalk defaults to English (`en`). See the [Localization](/http/localization) guide for full details.
+
 ## Middleware Stack
 
 You can register global middlewares via the configuration.

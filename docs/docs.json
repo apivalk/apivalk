@@ -53,7 +53,8 @@
               "http/response",
               "http/pagination",
               "http/filtering",
-              "http/sorting"
+              "http/sorting",
+              "http/localization"
             ]
           },
           {
