@@ -21,13 +21,51 @@ The security layer consists of four main pillars:
 3.  **Authorization**: The `SecurityMiddleware` compares the `AuthIdentity`'s granted scopes and permissions against the `RouteAuthorization` defined in the `Route`.
 4.  **Controller**: If authorized, the controller receives the request and can access the identity via `$request->getAuthIdentity()`.
 
-## Quick Example: Private Route
+## Route Security Levels
+
+Apivalk supports three levels of route security. The level is determined by whether a `RouteAuthorization` is present and what scopes/permissions it requires.
+
+### 1. Public Route (No Authentication)
+
+A route without a `RouteAuthorization` is fully public. Anyone can access it, including anonymous users. The `SecurityMiddleware` passes the request through without any checks.
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+
+$route = Route::get('/about')->description('About page');
+```
+
+### 2. Authenticated Route (No Specific Scopes)
+
+A route that requires the user to be authenticated but does not require any specific scopes or permissions. This is useful for endpoints like "get my profile" where you just need to know the user is logged in.
+
+Pass a `RouteAuthorization` with only the security scheme name and omit (or pass empty arrays for) scopes and permissions. The `SecurityMiddleware` will still enforce that the user is authenticated (not a `GuestAuthIdentity`), returning a `401 Unauthorized` for anonymous requests.
 
 ```php
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 
-$route = Route::get('/admin/settings')->description('Admin Settings')->routeAuthorization(new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read']))
+$route = Route::get('/me/profile')
+    ->description('Get my profile')
+    ->routeAuthorization(new RouteAuthorization('BearerAuth'));
+```
+
+### 3. Scoped Route (Specific Scopes and/or Permissions)
+
+A route that requires the user to be authenticated **and** possess specific scopes and/or permissions. The `SecurityMiddleware` checks each required scope and permission against the user's identity:
+
+- Missing scope/permission + authenticated user = `403 Forbidden`
+- Missing scope/permission + anonymous user = `401 Unauthorized`
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+
+$route = Route::get('/admin/settings')
+    ->description('Admin Settings')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin:settings'], ['admin:settings:read'])
+    );
 ```
 
 In this example, the route requires a security scheme named `BearerAuth` with the `admin:settings` scope and `admin:settings:read` permission.
@@ -85,18 +123,28 @@ use apivalk\apivalk\Middleware\SecurityMiddleware;
 $configuration->addMiddleware(new SecurityMiddleware());
 ```
 
-### Full Example: Public and Private Routes
+### Full Example: All Three Security Levels
 
 Here is how you would define routes with different security requirements:
 
 ```php
-use apivalk\apivalk\Router\Route\Route;use apivalk\apivalk\Security\RouteAuthorization;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
 
-// PRIVATE: Requires 'write:orders' scope
-$privateRoute = Route::post('/orders')->description('Create order')->routeAuthorization(new RouteAuthorization('BearerAuth', ['order'], ['order:create']))
-
-// PUBLIC: No security requirements
+// PUBLIC: No security requirements — anyone can access
 $publicRoute = Route::get('/about')->description('About us');
+
+// AUTHENTICATED: Requires any valid token, no specific scopes
+$authenticatedRoute = Route::get('/me/profile')
+    ->description('Get my profile')
+    ->routeAuthorization(new RouteAuthorization('BearerAuth'));
+
+// SCOPED: Requires valid token with specific scopes and permissions
+$scopedRoute = Route::post('/orders')
+    ->description('Create order')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['order'], ['order:create'])
+    );
 ```
 
 For more details on custom logic, check the [Custom Authentication](/middleware/authentication#custom-authentication-logic) section.
