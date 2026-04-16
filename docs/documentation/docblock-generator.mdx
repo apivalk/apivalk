@@ -64,3 +64,14 @@ $generator->run(
 * `DocBlockRequestGenerator`: Converts an `AbstractApivalkRequest` into a `DocBlockRequest` data object.
 * `DocBlockRequest`: Holds the metadata for the shapes (Body, Query, Path, Sorting, Filtering).
 * `DocBlockShape`: Generates the PHP code for the Shape classes.
+* `DocBlockResourceGenerator` / `DocBlockResource`: Generates `@property` annotations for `AbstractResource` subclasses so you get IDE autocompletion on `$resource->name`, `$resource->status`, etc.
+* `DocBlockResourceRequestGenerator` / `DocBlockResourceRequest`: For each `AbstractListResourceController`, generates a typed per-resource list request (e.g. `AnimalListRequest`) with `@method` annotations for `sorting()`, `filtering()`, and `paginator()` wired to shape interfaces derived from the resource's `availableSortings()` / `availableFilters()`.
+
+## Resource DocBlock Generation
+
+When `DocBlockGenerator` encounters an `AbstractResourceController` subclass, it produces two extra artifacts:
+
+1. **Resource `@property` docblock** — written once per resource class so that `$animal->name`, `$animal->type`, etc. autocomplete in your IDE.
+2. **Per-resource list request** — for each `AbstractListResourceController`, a typed request class (e.g. `Api/v1/Animal/Request/AnimalListRequest.php`) with `@method` annotations pointing at generated sorting/filtering shape interfaces. If the file already exists, **only the docblock is updated** — your class body is preserved.
+
+This gives you full IDE autocompletion on `$request->sorting()->status`, `$request->filtering()->createdAt`, and `$request->paginator()` without writing the boilerplate yourself.

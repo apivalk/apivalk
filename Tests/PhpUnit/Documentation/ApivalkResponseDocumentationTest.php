@@ -34,15 +34,4 @@ class ApivalkResponseDocumentationTest extends TestCase
 
         $this->assertSame($description, $this->responseDocumentation->getDescription());
     }
-
-    public function testSetAndGetResponsePagination(): void
-    {
-        $this->assertFalse($this->responseDocumentation->hasResponsePagination());
-
-        $this->responseDocumentation->setHasResponsePagination(true);
-        $this->assertTrue($this->responseDocumentation->hasResponsePagination());
-
-        $this->responseDocumentation->setHasResponsePagination(false);
-        $this->assertFalse($this->responseDocumentation->hasResponsePagination());
-    }
 }

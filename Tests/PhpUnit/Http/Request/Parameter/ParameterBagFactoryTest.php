@@ -56,7 +56,7 @@ class ParameterBagFactoryTest extends TestCase
 
         $route = $this->createMock(Route::class);
 
-        $bag = ParameterBagFactory::createQueryBag($route, $doc);
+        $bag = ParameterBagFactory::createQueryBag($route, $doc->getQueryProperties());
         $this->assertEquals('John', $bag->name);
         $this->assertNull($bag->age);
     }
@@ -71,7 +71,7 @@ class ParameterBagFactoryTest extends TestCase
 
         $_SERVER['REQUEST_URI'] = '/users/123';
 
-        $bag = ParameterBagFactory::createPathBag($route, $doc);
+        $bag = ParameterBagFactory::createPathBag($route, $doc->getPathProperties());
         $this->assertEquals(123, $bag->id);
         $this->assertIsInt($bag->id);
     }
@@ -85,7 +85,7 @@ class ParameterBagFactoryTest extends TestCase
         $_POST['name'] = 'Jane';
         $_POST['age'] = '30';
 
-        $bag = ParameterBagFactory::createBodyBag($doc);
+        $bag = ParameterBagFactory::createBodyBag($doc->getBodyProperties());
         $this->assertEquals('Jane', $bag->name);
         $this->assertEquals(30, $bag->age);
         $this->assertIsInt($bag->age);

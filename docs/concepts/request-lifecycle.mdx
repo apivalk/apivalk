@@ -56,13 +56,23 @@ Once a route is matched:
 
 ### 5. Request Population
 
-The `Request` object's `populate()` method is called. It uses `ParameterBagFactory` and `FileBagFactory` to extract data from PHP superglobals:
+Before dispatch, the router builds a fully merged `ApivalkRequestDocumentation` for the route via `RequestDocumentationFactory::buildRuntimeDocumentation()`. This combines the request class's base documentation with route-derived properties (pagination query params, filter fields, `order_by`, available sort fields).
 
-- **Headers**: Extracted from `$_SERVER`.
-- **Query Parameters**: Extracted from `$_GET`.
-- **Path Parameters**: Parsed from the URI based on the route pattern.
-- **Body Parameters**: Extracted from `$_POST` or `php://input` (JSON).
-- **Files**: Extracted from `$_FILES`.
+The `Request` object's `populate()` method then runs a pipeline of small, single-purpose strategies implementing `PopulationStrategyInterface`. The `RequestPopulationStrategyCollection` wires up the default set:
+
+- `HeaderPopulationStrategy` — extracts headers from `$_SERVER`.
+- `QueryParameterPopulationStrategy` — extracts declared query params and filter fields from `$_GET`.
+- `PathParameterPopulationStrategy` — parses the URI against the route's path pattern.
+- `BodyParameterPopulationStrategy` — decodes `php://input` (JSON) and `$_POST`.
+- `FilePopulationStrategy` — builds the file bag from `$_FILES`.
+- `SortingPopulationStrategy` — applies route default sortings, then parses `order_by` from `$_GET`.
+- `FilteringPopulationStrategy` — clones the route's declared filters and binds values from the query bag.
+- `PaginationPopulationStrategy` — builds the correct paginator (page / offset / cursor) when the route declares pagination.
+- `AuthIdentityPopulationStrategy` — sets a default `GuestAuthIdentity` (middleware replaces it if auth succeeds).
+- `IpPopulationStrategy` — resolves the client IP.
+- `MethodPopulationStrategy` — attaches the HTTP method from the route.
+
+Each strategy is independent, easy to test in isolation, and receives a `RequestPopulationContext` carrying the `Route` and the runtime documentation.
 
 ### 6. Middleware Pipeline
 

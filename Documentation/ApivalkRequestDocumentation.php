@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class ApivalkRequestDocumentation
 {
@@ -15,6 +14,8 @@ class ApivalkRequestDocumentation
     private $queryProperties = [];
     /** @var array<string, AbstractProperty> */
     private $pathProperties = [];
+    /** @var string[] */
+    private $availableSortFields = [];
 
     public function addBodyProperty(AbstractProperty $property): void
     {
@@ -46,12 +47,14 @@ class ApivalkRequestDocumentation
         return $this->pathProperties;
     }
 
-    public function addPaginationQueryProperties(): void
+    public function addAvailableSortField(string $field): void
     {
-        $pageProperty = new IntegerProperty('page', 'Page', IntegerProperty::FORMAT_INT32);
-        $pageProperty->setIsRequired(false);
-        $pageProperty->setExample('1');
+        $this->availableSortFields[] = $field;
+    }
 
-        $this->addQueryProperty($pageProperty);
+    /** @return string[] */
+    public function getAvailableSortFields(): array
+    {
+        return $this->availableSortFields;
     }
 }

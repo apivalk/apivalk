@@ -115,3 +115,14 @@ GET /users?page_size=50&client_id=123
   "first_name": "Max"
 }
 ```
+
+## How Apivalk Enforces These Standards
+
+Most of the rules on this page are enforced automatically when you use [resource controllers](/resources/index):
+
+- **HTTP methods per mode** — `Route::resource()` picks `POST` for create, `GET` for view/list, `PATCH` for update, `DELETE` for delete. You can't accidentally use the wrong verb for a CRUD mode.
+- **Plural URLs** — paths are derived from `$resource->getPluralName()`.
+- **Explicit path-parameter naming** — the identifier property name (e.g. `{animal_uuid}`) is used literally in the URL. There's no generic `{id}`.
+- **snake_case fields** — property names on `AbstractProperty` instances are used verbatim as JSON keys; keep them in snake_case and the API stays consistent.
+
+UUID identifiers are still a developer choice — declare your identifier as a `StringProperty` holding a UUID rather than an `IntegerProperty`.

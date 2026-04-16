@@ -6,6 +6,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
@@ -17,11 +18,10 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
-use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -65,8 +65,13 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
             {
+            }
+
+            public function getRuntimeDocumentation(): ApivalkRequestDocumentation
+            {
+                return self::$d;
             }
 
             public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
@@ -199,8 +204,13 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
             {
+            }
+
+            public function getRuntimeDocumentation(): ApivalkRequestDocumentation
+            {
+                return self::$d;
             }
 
             public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
@@ -243,7 +253,6 @@ class RequestValidationMiddlewareTest extends TestCase
             public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity
             ): void {
             }
-
 
             public function getIp(): string
             {
@@ -417,8 +426,13 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route): void
+            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
             {
+            }
+
+            public function getRuntimeDocumentation(): ApivalkRequestDocumentation
+            {
+                return self::$d;
             }
 
             public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface

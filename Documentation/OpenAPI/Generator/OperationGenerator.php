@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\HeaderObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
@@ -34,6 +35,64 @@ class OperationGenerator
         ApivalkRequestDocumentation $requestDocumentation,
         array $responseClasses
     ): OperationObject {
+        $responseHeaders = $this->getResponseHeaders($route);
+
+        $responseDocumentations = [];
+
+        /** @var AbstractApivalkResponse $responseClass */
+        foreach ($responseClasses as $responseClass) {
+            $responseDocumentations[] = [
+                'statusCode' => (int)$responseClass::getStatusCode(),
+                'documentation' => $responseClass::getDocumentation(),
+            ];
+        }
+
+        return $this->generateOperation(
+            $route,
+            $requestDocumentation,
+            $responseDocumentations,
+            $responseHeaders
+        );
+    }
+
+    /**
+     * Generate an operation using pre-built response documentation.
+     *
+     * @param Route                                                                           $route
+     * @param ApivalkRequestDocumentation                                                     $requestDocumentation
+     * @param array<int, array{statusCode: int, documentation: ApivalkResponseDocumentation}> $responseDocumentations
+     *
+     * @return OperationObject
+     */
+    public function generateFromDocumentation(
+        Route $route,
+        ApivalkRequestDocumentation $requestDocumentation,
+        array $responseDocumentations
+    ): OperationObject {
+        $responseHeaders = $this->getResponseHeaders($route);
+
+        return $this->generateOperation(
+            $route,
+            $requestDocumentation,
+            $responseDocumentations,
+            $responseHeaders
+        );
+    }
+
+    /**
+     * @param Route                                                                           $route
+     * @param ApivalkRequestDocumentation                                                     $requestDocumentation
+     * @param array<int, array{statusCode: int, documentation: ApivalkResponseDocumentation}> $responseDocumentations
+     * @param array<string, HeaderObject>                                                     $responseHeaders
+     *
+     * @return OperationObject
+     */
+    private function generateOperation(
+        Route $route,
+        ApivalkRequestDocumentation $requestDocumentation,
+        array $responseDocumentations,
+        array $responseHeaders
+    ): OperationObject {
         $parameterGenerator = new ParameterGenerator();
         $requestBodyGenerator = new RequestBodyGenerator();
         $responseGenerator = new ResponseGenerator();
@@ -47,18 +106,16 @@ class OperationGenerator
             $parameters[] = $parameterGenerator->generate($pathProperty, 'query');
         }
 
-        $orderProperty = $this->getOrderProperty($route);
+        $orderProperty = self::getOrderProperty($route);
         if ($orderProperty !== null) {
             $parameters[] = $parameterGenerator->generate($orderProperty, 'query');
         }
 
-        foreach ($this->getPaginationProperties($route) as $paginationProperty) {
+        foreach (self::getPaginationProperties($route) as $paginationProperty) {
             $parameters[] = $parameterGenerator->generate($paginationProperty, 'query');
         }
 
-        foreach ($this->getFilterProperties($route) as $filterProperty) {
-            $filterProperty->setIsRequired(false);
-
+        foreach (self::getFilterProperties($route) as $filterProperty) {
             $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
         }
 
@@ -72,22 +129,17 @@ class OperationGenerator
             $parameters[] = $parameterGenerator->generate($acceptLanguageProperty, 'header');
         }
 
-        $responseHeaders = $this->getResponseHeaders($route);
-
         $responses = [];
 
-        /** @var AbstractApivalkResponse $responseClass */
-        foreach ($responseClasses as $responseClass) {
-            $responses[] =
-                $responseGenerator->generate(
-                    (int)$responseClass::getStatusCode(),
-                    $responseClass::getDocumentation(),
-                    $route,
-                    $responseHeaders
-                );
+        foreach ($responseDocumentations as $responseDoc) {
+            $responses[] = $responseGenerator->generate(
+                $responseDoc['statusCode'],
+                $responseDoc['documentation'],
+                $route,
+                $responseHeaders
+            );
         }
 
-        // Todo: Maybe define the default responses in all operations in apivalk configuration
         $responses[] = $responseGenerator->generate(
             BadValidationApivalkResponse::getStatusCode(),
             BadValidationApivalkResponse::getDocumentation(),
@@ -141,7 +193,7 @@ class OperationGenerator
      *
      * @return AbstractProperty[]
      */
-    private function getPaginationProperties(Route $route): array
+    public static function getPaginationProperties(Route $route): array
     {
         if ($route->getPagination() === null) {
             return [];
@@ -213,7 +265,7 @@ class OperationGenerator
         return $properties;
     }
 
-    private function getOrderProperty(Route $route): ?StringProperty
+    public static function getOrderProperty(Route $route): ?StringProperty
     {
         if (\count($route->getSortings()) === 0) {
             return null;
@@ -228,7 +280,7 @@ class OperationGenerator
         $group = implode('|', $fields);
 
         $regex = \sprintf(
-            '^([+-](%s))(,([+-](%s)))*$',
+            '/^([+-](%s))(,([+-](%s)))*$/',
             $group,
             $group
         );
@@ -248,6 +300,7 @@ class OperationGenerator
 
         $orderProperty->setPattern($regex);
         $orderProperty->setIsRequired(false);
+        $orderProperty->setExample($example);
 
         return $orderProperty;
     }
@@ -257,15 +310,19 @@ class OperationGenerator
      *
      * @return AbstractProperty[]
      */
-    private function getFilterProperties(Route $route): array
+    public static function getFilterProperties(Route $route): array
     {
         if (\count($route->getFilters()) === 0) {
             return [];
         }
 
         $properties = [];
+
         foreach ($route->getFilters() as $filter) {
-            $properties[] = $filter->getProperty();
+            $filterProperty = $filter->getProperty();
+            $filterProperty->setIsRequired(false);
+
+            $properties[] = $filterProperty;
         }
 
         return $properties;
@@ -279,7 +336,8 @@ class OperationGenerator
         $headers = [];
 
         if ($this->documentLocaleHeaders) {
-            $headers['Content-Language'] = new HeaderObject('The locale of the response content (BCP 47 language tag).');
+            $headers['Content-Language'] =
+                new HeaderObject('The locale of the response content (BCP 47 language tag).');
         }
 
         if ($route->getRateLimit() !== null) {

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Router\Route\Sort\SortBag;
-use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
-use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
 class AbstractApivalkRequestTest extends TestCase
@@ -31,7 +31,7 @@ class AbstractApivalkRequestTest extends TestCase
         $route = Route::get('/test')
             ->filtering([$filter]);
 
-        $request->populate($route);
+        $request->populate($route, new ApivalkRequestDocumentation());
 
         $this->assertEquals(123, $request->filtering()->id->getValue());
         $this->assertInstanceOf(IntegerFilter::class, $request->filtering()->get('id'));
@@ -66,7 +66,7 @@ class AbstractApivalkRequestTest extends TestCase
         $route->method('getMethod')->willReturn($method);
 
         // Mock global factories is hard, but we can check if they are called and set bags
-        $request->populate($route);
+        $request->populate($route, new ApivalkRequestDocumentation());
 
         $this->assertSame($method, $request->getMethod());
         $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->header());

@@ -58,6 +58,15 @@
             ]
           },
           {
+            "group": "Resources",
+            "pages": [
+              "resources/index",
+              "resources/resource",
+              "resources/controllers",
+              "resources/responses"
+            ]
+          },
+          {
             "group": "Routing",
             "pages": [
               "routing/index",

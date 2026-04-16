@@ -52,6 +52,22 @@ class GetPetResponse extends AbstractApivalkResponse
 }
 ```
 
+## Resource Responses (CRUD)
+
+When a controller extends one of the `Abstract*ResourceController` bases, pair it with the matching pre-built response from `Http/Response/Resource/`:
+
+| Response class | Status | Used by |
+|---|---|---|
+| `ResourceCreatedResponse` | 201 | `AbstractCreateResourceController` |
+| `ResourceViewResponse` | 200 | `AbstractViewResourceController` |
+| `ResourceListResponse` | 200 | `AbstractListResourceController` |
+| `ResourceUpdatedResponse` | 200 | `AbstractUpdateResourceController` |
+| `ResourceDeletedResponse` | 200 | `AbstractDeleteResourceController` |
+
+Each wraps the resource's `toArray($mode)` output under a `data` key. `ResourceListResponse` additionally takes a `PaginationResponseInterface` and emits the standard `pagination` envelope. The OpenAPI schema for these responses is generated from the `AbstractResource` declaration — you do **not** author response documentation by hand.
+
+See [Resource Responses](/resources/responses).
+
 ## Built-in Error Responses
 
 Apivalk provides several pre-defined error responses for common scenarios:

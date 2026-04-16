@@ -34,20 +34,20 @@ When a route has sorting enabled, you can access the resolved sortings from the 
 public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
 {
     $sorting = $request->sorting();
-    
+
     // Check if a specific field was sorted by the client
     if ($sorting->has('name')) {
         $nameSort = $sorting->name; // returns Sort|null
         $direction = $nameSort->isAsc() ? 'ASC' : 'DESC';
         // apply to your query...
     }
-    
-    // Iterate over all provided sortings
+
+    // Iterate over all provided sortings (SortBag implements IteratorAggregate)
     foreach ($sorting as $field => $sort) {
         $direction = $sort->isAsc() ? 'ASC' : 'DESC';
         // ...
     }
-    
+
     // ...
 }
 ```
@@ -60,6 +60,10 @@ Apivalk supports sorting using the `order_by` query parameter. Clients can speci
 
 **Example: sort by name ascending and then by id descending**
 `GET /pets?order_by=name,-id`
+
+## Validation
+
+`RequestValidationMiddleware` rejects any sort field that isn't declared in the route's `sorting([...])` list. A request like `GET /pets?order_by=hacked_field` returns `422 Unprocessable Entity` with a validation error on the `order_by` parameter. Routes without any declared sortings skip this check entirely.
 
 ---
 

@@ -93,3 +93,32 @@ Apivalk uses `ClassLocator` to scan your controller directory. You don't need to
 ## Pagination
 
 For endpoints returning lists of data, see the [Pagination](/http/pagination) guide.
+
+## Resource Controllers (CRUD)
+
+If your endpoint follows a standard RESTful CRUD pattern against a single entity, you don't need to author a controller class like the one above by hand. Apivalk ships five abstract base controllers — `AbstractCreateResourceController`, `AbstractViewResourceController`, `AbstractUpdateResourceController`, `AbstractDeleteResourceController`, `AbstractListResourceController` — that derive their route, request class, response classes, and OpenAPI documentation from an `AbstractResource` declaration.
+
+A minimal list controller looks like this:
+
+```php
+use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractListResourceController<AnimalResource>
+ */
+final class ListAnimalController extends AbstractListResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        // fetch, paginate, return ResourceListResponse
+    }
+}
+```
+
+See the full [Resources](/resources/index) section for how to declare a resource and wire up all five CRUD endpoints.

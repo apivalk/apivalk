@@ -1,0 +1,221 @@
+---
+title: "Resource Controllers"
+description: "Five abstract controllers — Create, View, Update, Delete, List — turn an `AbstractResource` into a full CRUD surface."
+---
+
+## The Five Controllers
+
+| Base class | HTTP | Path | Response (default) |
+|---|---|---|---|
+| `AbstractCreateResourceController` | `POST` | `/{base}/{plural}` | `ResourceCreatedResponse` (201) |
+| `AbstractViewResourceController` | `GET` | `/{base}/{plural}/{id}` | `ResourceViewResponse` (200) |
+| `AbstractUpdateResourceController` | `PATCH` | `/{base}/{plural}/{id}` | `ResourceUpdatedResponse` (200) |
+| `AbstractDeleteResourceController` | `DELETE` | `/{base}/{plural}/{id}` | `ResourceDeletedResponse` (200) |
+| `AbstractListResourceController` | `GET` | `/{base}/{plural}` | `ResourceListResponse` (200) |
+
+`{base}` comes from `$resource->getBaseUrl()`, `{plural}` from `$resource->getPluralName()`, `{id}` from `$resource->getIdentifierProperty()->getPropertyName()`.
+
+All five are generic over the resource type: `@template TResource of AbstractResource`. When you subclass, declare your concrete resource so static analysis propagates the type through.
+
+## What You Write
+
+A resource controller is **one small class** — a `getResourceClass()` method plus your business logic. The `@extends Abstract...<YourResource>` annotation is what gives you IDE autocompletion and static analysis on the typed helpers the base class exposes.
+
+### Example: Create
+
+`AbstractCreateResourceController` provides `$this->getResource($request)` which builds a typed resource instance from the validated request body (and path, for `Update`). Because of the `@template TResource`, `$customer` below is known to be a `CustomerResource` — your IDE and PHPStan both know it.
+
+```php
+namespace App\Http\Controller\Customer;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceCreatedResponse;
+use App\Resource\CustomerResource;
+
+/**
+ * @extends AbstractCreateResourceController<CustomerResource>
+ */
+final class CreateCustomerController extends AbstractCreateResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return CustomerResource::class;
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        // CustomerResource (typed via the template parameter), built from
+        // the validated body + identifier path param. No manual property copying.
+        $customer = $this->getResource($request);
+
+        // ... persist $customer via your repository here ...
+
+        return new ResourceCreatedResponse($customer);
+    }
+}
+```
+
+That's the full controller. `AbstractUpdateResourceController` has the same `getResource($request)` helper; `AbstractView/Delete/ListResourceController` don't need it since they don't hydrate from a body.
+
+### Example: Update
+
+`AbstractUpdateResourceController` gives you **both** helpers: `$this->getResource($request)` hydrates a typed resource from the validated body **and** the identifier in the path, and `$this->getResourceIdentifier($request)` returns the raw identifier on its own (useful if you need to look up the existing row first, merge, and persist).
+
+```php
+namespace App\Http\Controller\Customer;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceUpdatedResponse;
+use App\Resource\CustomerResource;
+
+/**
+ * @extends AbstractUpdateResourceController<CustomerResource>
+ */
+final class UpdateCustomerController extends AbstractUpdateResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return CustomerResource::class;
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        // CustomerResource with path id + body fields already merged in.
+        $customer = $this->getResource($request);
+
+        // ... persist updates via your repository here ...
+
+        return new ResourceUpdatedResponse($customer);
+    }
+}
+```
+
+### Example: View
+
+`AbstractView/Delete/UpdateResourceController` expose `$this->getResourceIdentifier($request)` — a typed convenience for pulling the identifier path parameter (defined by `$resource->getIdentifierProperty()`) out of the request. It throws `InvalidArgumentException` if the parameter is missing, so the validation middleware has already ensured it's present by the time you reach `__invoke()`.
+
+```php
+namespace App\Http\Controller\Customer;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
+use App\Resource\CustomerResource;
+
+/**
+ * @extends AbstractViewResourceController<CustomerResource>
+ */
+final class ViewCustomerController extends AbstractViewResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return CustomerResource::class;
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $customerUuid = $this->getResourceIdentifier($request);
+
+        // ... fetch the row from your repository here ...
+        $customer = CustomerResource::byArray([
+            'uuid'       => $customerUuid,
+            'first_name' => 'John',
+            'last_name'  => 'Doe',
+            'status'     => 'active',
+        ]);
+
+        return new ResourceViewResponse($customer);
+    }
+}
+```
+
+`AbstractDeleteResourceController` follows the same pattern — call `$this->getResourceIdentifier($request)`, delete the row, return a `ResourceDeletedResponse`.
+
+### Example: List
+
+```php
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractListResourceController<AnimalResource>
+ */
+final class ListAnimalController extends AbstractListResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function pagination(): ?Pagination
+    {
+        return new Pagination(Pagination::TYPE_PAGE, 100);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $paginator = $request->paginator();
+
+        // $request->filtering()->status, $request->sorting() etc. are already typed
+        $animals = $this->repository->findAll(
+            $request->filtering(),
+            $request->sorting(),
+            $paginator->getLimit(),
+            ($paginator->getPage() - 1) * $paginator->getLimit()
+        );
+
+        return new ResourceListResponse(
+            $animals,
+            new PagePaginationPaginationResponse(
+                $paginator->getPage(),
+                $paginator->getLimit(),
+                /* hasMore */ true
+            )
+        );
+    }
+}
+```
+
+The five things the base class handles for you:
+
+1. `getRoute()` — built via `Route::resource($this->getEmptyResource(), static::getMode())`, wired with the resource's filters / sortings / pagination hook.
+2. `getRequestClass()` — returns `ResourceRequest::class` (a shared, empty request class).
+3. `getResponseClasses()` — the mode-specific response + standard error responses.
+4. `getMode()` — the constant for Create / View / Update / Delete / List.
+5. `getDescription()` — e.g. `"Create animal"`, `"List animals"`.
+
+## What You Can Override
+
+- `pagination(): ?Pagination` — on `AbstractListResourceController`. Default `null` (no pagination).
+- `routeAuthorization(): ?RouteAuthorization` — declare required scopes/permissions.
+- `rateLimit(): ?RateLimitInterface` — per-endpoint rate limit.
+- `getDescription(): string` — override the auto-generated description if needed.
+- `configureRoute(Route $route): void` — for exotic tweaks. `AbstractListResourceController` uses this internally to wire filters/sortings/pagination; if you override it on `List`, call back into the parent or re-wire manually.
+
+## The Shared `ResourceRequest`
+
+All resource controllers return `ResourceRequest::class` from `getRequestClass()`. This is intentional: the runtime documentation (body fields for create/update, path id for view/update/delete, filters/sortings/pagination for list) is built from the **resource declaration**, not from per-mode request classes. You never need to author a resource request class yourself.
+
+The [docblock generator](/documentation/docblock-generator#resource-docblock-generation) can emit an optional per-resource `AnimalListRequest` subclass purely for IDE autocompletion — that file only carries `@method` annotations, no runtime behavior.
+
+## Registering Controllers
+
+Resource controllers are ordinary controllers — the `ClassLocator` finds them automatically during route cache building. No manual registration.
+
+## Related
+
+- [Defining a Resource](/resources/resource)
+- [Resource Responses](/resources/responses)
+- [Route::resource()](/routing/route#resource-routes)

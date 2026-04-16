@@ -82,6 +82,15 @@ $name = $request->body()->name;
 $userId = $request->path()->id;
 ```
 
+## Base vs. Runtime Documentation
+
+Every request class exposes **two** documentation views:
+
+- **Static** — `RequestClass::getDocumentation()`. Returns the base `ApivalkRequestDocumentation` as declared by the developer. Stable and independent of the route.
+- **Instance** — `$request->getRuntimeDocumentation()`. Returns the base documentation merged with route-derived metadata (pagination query params, filter fields, `order_by`, available sort fields). This is what the `RequestValidationMiddleware` validates against and what the population strategies consume.
+
+You normally only define the base via `getDocumentation()`. The framework builds the runtime view for you in `RequestDocumentationFactory::buildRuntimeDocumentation()`.
+
 ## Automatic Request Documentation
 
 When a route has [sorting defined](/routing/route#sorting) or [pagination enabled](/http/pagination), the framework automatically documents the corresponding query parameters (`order_by`, `page`, `limit`, `offset`, or `cursor`) in your OpenAPI specification.
@@ -98,6 +107,10 @@ Additionally:
 ## Validation
 
 Validation happens automatically if you use the `RequestValidationMiddleware`. If the incoming data does not match your `getDocumentation()` definition, the framework will immediately return a `422 Unprocessable Entity` response with detailed error messages.
+
+## Resource Requests
+
+For endpoints backed by a resource CRUD controller you typically don't author a request class at all — the framework uses a single shared `ResourceRequest`, and the runtime documentation is derived from your `AbstractResource` definition. See [Resources](/resources/index).
 
 ## Authentication Identity
 

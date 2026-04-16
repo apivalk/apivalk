@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router;
 
 use apivalk\apivalk\Cache\CacheItem;
+use apivalk\apivalk\Documentation\Request\RequestDocumentationFactory;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\i18n\LocaleResolver;
 use apivalk\apivalk\Http\Method\MethodInterface;
@@ -47,12 +48,9 @@ class Router extends AbstractRouter
             return new MethodNotAllowedApivalkResponse();
         }
 
-        $request = $this->buildRequestByRoute(
-            $matchingRoutes[$requestMethod]['controllerClass'],
-            $matchingRoutes[$requestMethod]['route']
-        );
-
         $controller = $this->buildControllerByClass($matchingRoutes[$requestMethod]['controllerClass']);
+
+        $request = $this->buildRequestByRoute($controller, $matchingRoutes[$requestMethod]['route']);
 
         return $middlewareStack->handle($request, $controller);
     }
@@ -81,17 +79,16 @@ class Router extends AbstractRouter
         return $this->getControllerFactory()->create($controllerClass);
     }
 
-    /**
-     * @param class-string<AbstractApivalkController> $controllerClass
-     */
-    private function buildRequestByRoute(string $controllerClass, Route $route): ApivalkRequestInterface
+    private function buildRequestByRoute(AbstractApivalkController $controller, Route $route): ApivalkRequestInterface
     {
         /** @var class-string<ApivalkRequestInterface> $requestClass */
-        $requestClass = $controllerClass::getRequestClass();
+        $requestClass = $controller::getRequestClass();
+
+        $documentation = RequestDocumentationFactory::buildRuntimeDocumentation($route, \get_class($controller));
 
         $request = new $requestClass();
         $request->setLocale(LocaleResolver::resolve($this->getApivalk()->getLocalizationConfiguration()));
-        $request->populate($route);
+        $request->populate($route, $documentation);
 
         return $request;
     }
