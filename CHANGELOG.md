@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.0.0](https://github.com/apivalk/apivalk/compare/v1.6.0...v2.0.0) (2026-04-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* v1 to v2
+
+* add major changes and upgrade guide for v1 to v2 ([#106](https://github.com/apivalk/apivalk/issues/106)) ([9c980ae](https://github.com/apivalk/apivalk/commit/9c980aed1661ae1117da6b96de387aa4247e0246))
+
+
+### Features
+
+* document locale and rate limit headers in OpenAPI generation ([#96](https://github.com/apivalk/apivalk/issues/96)) ([6650c4e](https://github.com/apivalk/apivalk/commit/6650c4e4c1c0c3140db9fa5c1fd3deeef6aebc68)), closes [#80](https://github.com/apivalk/apivalk/issues/80)
+* extend `RouteJsonSerializer` to support orderings in serialization ([#90](https://github.com/apivalk/apivalk/issues/90)) ([f0ee9df](https://github.com/apivalk/apivalk/commit/f0ee9df4683aeb280260724b5455b78b6750c96e)), closes [#86](https://github.com/apivalk/apivalk/issues/86)
+* implement comprehensive filtering and sorting systems ([#92](https://github.com/apivalk/apivalk/issues/92)) ([9798249](https://github.com/apivalk/apivalk/commit/97982495b82086d7515420b321d9ecf4200015a8)), closes [#44](https://github.com/apivalk/apivalk/issues/44)
+* introduce modular pagination support and enhance schema documentation ([#91](https://github.com/apivalk/apivalk/issues/91)) ([829a2bb](https://github.com/apivalk/apivalk/commit/829a2bb640b9e5d0b026ff27202b837d3a028f6b)), closes [#43](https://github.com/apivalk/apivalk/issues/43)
+* **resource:** add resource controllers, responses, and documentation ([#102](https://github.com/apivalk/apivalk/issues/102)) ([f46d085](https://github.com/apivalk/apivalk/commit/f46d08546d0be0c4a37d15b5d15254a14c78eef4)), closes [#78](https://github.com/apivalk/apivalk/issues/78)
+* split properties into typed variants with per-type filters, validators, and serialization ([#95](https://github.com/apivalk/apivalk/issues/95)) ([700c289](https://github.com/apivalk/apivalk/commit/700c289b743d0cfa1d24d22a06efeb87bb276bc9)), closes [#94](https://github.com/apivalk/apivalk/issues/94)
+
 ## [1.6.0](https://github.com/apivalk/apivalk/compare/v1.5.0...v1.6.0) (2026-04-07)
 
 
