@@ -8,7 +8,23 @@ This section contains upgrade guides between major versions.
 
 ### v1 to v2
 
-Nothing known yet.
+This section lists major changes and steps required to upgrade from Apivalk v1 to v2.
+
+#### Breaking Changes
+
+- **Renamed `MODE_EDIT` to `MODE_UPDATE`**: All occurrences of `MODE_EDIT` in `AbstractPropertyCollection` and related security permissions (e.g., `asset:edit` to `asset:update`) have been renamed.
+- **Renamed "Ordering" to "Sorting"**: The terminology and related classes/methods have been updated from "Ordering" to "Sorting" (e.g., `Order` is now `Sort`).
+- **Property System Refactor**: `NumberProperty` has been split into `IntegerProperty` and `FloatProperty`. `StringProperty` now has specialized variants like `EnumProperty`, `DateProperty`, `DateTimeProperty`, `ByteProperty`, and `BinaryProperty`.
+- **Pagination Refactor**: `ResponsePagination` was replaced by dedicated response interfaces (`CursorPaginationPaginationResponse`, `OffsetPaginationPaginationResponse`, `PagePaginationPaginationResponse`).
+
+#### New Features
+
+- **Resource System**: Introduced `AbstractResource` and a CRUD controller hierarchy (`Create`, `View`, `List`, `Update`, `Delete`) to streamline resource management.
+- **Modular Pagination**: Added support for multiple pagination strategies (Cursor, Offset, Page) with a new `PaginatorFactory`.
+- **Comprehensive Filtering & Sorting**: A new robust system for defining filters and sorts on routes, with automatic population from query parameters.
+- **Property Serializer**: Introduced `PropertySerializer` for full round-trip serialization of properties, including validators.
+- **Improved OpenAPI & DocBlock Generation**: Enhanced generators to support the new resource system, pagination, filters, and sorts.
+- **Request Population Strategies**: Refactored request population into a modular strategy collection.
 
 ## Deprecation marks
 
