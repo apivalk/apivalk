@@ -3,6 +3,8 @@ title: "Configuration"
 description: "Apivalk is configured via the `ApivalkConfiguration` class. This class holds the router, renderer, exception handler, and the optional PSR-11 container."
 ---
 
+<Tip>Looking for a step-by-step walkthrough? The [Configure Apivalk](/how-to/configure) how-to covers the same ground with a recommended middleware order and a section on growing your configuration as the app expands.</Tip>
+
 ## Basic Setup
 
 To bootstrap Apivalk, you need to create an instance of `ApivalkConfiguration` and pass it to the `Apivalk` core class.
@@ -23,8 +25,8 @@ $router = new Router($classLocator, $routerCache);
 $configuration = new ApivalkConfiguration($router, null, [ApivalkExceptionHandler::class, 'handle']);
 
 // 3. Add Middlewares
-$configuration->addMiddleware(new SanitizeMiddleware());
-$configuration->addMiddleware(new RequestValidationMiddleware());
+$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
+$configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
 
 // 4. Run the App
 $apivalk = new Apivalk($configuration);

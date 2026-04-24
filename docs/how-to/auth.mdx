@@ -1,0 +1,187 @@
+---
+title: "Authenticate, authorize, and inspect identity"
+description: "How the Apivalk auth pieces fit together: Authenticator → AuthIdentity → RouteAuthorization → Middleware. What the developer has to wire, and what happens automatically."
+---
+
+Apivalk splits authentication ("who are you?") from authorization ("are you allowed to do this?"). Five moving parts:
+
+| Piece | Role |
+|---|---|
+| `AuthenticatorInterface` | Turns a raw token into an identity (or `null`). You choose / implement this. |
+| `AbstractAuthIdentity` | What a token decodes to: scopes, permissions, plus any fields you need (sub, email, ...). |
+| `GuestAuthIdentity` | Default identity when no token is provided. `isAuthenticated() === false`. |
+| `RouteAuthorization` | Per-route policy: security scheme name + required scopes + required permissions. |
+| `AuthenticationMiddleware` / `SecurityMiddleware` | Runtime pipeline. First attaches identity to the request, second enforces `RouteAuthorization`. |
+
+## The pipeline in one picture
+
+```
+HTTP request
+  │
+  ▼
+AuthenticationMiddleware  ← reads Authorization header, calls Authenticator
+  │                         sets AuthIdentity on the request
+  │                         (no token? GuestAuthIdentity remains)
+  ▼
+SecurityMiddleware        ← reads Route::getRouteAuthorization()
+  │                         checks identity has required scopes + permissions
+  │                         returns 401 (guest) or 403 (authenticated but missing scope)
+  ▼
+Controller::__invoke()    ← guaranteed that auth policy was met
+```
+
+`AuthenticationMiddleware` is **passive** — it never rejects the request. That means the same pipeline supports public routes (no `RouteAuthorization`), optional-auth routes (public but identity-aware), and strict routes all at once.
+
+## What you have to wire
+
+1. **Pick or implement an authenticator.** Apivalk ships `JwtAuthenticator` (see [how to authenticate with JWT](/how-to/jwt-auth)). For anything else, implement `AuthenticatorInterface` — [API key example](/how-to/api-key-auth).
+2. **Register the two middlewares in the right order.** Authentication before Security.
+3. **Declare a security scheme in `ComponentsObject`.** The `name` you give it (e.g. `BearerAuth`, `ApiKeyAuth`) becomes the link between your routes and the OpenAPI spec.
+4. **Attach `RouteAuthorization` to each protected route.**
+
+### Bootstrap
+
+```php
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+use apivalk\apivalk\Middleware\SecurityMiddleware;
+
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+```
+
+### Route-level declaration
+
+```php
+use apivalk\apivalk\Security\RouteAuthorization;
+
+public static function getRoute(): Route
+{
+    return Route::post('/api/v1/animals')
+        ->routeAuthorization(
+            new RouteAuthorization('BearerAuth', ['animal'], ['animal:create'])
+        );
+}
+```
+
+`'BearerAuth'` must match the `name` of a `SecuritySchemeObject` in your `ComponentsObject` — see [OpenAPI Generator / Security Schemes](/documentation/openapi-generator#security-schemes-and-components).
+
+### What SecurityMiddleware does with this
+
+For every required scope / permission:
+
+- If the identity has it → keep going.
+- If the identity is authenticated but missing the requirement → `403 Forbidden`.
+- If the identity is a guest → `401 Unauthorized`.
+
+And finally, if the identity is still a guest at the end → `401 Unauthorized`. Passing *no* requirements (just the scheme name) means "any authenticated user".
+
+## The three useful route shapes
+
+**Public route.** No `routeAuthorization(...)` at all. Guest and authenticated callers both pass.
+
+```php
+Route::get('/health');
+```
+
+**Any-authenticated route.** Pass only the scheme name. Guest → 401; anyone with a valid token → allowed.
+
+```php
+Route::get('/me/profile')
+    ->routeAuthorization(new RouteAuthorization('BearerAuth'));
+```
+
+**Scoped route.** Add scopes and/or permissions. All of them must be granted.
+
+```php
+Route::post('/admin/users')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin'], ['user:create', 'user:write'])
+    );
+```
+
+## Reading the identity in a controller
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $identity = $request->getAuthIdentity();
+
+    if ($identity->isAuthenticated()) {
+        /** @var \apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity $identity */
+        $userSub = $identity->getSub();
+    }
+
+    // ...
+}
+```
+
+### Optional auth (public route, identity-aware response)
+
+Leave `RouteAuthorization` off the route. The `AuthenticationMiddleware` still populates the identity if a valid token is present — you just branch in the controller:
+
+```php
+if ($request->getAuthIdentity()->isAuthenticated()) {
+    // return personalized view
+}
+```
+
+This is how you run a public landing endpoint that shows "Log in" to guests and "Hi, Jane" to authenticated users with the same controller.
+
+## Scopes vs permissions
+
+They're two independent lists on `RouteAuthorization`. Both must be satisfied. How you split them is a policy choice — a common convention:
+
+- **Scopes** model *who* is allowed in this area (`admin`, `animal`, `billing`). Typically tied to an OAuth2 scope emitted at token-issuance time.
+- **Permissions** model fine-grained actions (`animal:read`, `animal:create`). Typically derived from the user's roles on your side.
+
+`AbstractAuthIdentity::isScopeGranted()` / `isPermissionGranted()` is simple `in_array` — override if you need hierarchy (e.g. `admin` implies everything).
+
+## Custom identity classes
+
+`JwtAuthIdentity` is just the built-in that ships with `JwtAuthenticator`. Nothing stops you from defining your own:
+
+```php
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+
+final class ApiKeyIdentity extends AbstractAuthIdentity
+{
+    /** @var string */
+    private $accountId;
+    /** @var string[] */
+    private $scopes;
+
+    public function __construct(string $accountId, array $scopes)
+    {
+        $this->accountId = $accountId;
+        $this->scopes = $scopes;
+    }
+
+    public function getAccountId(): string
+    {
+        return $this->accountId;
+    }
+
+    public function getScopes(): array
+    {
+        return $this->scopes;
+    }
+
+    public function getPermissions(): array
+    {
+        return [];
+    }
+
+    public function isAuthenticated(): bool
+    {
+        return true;
+    }
+}
+```
+
+Return it from your authenticator and downcast with PHPStan-friendly narrowing in the controllers that care.
+
+## Related how-tos
+
+- [Authenticate with JWT (JWKS)](/how-to/jwt-auth)
+- [Authenticate with a custom API key header](/how-to/api-key-auth)
+- [Write a custom middleware](/how-to/custom-middleware) — useful if you need session-based auth, mTLS, or anything that isn't a bearer token.

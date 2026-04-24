@@ -3,6 +3,8 @@ title: "Property Collection"
 description: "Property Collections in Apivalk are used to group multiple properties together. They serve as the backbone for `AbstractObjectProperty` and are essential for maintaining reusable data structures and managing different data \"views\" (modes)."
 ---
 
+<Tip>For a worked nested-object example (customer with a shipping address, line items array), see the [complex objects how-to](/how-to/complex-objects).</Tip>
+
 ## The Concept
 
 A `PropertyCollection` is an iterable container for `AbstractProperty` instances. Instead of defining properties directly inside an object or a request, you group them into a collection. This promotes the Single Responsibility Principle (SRP) and allows you to reuse the same set of properties across different parts of your API.

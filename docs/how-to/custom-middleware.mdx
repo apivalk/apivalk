@@ -1,0 +1,181 @@
+---
+title: "Write a custom middleware"
+description: "Implement MiddlewareInterface, understand the onion execution order, and know when to choose middleware over a controller decorator."
+---
+
+A middleware in Apivalk is any class implementing `MiddlewareInterface`. It sits in the `MiddlewareStack` between the router and the controller, gets a typed request + the resolved controller + a `$next` callable, and must return an `AbstractApivalkResponse`.
+
+## The contract
+
+```php
+namespace apivalk\apivalk\Middleware;
+
+interface MiddlewareInterface
+{
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse;
+}
+```
+
+Three things to know:
+
+1. **Call `$next($request)` exactly once** to continue the pipeline. Return its value (or a wrapper) to the caller.
+2. **Short-circuit by returning a response without calling `$next`.** That's how auth, rate limit, validation failures, feature flags, etc. bail out.
+3. **The stack is onion-shaped.** Middlewares added last wrap the controller innermost. See the order rules below.
+
+## Example: log request + response
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Middleware;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Middleware\MiddlewareInterface;
+use Psr\Log\LoggerInterface;
+
+final class AccessLogMiddleware implements MiddlewareInterface
+{
+    /** @var LoggerInterface */
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse {
+        $startedAt = \microtime(true);
+
+        $response = $next($request);
+
+        $this->logger->info('apivalk.request', [
+            'method'      => $request->getMethod()->getName(),
+            'controller'  => \get_class($controller),
+            'status'      => $response::getStatusCode(),
+            'duration_ms' => (int)((\microtime(true) - $startedAt) * 1000),
+            'identity'    => $request->getAuthIdentity()->isAuthenticated() ? 'user' : 'guest',
+        ]);
+
+        return $response;
+    }
+}
+```
+
+Register it:
+
+```php
+$configuration->getMiddlewareStack()->add(new AccessLogMiddleware($logger));
+```
+
+## Example: short-circuit feature flag
+
+```php
+final class FeatureFlagMiddleware implements MiddlewareInterface
+{
+    /** @var FeatureFlagService */
+    private $flags;
+
+    public function __construct(FeatureFlagService $flags)
+    {
+        $this->flags = $flags;
+    }
+
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse {
+        // e.g. only let traffic through when a flag is on
+        if (!$this->flags->isEnabled('new_api', $request->getAuthIdentity())) {
+            return new NotFoundApivalkResponse();
+        }
+
+        return $next($request);
+    }
+}
+```
+
+Returning without calling `$next()` stops the pipeline. Everything *outside* this middleware still runs on the response — notably, the `MiddlewareStack` still appends `Content-Language` and (if applicable) `X-RateLimit-*` headers after all middlewares return.
+
+## Example: mutate the request
+
+```php
+final class RequestIdMiddleware implements MiddlewareInterface
+{
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse {
+        if (!$request->header()->has('X-Request-Id')) {
+            // You'd typically set this on a logger/context store, not on the bag directly —
+            // ParameterBag is read-mostly in Apivalk.
+        }
+
+        $response = $next($request);
+
+        $response->addHeaders(['X-Request-Id' => \bin2hex(\random_bytes(8))]);
+
+        return $response;
+    }
+}
+```
+
+Middlewares are the right place to stamp correlation IDs onto outbound responses, because they're the only layer that sees every response uniformly.
+
+## Order rules
+
+`MiddlewareStack::handle()` reverses the list internally, so the **last** middleware you `add()` is the **innermost** layer (closest to the controller). Practical consequences:
+
+- **Authentication → Security.** Add `AuthenticationMiddleware` before `SecurityMiddleware`, so the identity is populated before `SecurityMiddleware` reads it.
+- **Rate limit early.** Add `RateLimitMiddleware` early so 429s don't do expensive work. You still want it *after* any middleware that sets the identity if your `RateLimitInterface::getKey()` reads identity.
+- **Sanitize + Validate last.** They touch the actual request body and should be closest to the controller so everything they produce is fresh.
+- **Cross-cutting observability (log, request id, metrics).** Add first — they wrap everything, see both entry and exit of the whole stack.
+
+Recommended default order:
+
+```php
+$stack = $configuration->getMiddlewareStack();
+$stack->add(new AccessLogMiddleware($logger));              // outermost
+$stack->add(new RequestIdMiddleware());
+$stack->add(new AuthenticationMiddleware($authenticator));
+$stack->add(new SecurityMiddleware());
+$stack->add(new RateLimitMiddleware($cache));
+$stack->add(new SanitizeMiddleware());
+$stack->add(new RequestValidationMiddleware());             // innermost, last before controller
+```
+
+## Middleware vs controller logic
+
+Use a middleware when:
+
+- The behaviour applies to **many routes** — auth, rate limit, logging, request id.
+- You want to short-circuit **before** the controller builds state.
+- You need to see both request and response uniformly.
+
+Use a controller (or a service called from one) when:
+
+- The logic is **route-specific** — only `CreateAnimalController` validates against inventory.
+- The logic requires **typed access** to declared properties — body / path / query — which the middleware only sees as generic bags.
+
+## Register via the container (optional)
+
+For a middleware with dependencies (logger, cache, feature-flag service, database), define it in your PSR-11 container and pull it out at bootstrap:
+
+```php
+$configuration->getMiddlewareStack()->add($container->get(AccessLogMiddleware::class));
+```
+
+See [Configure Apivalk → extending your configuration](/how-to/configure#how-to-extend-your-configuration).

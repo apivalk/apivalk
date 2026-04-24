@@ -1,0 +1,393 @@
+---
+title: "Build a CRUD surface with a resource (Animal)"
+description: "Declare a resource once, pair it with five thin controller subclasses, and get Create/View/Update/Delete/List endpoints with request validation, OpenAPI schemas, filtering, sorting, and pagination — no request or response classes to author by hand."
+---
+
+A resource replaces the 15-class CRUD scaffold (5 controllers + 5 requests + 5 responses) with **one resource + five controllers**. All request schemas, response envelopes, and OpenAPI docs are derived from the resource declaration.
+
+This how-to wires up `Animal` as a fully protected resource (JWT + scopes).
+
+## Directory layout
+
+```text
+src/
+├── Http/Controller/Animal/
+│   ├── CreateAnimalController.php
+│   ├── ViewAnimalController.php
+│   ├── UpdateAnimalController.php
+│   ├── DeleteAnimalController.php
+│   └── ListAnimalController.php
+└── Resource/
+    └── AnimalResource.php
+```
+
+## 1. Declare the resource
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Resource;
+
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Resource\AbstractResource;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Sort\Sort;
+
+class AnimalResource extends AbstractResource
+{
+    public function getIdentifierProperty(): AbstractProperty
+    {
+        return new StringProperty('animal_uuid', 'Unique identifier of the animal');
+    }
+
+    public function getBaseUrl(): string
+    {
+        return '/api/v1';
+    }
+
+    public function getName(): string
+    {
+        return 'animal';
+    }
+
+    public function tags(): array
+    {
+        return [new TagObject('Animals', 'Animal management')];
+    }
+
+    public function availableFilters(): array
+    {
+        return [
+            EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'archived'])),
+            StringFilter::contains(new StringProperty('name', 'Name contains')),
+        ];
+    }
+
+    public function availableSortings(): array
+    {
+        return [Sort::asc('name'), Sort::desc('created_at')];
+    }
+
+    public function excludeFromMode(string $mode): array
+    {
+        // Hide heavy field from list responses to keep payloads small
+        if ($mode === self::MODE_LIST) {
+            return ['weight'];
+        }
+
+        return [];
+    }
+
+    protected function init(): void
+    {
+        $this->addProperty(new StringProperty('name', 'Animal name'));
+        $this->addProperty(new EnumProperty('status', 'Lifecycle status', ['active', 'archived']));
+        $this->addProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+    }
+}
+```
+
+`Route::resource()` uses `getBaseUrl()` + `getPluralName()` to build URLs: `/api/v1/animals` and `/api/v1/animals/{animal_uuid}`.
+
+## 2. Wire the five controllers
+
+Each controller is a thin subclass. The base class fills in the route, request class, response classes, and OpenAPI schema.
+
+### Create
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceCreatedResponse;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractCreateResourceController<AnimalResource>
+ */
+final class CreateAnimalController extends AbstractCreateResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function routeAuthorization(): ?RouteAuthorization
+    {
+        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $animal = $this->getResource($request); // AnimalResource hydrated from body
+        $animal->animal_uuid = $this->repository->persist($animal);
+
+        return new ResourceCreatedResponse($animal);
+    }
+}
+```
+
+### View
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractViewResourceController<AnimalResource>
+ */
+final class ViewAnimalController extends AbstractViewResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function routeAuthorization(): ?RouteAuthorization
+    {
+        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $row = $this->repository->findByUuid($this->getResourceIdentifier($request));
+        if ($row === null) {
+            return new NotFoundApivalkResponse();
+        }
+
+        return new ResourceViewResponse(AnimalResource::byArray($row));
+    }
+}
+```
+
+### Update
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceUpdatedResponse;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractUpdateResourceController<AnimalResource>
+ */
+final class UpdateAnimalController extends AbstractUpdateResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function routeAuthorization(): ?RouteAuthorization
+    {
+        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $animal = $this->getResource($request); // body + path identifier merged
+        $this->repository->update($animal);
+
+        return new ResourceUpdatedResponse($animal);
+    }
+}
+```
+
+### Delete
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractDeleteResourceController<AnimalResource>
+ */
+final class DeleteAnimalController extends AbstractDeleteResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function routeAuthorization(): ?RouteAuthorization
+    {
+        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $this->repository->delete($this->getResourceIdentifier($request));
+
+        return new DeletedApivalkResponse();
+    }
+}
+```
+
+### List
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractListResourceController<AnimalResource>
+ */
+final class ListAnimalController extends AbstractListResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function pagination(): ?Pagination
+    {
+        return Pagination::page()->setMaxLimit(50);
+    }
+
+    public static function routeAuthorization(): ?RouteAuthorization
+    {
+        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $paginator = $request->paginator();
+        $filters   = $request->filtering();
+        $sorting   = $request->sorting();
+
+        $rows  = $this->repository->findPage($filters, $sorting, $paginator);
+        $total = $this->repository->countForFilters($filters);
+
+        $resources = [];
+        foreach ($rows as $row) {
+            $resources[] = AnimalResource::byArray($row);
+        }
+
+        $totalPages = (int)\ceil($total / $paginator->getLimit());
+
+        return new ResourceListResponse(
+            $resources,
+            new PagePaginationPaginationResponse(
+                $paginator->getPage(),
+                $paginator->getLimit(),
+                $paginator->getPage() < $totalPages,
+                $totalPages
+            )
+        );
+    }
+}
+```
+
+## What the framework handles for you
+
+- **URL + verb per mode** — `Route::resource()` picks `POST /api/v1/animals`, `GET /api/v1/animals/{animal_uuid}`, `PATCH` for update, `DELETE` for delete, `GET` collection for list. You can't accidentally violate REST conventions.
+- **Body / path / filter / sort validation** — `RequestValidationMiddleware` validates against the runtime documentation derived from `AnimalResource`. Unknown `?order_by=hacked_field` → 422 before your controller runs.
+- **Response envelope** — `Resource*Response` classes emit the standard `{"data": ...}` (and `"pagination"` for list). No `toArray()` to write.
+- **Per-mode field visibility** — `excludeFromMode()` hides `weight` from the list endpoint; the rest of the endpoints still see it.
+- **OpenAPI** — all five operations are generated from the single resource. Add a field to `AnimalResource::init()` and every operation updates at once.
+
+## Optional: IDE autocomplete via the DocBlock generator
+
+Run the docblock generator once to emit `@property` annotations on `AnimalResource` and typed request stubs (`AnimalListRequest`) for filters and sorts. See [Generate OpenAPI and docblocks](/how-to/generate-openapi) for the script.
+
+After the generator runs, `$animal->name`, `$request->filtering()->status`, and `$request->sorting()->created_at` all autocomplete.

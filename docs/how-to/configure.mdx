@@ -1,0 +1,258 @@
+---
+title: "Configure Apivalk"
+description: "Bootstrap Apivalk end-to-end: router, middlewares, renderer, container, logger, and localization. The final section covers how to extend the configuration as your app grows."
+---
+
+## The pieces
+
+`ApivalkConfiguration` is the single object that holds the runtime wiring. `Apivalk` (the entry point) takes one and does nothing else — so everything you do to customise the framework happens on the configuration.
+
+A full constructor looks like this:
+
+```php
+use apivalk\apivalk\ApivalkConfiguration;
+
+new ApivalkConfiguration(
+    $router,                     // AbstractRouter (required)
+    $renderer,                   // ?RendererInterface — defaults to JsonRenderer
+    $exceptionHandler,           // ?callable — defaults to none
+    $container,                  // ?Psr\Container\ContainerInterface
+    $logger,                     // ?Psr\Log\LoggerInterface — defaults to NullLogger
+    $localizationConfiguration   // ?LocalizationConfiguration — defaults to English
+);
+```
+
+## Minimal bootstrap
+
+The smallest working `index.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\ApivalkConfiguration;
+use apivalk\apivalk\ApivalkExceptionHandler;
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Middleware\RequestValidationMiddleware;
+use apivalk\apivalk\Middleware\SanitizeMiddleware;
+use apivalk\apivalk\Router\Router;
+use apivalk\apivalk\Util\ClassLocator;
+
+require __DIR__ . '/vendor/autoload.php';
+
+// 1. Discover controllers and cache the route index
+$classLocator = new ClassLocator(__DIR__ . '/src/Http/Controller', 'App\\Http\\Controller');
+$routerCache  = new FilesystemCache(__DIR__ . '/var/cache/apivalk');
+$router       = new Router($classLocator, $routerCache);
+
+// 2. Build the configuration
+$configuration = new ApivalkConfiguration(
+    $router,
+    null,                                         // default JsonRenderer
+    [ApivalkExceptionHandler::class, 'handle']   // default exception handler
+);
+
+// 3. Register middlewares — order matters (see below)
+$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
+$configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
+
+// 4. Run
+$apivalk = new Apivalk($configuration);
+$response = $apivalk->run();
+
+$apivalk->getRenderer()->render($response);
+```
+
+That's a complete, public-only API. Hitting a configured `GET /health` route goes through `Sanitize → Validate → Controller` and returns JSON.
+
+## Adding authentication
+
+`AuthenticationMiddleware` populates the identity; `SecurityMiddleware` enforces it. Always add them in that order:
+
+```php
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+use apivalk\apivalk\Middleware\SecurityMiddleware;
+use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+
+$authenticator = new JwtAuthenticator(
+    'https://your-tenant.auth0.com/.well-known/jwks.json',
+    $routerCache,              // reuse any CacheInterface
+    'https://your-tenant.auth0.com/',
+    'https://api.example.com'
+);
+
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+```
+
+See [how to authenticate with JWT](/how-to/jwt-auth) and [how to authenticate with a custom API key](/how-to/api-key-auth).
+
+## Adding a PSR-11 container
+
+If you pass a container, Apivalk uses it to build controllers — so constructor injection works:
+
+```php
+$configuration = new ApivalkConfiguration(
+    $router,
+    null,
+    [ApivalkExceptionHandler::class, 'handle'],
+    $container    // any PSR-11 container (PHP-DI, Symfony DI, Laravel, ...)
+);
+```
+
+Without a container the controller factory falls back to `new $controllerClass()`, so constructor-less controllers still work.
+
+## Adding a logger
+
+Apivalk accepts any PSR-3 logger and exposes it via `$apivalk->getLogger()`:
+
+```php
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger('apivalk');
+$logger->pushHandler(new StreamHandler(__DIR__ . '/var/log/app.log'));
+
+$configuration = new ApivalkConfiguration(
+    $router,
+    null,
+    null,
+    $container,
+    $logger
+);
+```
+
+## Localization
+
+See the full [Localization reference](/http/localization). The short version:
+
+```php
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
+
+$localization = new LocalizationConfiguration(Locale::en());
+$localization->addSupportedLocale(Locale::en());
+$localization->addSupportedLocale(Locale::de());
+$localization->addSupportedLocale(Locale::deDe());
+
+$configuration = new ApivalkConfiguration(
+    $router,
+    null,
+    null,
+    $container,
+    $logger,
+    $localization
+);
+```
+
+If you pass nothing, Apivalk defaults to `Locale::en()`.
+
+## Middleware order (LIFO onion)
+
+`MiddlewareStack::handle()` reverses the list, so the **last** middleware you `add()` is the **innermost** layer (closest to the controller). That means:
+
+- `SanitizeMiddleware` and `RequestValidationMiddleware` run as close to the controller as possible → add them last.
+- `AuthenticationMiddleware` must run before `SecurityMiddleware` (authentication before authorization) → add Authentication first, Security second.
+- `RateLimitMiddleware` usually runs before anything expensive → add early.
+
+The recommended order is:
+
+```php
+$stack = $configuration->getMiddlewareStack();
+$stack->add(new AuthenticationMiddleware($authenticator));
+$stack->add(new SecurityMiddleware());
+$stack->add(new RateLimitMiddleware($rateLimiter));
+$stack->add(new SanitizeMiddleware());
+$stack->add(new RequestValidationMiddleware());
+```
+
+## How to extend your configuration
+
+A raw `index.php` with every middleware listed inline is fine for a small service but gets noisy fast. Grow into one of these patterns:
+
+### 1. Move bootstrapping into an application class
+
+Wrap everything the request-scoped entry point needs in a factory:
+
+```php
+namespace App\Bootstrap;
+
+final class ApivalkBootstrap
+{
+    public static function create(string $rootDir): Apivalk
+    {
+        $router = self::buildRouter($rootDir);
+        $container = self::buildContainer($rootDir);
+
+        $configuration = new ApivalkConfiguration(
+            $router,
+            null,
+            [ApivalkExceptionHandler::class, 'handle'],
+            $container,
+            self::buildLogger($rootDir),
+            self::buildLocalization()
+        );
+
+        self::registerMiddlewares($configuration, $container);
+
+        return new Apivalk($configuration);
+    }
+
+    // private static build... methods per concern
+}
+```
+
+Your `public/index.php` then shrinks to:
+
+```php
+$apivalk = App\Bootstrap\ApivalkBootstrap::create(__DIR__ . '/..');
+$response = $apivalk->run();
+$apivalk->getRenderer()->render($response);
+```
+
+Tests, CLI tools, and the [OpenAPI generator script](/how-to/generate-openapi) can reuse the same factory so routing/middleware definitions never drift.
+
+### 2. Register middlewares through the container
+
+Pull middlewares out of the bootstrap file and into the container as first-class services. That lets them take dependencies (database, PSR-3 logger, cache, feature flags) without you constructing them by hand:
+
+```php
+// In your container definitions:
+AuthenticationMiddleware::class => function ($c) {
+    return new AuthenticationMiddleware($c->get(AuthenticatorInterface::class));
+},
+```
+
+And in the bootstrap:
+
+```php
+foreach ([
+    AuthenticationMiddleware::class,
+    SecurityMiddleware::class,
+    SanitizeMiddleware::class,
+    RequestValidationMiddleware::class,
+] as $id) {
+    $configuration->getMiddlewareStack()->add($container->get($id));
+}
+```
+
+This is also how you add your own middlewares — see [Write a custom middleware](/how-to/custom-middleware).
+
+### 3. Swap the renderer or exception handler per environment
+
+`JsonRenderer` and `ApivalkExceptionHandler::handle` are defaults, not requirements. Both are constructor arguments:
+
+```php
+$renderer  = $isDebug ? new DebugJsonRenderer() : new JsonRenderer();
+$exHandler = $isDebug ? [DebugExceptionHandler::class, 'handle'] : [ApivalkExceptionHandler::class, 'handle'];
+
+$configuration = new ApivalkConfiguration($router, $renderer, $exHandler, $container, $logger, $localization);
+```
+
+Ship your own `RendererInterface` implementation when you need non-JSON output or custom envelopes; ship your own exception handler when you need to integrate with Sentry / Datadog / Bugsnag.
+
+### 4. Keep framework bridges thin
+
+If you're running inside Laravel or Symfony, use the [framework bridges](/installation) rather than re-implementing wiring. The bridges do the `ApivalkBootstrap` work and hand you an `Apivalk` instance tuned for that framework's lifecycle.

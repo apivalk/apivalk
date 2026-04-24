@@ -1,0 +1,144 @@
+---
+title: "Authenticate with JWT (JWKS)"
+description: "Wire up JwtAuthenticator against any OAuth2 / OIDC provider that exposes a JWKS endpoint — Auth0, Okta, Keycloak, Cognito, Azure AD, etc."
+---
+
+`JwtAuthenticator` validates bearer tokens using public keys fetched from a JWKS URL. It checks the standard claims (`iss`, `aud`, `exp`), extracts scopes and permissions, and returns a `JwtAuthIdentity`.
+
+## 1. Register the authenticator
+
+```php
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Middleware\AuthenticationMiddleware;
+use apivalk\apivalk\Middleware\SecurityMiddleware;
+use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+
+$cache = new FilesystemCache(__DIR__ . '/var/cache/apivalk');
+
+$authenticator = new JwtAuthenticator(
+    'https://your-tenant.auth0.com/.well-known/jwks.json', // JWKS URL
+    $cache,                                                 // ?CacheInterface — fetched JWKS get cached 1h
+    'https://your-tenant.auth0.com/',                       // expected `iss`
+    'https://api.example.com'                               // expected `aud`
+);
+
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+```
+
+The cache is optional but strongly recommended in production — without it every request re-downloads the JWKS. Any `CacheInterface` works; `FilesystemCache` is shipped.
+
+## 2. Declare the security scheme in your OpenAPI components
+
+This name is what your routes reference via `RouteAuthorization`.
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'http',         // type
+        'BearerAuth',   // name — referenced by RouteAuthorization('BearerAuth', ...)
+        'JWT Bearer',   // description
+        'header',       // in
+        'bearer',       // scheme
+        'JWT',          // bearerFormat
+        null,           // flows
+        null            // openIdConnectUrl
+    ),
+]);
+```
+
+Pass `$components` when you run the OpenAPI generator — see [Generate OpenAPI and docblocks](/how-to/generate-openapi).
+
+## 3. Protect routes
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+
+public static function getRoute(): Route
+{
+    return Route::post('/api/v1/animals')
+        ->routeAuthorization(
+            new RouteAuthorization('BearerAuth', ['animal'], ['animal:create'])
+        );
+}
+```
+
+Clients send `Authorization: Bearer <jwt>`. Anything else reaches your controller as a guest (and gets rejected by `SecurityMiddleware` if the route requires auth).
+
+## What the authenticator reads from the token
+
+| Claim | Becomes |
+|---|---|
+| `sub` | `$identity->getSub()` |
+| `email` | `$identity->getEmail()` |
+| `username` | `$identity->getUsername()` |
+| `scope` or `scp` (space-separated string or array) | `$identity->getScopes()` |
+| `permissions`, `permission`, `roles`, `role` (string or array) | `$identity->getPermissions()` |
+
+If `iss` or `aud` don't match the values you passed into the constructor, or the signature is invalid, or the token is expired, `authenticate()` returns `null` and the middleware falls back to `GuestAuthIdentity`. It never throws.
+
+## Reading identity in a controller
+
+```php
+use apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity;
+
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    /** @var JwtAuthIdentity $identity */
+    $identity = $request->getAuthIdentity();
+
+    $userId = $identity->getSub();
+    $email  = $identity->getEmail();
+
+    // ...
+}
+```
+
+`SecurityMiddleware` already enforced that the token is valid and has the required scopes, so at this point the downcast is safe.
+
+## Scope / permission mapping tips
+
+- **Scopes.** In Auth0 / Okta / Keycloak, scopes come from the OAuth2 authorization request (`scope=openid profile animal`). `JwtAuthenticator` splits on whitespace for string claims and trims each entry.
+- **Permissions.** Providers vary: Auth0 emits `permissions` as an array, Keycloak emits `realm_access.roles` (you'd have to flatten that in a custom authenticator), Okta emits `groups`. `JwtAuthenticator` checks `permissions`, `permission`, `roles`, `role` in that order and merges string + array forms.
+- **Hierarchies.** `AbstractAuthIdentity::isScopeGranted()` is a strict `in_array`. If you need `admin` to imply everything, subclass `JwtAuthIdentity` and override `isScopeGranted()` / `isPermissionGranted()`.
+
+## Troubleshooting
+
+- **Always guest, even with a valid token.** Confirm `iss` and `aud` **exactly** match what you passed into the constructor (trailing slash on `iss` matters). Confirm the JWKS URL is reachable from your PHP container — `JwtAuthenticator::httpGet()` times out after 5 seconds.
+- **"Invalid JWKS response".** Your provider returned HTML or an error. Open the URL in a browser; the response must be `{"keys": [...]}`.
+- **Cache poisoning suspicions.** JWKS is cached for 3600 seconds per URL. Delete the cached entry (key pattern: `jwks_<md5(url)>`) or clear the `FilesystemCache` directory and retry.
+- **Signature failures after key rotation.** `JwtAuthenticator` caches keys for an hour; worst case you wait that hour. To force a refresh on demand, clear the same cache entry.
+
+## Multiple providers
+
+Run multiple JWKS-backed providers by composing them behind your own authenticator:
+
+```php
+final class ChainedJwtAuthenticator implements AuthenticatorInterface
+{
+    /** @var JwtAuthenticator[] */
+    private $chain;
+
+    public function __construct(JwtAuthenticator ...$chain)
+    {
+        $this->chain = $chain;
+    }
+
+    public function authenticate(string $token): ?AbstractAuthIdentity
+    {
+        foreach ($this->chain as $authenticator) {
+            $identity = $authenticator->authenticate($token);
+            if ($identity !== null) {
+                return $identity;
+            }
+        }
+
+        return null;
+    }
+}
+```

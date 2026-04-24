@@ -36,7 +36,7 @@ $authenticator = new JwtAuthenticator(
 );
 
 $middleware = new AuthenticationMiddleware($authenticator);
-$configuration->addMiddleware($middleware);
+$configuration->getMiddlewareStack()->add($middleware);
 ```
 
 ## Custom Authentication Logic
@@ -99,6 +99,8 @@ The authentication middleware populates the "Who" (Identity), while the security
 
 ```php
 // CORRECT ORDER
-$configuration->addMiddleware(new AuthenticationMiddleware($jwtAuth));
-$configuration->addMiddleware(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($jwtAuth));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
 ```
+
+See the full [auth how-to](/how-to/auth) for how authentication, authorization, and identity fit together.

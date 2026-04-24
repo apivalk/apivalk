@@ -51,12 +51,11 @@ class GetPetController extends AbstractApivalkController
         // $request is already populated and validated!
         $id = $request->path()->id;
 
-        // Access populated sorting filters.
-        // The sorting bag is always populated: if the user does not provide order_by,
-        // it contains the default sorting from the route.
-        foreach ($request->sorting()->all() as $sort) {
-            $field = $sort->getField();
-            $direction = $sort->getDirection();
+        // Access populated sorting filters. SortBag is iterable — iterate
+        // directly. The bag is always populated: if the user does not provide
+        // order_by, it contains the default sorting from the route.
+        foreach ($request->sorting() as $field => $sort) {
+            $direction = $sort->isAsc() ? 'ASC' : 'DESC';
         }
 
         // or directly access populated filters.

@@ -1,0 +1,115 @@
+---
+title: "Add rate limiting"
+description: "Attach a rate limit to any route — per-IP by default — and let the middleware reject overages with 429 and emit the standard X-RateLimit-* response headers."
+---
+
+Rate limiting in Apivalk is two pieces:
+
+- **`RateLimitMiddleware`** (global) — checks the hit counter in a cache and, when a rate limit is attached to the current route, either lets the request through or returns `429 Too Many Requests`.
+- **`RateLimitInterface`** (per route) — the policy object on the `Route`. Ships with `IpRateLimit`; bring your own for anything else.
+
+## 1. Register the middleware once
+
+The middleware needs a cache to store counters. Any `CacheInterface` works — it can be the same one you use for the router index.
+
+```php
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Middleware\RateLimitMiddleware;
+
+$cache = new FilesystemCache(__DIR__ . '/var/cache/apivalk');
+
+$configuration->getMiddlewareStack()->add(new RateLimitMiddleware($cache));
+```
+
+Add it **before** authentication in the stack if you want unauthenticated clients also throttled before key validation runs.
+
+## 2. Attach a limit to a specific route
+
+`IpRateLimit` throttles by client IP. The constructor is `(string $name, int $maxAttempts, int $windowInSeconds)`.
+
+```php
+use apivalk\apivalk\Router\RateLimit\IpRateLimit;
+use apivalk\apivalk\Router\Route\Route;
+
+public static function getRoute(): Route
+{
+    return Route::post('/api/v1/login')
+        ->rateLimit(new IpRateLimit('login_ip', 5, 60)); // 5 requests / minute / IP
+}
+```
+
+Routes **without** `rateLimit(...)` bypass the limiter entirely — `RateLimitMiddleware` no-ops them. Only routes with a policy attached ever land in the cache.
+
+## 3. What happens at request time
+
+On every hit, `RateLimiter::allow()` increments a counter keyed by `getKey(RateLimitContext)`. If the incremented value exceeds `getMaxAttempts()` within the window, `RateLimitMiddleware` short-circuits with `TooManyRequestsApivalkResponse` (HTTP 429). Either way, the `RateLimitResult` is set on the request and the `MiddlewareStack` appends these headers to **every** response for the route:
+
+| Header | Meaning |
+|---|---|
+| `X-RateLimit-Limit` | Max requests in the window |
+| `X-RateLimit-Remaining` | Requests remaining |
+| `X-RateLimit-Reset` | UTC epoch when the window resets |
+| `Retry-After` | Seconds (or epoch) the client should wait — only on 429 |
+
+The OpenAPI generator documents these headers automatically for any route with a rate limit.
+
+## 4. Custom strategies
+
+Implement `RateLimitInterface` to key on anything other than IP — API key, user id, tenant.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\RateLimit;
+
+use apivalk\apivalk\Router\RateLimit\RateLimitContext;
+use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+
+final class AccountRateLimit implements RateLimitInterface
+{
+    /** @var string */
+    private $name;
+    /** @var int */
+    private $maxAttempts;
+    /** @var int */
+    private $windowInSeconds;
+
+    public function __construct(string $name, int $maxAttempts, int $windowInSeconds)
+    {
+        $this->name = $name;
+        $this->maxAttempts = $maxAttempts;
+        $this->windowInSeconds = $windowInSeconds;
+    }
+
+    public function getName(): string { return $this->name; }
+    public function getMaxAttempts(): int { return $this->maxAttempts; }
+    public function getWindowInSeconds(): int { return $this->windowInSeconds; }
+
+    public function getKey(RateLimitContext $context): string
+    {
+        $identity = $context->getRequest()->getAuthIdentity();
+
+        $accountId = $identity instanceof \App\Security\ApiKeyIdentity
+            ? $identity->getAccountId()
+            : 'guest';
+
+        return \sprintf('rateLimit:%s:%s', $this->name, $accountId);
+    }
+}
+```
+
+`RateLimitContext` is built per-request; it exposes the route and the request, so any identifier you can get from those is fair game for the cache key. Order matters: the route's `rateLimit(...)` must be called **after** whatever middleware populates that identifier — `AuthenticationMiddleware` for auth-keyed limits.
+
+## 5. Stacking limits
+
+Only one `rateLimit()` per route. If you need "5 req/s + 1000 req/day", implement a composite `RateLimitInterface` that owns two counters internally and returns the stricter one.
+
+## 6. Testing locally
+
+Because `FilesystemCache` persists counters to disk, restart behaviour is: counters survive PHP restarts but disappear when you clear the cache directory. Clearing it is the fastest way to reset a limit during development.
+
+## Reference
+
+[Routing / Rate Limit](/routing/rate-limit) walks through the `RateLimitResult` shape and header serialisation. [Middleware / Rate Limit](/middleware/rate-limit) covers middleware-level concerns.

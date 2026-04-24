@@ -1,0 +1,230 @@
+---
+title: "Authenticate with a custom API key header"
+description: "Swap the built-in bearer-token flow for an X-Api-Key header backed by your own lookup (database, KMS, static config, ...)."
+---
+
+`AuthenticationMiddleware` only knows how to extract `Bearer <token>` from the `Authorization` header. For anything else — an API key in `X-Api-Key`, a signed cookie, mTLS client cert — you have two options:
+
+1. **Keep `AuthenticationMiddleware`** and implement a custom `AuthenticatorInterface` that is tolerant of your token format (fine if clients still send `Authorization: Bearer <key>`).
+2. **Replace `AuthenticationMiddleware`** with a custom middleware that pulls the credential from wherever it lives, calls your authenticator, and sets the identity on the request.
+
+This guide covers option 2 — because an `X-Api-Key` header isn't a bearer token.
+
+## 1. Define an identity class
+
+You can reuse `JwtAuthIdentity` if you don't mind the misleading name. For clarity, define a dedicated one:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+
+final class ApiKeyIdentity extends AbstractAuthIdentity
+{
+    /** @var string */
+    private $accountId;
+    /** @var string[] */
+    private $scopes;
+    /** @var string[] */
+    private $permissions;
+
+    /**
+     * @param string[] $scopes
+     * @param string[] $permissions
+     */
+    public function __construct(string $accountId, array $scopes, array $permissions = [])
+    {
+        $this->accountId = $accountId;
+        $this->scopes = $scopes;
+        $this->permissions = $permissions;
+    }
+
+    public function getAccountId(): string
+    {
+        return $this->accountId;
+    }
+
+    public function getScopes(): array
+    {
+        return $this->scopes;
+    }
+
+    public function getPermissions(): array
+    {
+        return $this->permissions;
+    }
+
+    public function isAuthenticated(): bool
+    {
+        return true;
+    }
+}
+```
+
+## 2. Implement the authenticator
+
+Keep credential validation isolated from HTTP plumbing. The authenticator takes a raw string and returns an identity or `null`.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
+use App\Domain\ApiKey\ApiKeyRepository;
+
+final class ApiKeyAuthenticator implements AuthenticatorInterface
+{
+    /** @var ApiKeyRepository */
+    private $repository;
+
+    public function __construct(ApiKeyRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public function authenticate(string $token): ?AbstractAuthIdentity
+    {
+        $record = $this->repository->findActiveByHash(\hash('sha256', $token));
+        if ($record === null) {
+            return null;
+        }
+
+        return new ApiKeyIdentity(
+            $record['account_id'],
+            $record['scopes'],
+            $record['permissions']
+        );
+    }
+}
+```
+
+Store hashes, not raw keys. Compare in constant time if you can — a database index lookup by hash does that for you implicitly.
+
+## 3. Write the middleware
+
+This replaces `AuthenticationMiddleware` (don't add both; you'd double up on work).
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Middleware\MiddlewareInterface;
+use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
+
+final class ApiKeyMiddleware implements MiddlewareInterface
+{
+    /** @var AuthenticatorInterface */
+    private $authenticator;
+
+    public function __construct(AuthenticatorInterface $authenticator)
+    {
+        $this->authenticator = $authenticator;
+    }
+
+    public function process(
+        ApivalkRequestInterface $request,
+        AbstractApivalkController $controller,
+        callable $next
+    ): AbstractApivalkResponse {
+        foreach (['X-Api-Key', 'x-api-key', 'X-API-KEY'] as $candidate) {
+            if ($request->header()->has($candidate)) {
+                $raw = (string)$request->header()->get($candidate)->getValue();
+
+                $identity = $this->authenticator->authenticate($raw);
+                if ($identity !== null) {
+                    $request->setAuthIdentity($identity);
+                }
+
+                break;
+            }
+        }
+
+        return $next($request);
+    }
+}
+```
+
+Notes:
+
+- **Passive, like `AuthenticationMiddleware`.** Invalid or missing keys don't short-circuit — we let `SecurityMiddleware` decide based on the route's `RouteAuthorization`. This keeps public routes public.
+- **Header name variants.** `ParameterBag::has()` is case-sensitive. If your web server normalises headers you may only need one variant, but covering three common casings is cheap insurance.
+
+## 4. Register it in place of `AuthenticationMiddleware`
+
+```php
+$authenticator = new ApiKeyAuthenticator($apiKeyRepository);
+
+$configuration->getMiddlewareStack()->add(new ApiKeyMiddleware($authenticator));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+```
+
+## 5. Declare the security scheme for OpenAPI
+
+Tell the OpenAPI generator that this API is secured via an `apiKey` in the `X-Api-Key` header. The name (`ApiKeyAuth` below) is what your routes reference.
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'apiKey',        // type
+        'ApiKeyAuth',    // name — link to routes
+        'API key',       // description
+        'header',        // in
+        null,            // scheme (not used for apiKey)
+        null,            // bearerFormat (not used for apiKey)
+        null,
+        null
+    ),
+]);
+```
+
+Swagger UI will prompt the user for a key and send it on matching requests. See [OpenAPI Generator / Security Schemes](/documentation/openapi-generator#security-schemes-and-components) for the full mapping rules.
+
+## 6. Protect routes
+
+```php
+public static function getRoute(): Route
+{
+    return Route::get('/api/v1/reports')
+        ->routeAuthorization(
+            new RouteAuthorization('ApiKeyAuth', ['reports'], ['reports:read'])
+        );
+}
+```
+
+## Supporting both JWT and API keys
+
+Run both middlewares. Whichever header the client sent populates the identity; `SecurityMiddleware` doesn't care which authenticator was used, only whether the identity satisfies the route policy.
+
+```php
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($jwtAuth));   // Bearer
+$configuration->getMiddlewareStack()->add(new ApiKeyMiddleware($apiKeyAuth));        // X-Api-Key
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+```
+
+Because both are passive, a request carrying *neither* credential still falls through as a guest — the route's `RouteAuthorization` decides whether that's allowed.
+
+In your `ComponentsObject`, register both schemes (`BearerAuth` and `ApiKeyAuth`). Different routes can require different schemes; the `SecuritySchemeObject.name` passed to `RouteAuthorization` picks which one OpenAPI displays.
+
+## Rotating keys
+
+Because the authenticator looks up keys by hash, revocation is "delete the row" and rotation is "insert a new row, tell the customer, delete the old row after a grace period". Nothing is cached at the authenticator level — you rely on your database.
+
+If you front the repository with a short-lived cache, remember to invalidate on rotation.

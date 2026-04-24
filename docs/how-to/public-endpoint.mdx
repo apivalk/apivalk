@@ -1,0 +1,152 @@
+---
+title: "Build a public endpoint: GET /health"
+description: "The shortest possible Apivalk endpoint — no auth, no path params, no body. Useful as a Kubernetes liveness probe or a smoke test."
+---
+
+An Apivalk endpoint is always the same three classes:
+
+1. A **controller** that extends `AbstractApivalkController`.
+2. A **request** class that extends `AbstractApivalkRequest`.
+3. One or more **response** classes that extend `AbstractApivalkResponse`.
+
+For a public endpoint you skip `RouteAuthorization` entirely — the `SecurityMiddleware` treats the route as open.
+
+## Directory layout
+
+```text
+src/Http/
+├── Controller/
+│   └── Health/
+│       └── GetHealthController.php
+├── Request/
+│   └── Health/
+│       └── GetHealthRequest.php
+└── Response/
+    └── Health/
+        └── GetHealthResponse.php
+```
+
+If you set up [auto-discovery](/how-to/configure) on `src/Http/Controller`, no registration step is needed — the controller is picked up by `ClassLocator`.
+
+## 1. The request
+
+Nothing to validate; just satisfy the interface:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Health;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+class GetHealthRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        return new ApivalkRequestDocumentation();
+    }
+}
+```
+
+## 2. The response
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Response\Health;
+
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class GetHealthResponse extends AbstractApivalkResponse
+{
+    /** @var string */
+    private $status;
+
+    public function __construct(string $status = 'ok')
+    {
+        $this->status = $status;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->setDescription('Liveness probe result');
+        $doc->addProperty(
+            (new StringProperty('status', 'ok if the service is up'))->setExample('ok')
+        );
+
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return ['status' => $this->status];
+    }
+}
+```
+
+## 3. The controller
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Health;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use App\Http\Request\Health\GetHealthRequest;
+use App\Http\Response\Health\GetHealthResponse;
+
+class GetHealthController extends AbstractApivalkController
+{
+    public static function getRoute(): Route
+    {
+        return Route::get('/health')
+            ->summary('Health check')
+            ->description('Returns 200 OK as long as the service is reachable.');
+    }
+
+    public static function getRequestClass(): string
+    {
+        return GetHealthRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [GetHealthResponse::class];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        return new GetHealthResponse();
+    }
+}
+```
+
+## What you get out of the box
+
+- **No `RouteAuthorization`** → the `SecurityMiddleware` passes the request straight to the controller. Guest and authenticated clients are both accepted.
+- **OpenAPI coverage** → `GET /health` shows up in the generated spec with a `200` response whose schema matches `GetHealthResponse::getDocumentation()`.
+- **Locale + rate-limit headers** → `Content-Language` is added by the middleware stack, and if you ever add a rate limit to this route, the `X-RateLimit-*` headers appear automatically.
+
+## Variations
+
+- **Add a `version` or `uptime` field** — extend the response with more `StringProperty` / `IntegerProperty` entries and include them in `toArray()`.
+- **Return 503 when a dependency is down** — declare a second response class (e.g. `ServiceUnavailableResponse`) in `getResponseClasses()`, and return whichever matches the actual check result.
+- **Keep it public but log anonymous calls** — read `$request->getAuthIdentity()->isAuthenticated()` inside `__invoke()`; since no `RouteAuthorization` was set, the identity is always populated (guest or real) but never rejected.

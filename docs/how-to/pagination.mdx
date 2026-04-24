@@ -1,0 +1,154 @@
+---
+title: "Add pagination to a list endpoint"
+description: "Pick a pagination strategy — page, offset, or cursor — and wire it end-to-end: route declaration, controller consumption, response envelope."
+---
+
+Pagination is route-level. The framework resolves query parameters into a typed `Paginator`, validates them against the strategy you chose, and emits a standard `pagination` envelope on the response.
+
+## 1. Choose a strategy
+
+```php
+use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Route;
+
+// Page pagination — ?page=1&limit=20
+Route::get('/api/v1/animals')
+    ->pagination(Pagination::page()->setMaxLimit(50));
+
+// Offset pagination — ?offset=40&limit=20
+Route::get('/api/v1/animals')
+    ->pagination(Pagination::offset()->setMaxLimit(50));
+
+// Cursor pagination — ?cursor=abc&limit=20
+Route::get('/api/v1/animals')
+    ->pagination(Pagination::cursor()->setMaxLimit(50));
+```
+
+`setMaxLimit()` caps what a client can request; the default max is `100`. `RequestValidationMiddleware` rejects `limit` values above that with `422`.
+
+### When to pick which
+
+| Strategy | Good for | Gotchas |
+|---|---|---|
+| Page | Admin UIs, "show me page 3 of results" | Skewed results when underlying data mutates mid-browse |
+| Offset | Same as page, but when you want explicit skip semantics | Large offsets are expensive in SQL |
+| Cursor | High-throughput feeds, stable paging over mutating data | Clients must respect the opaque cursor — can't jump to "page 5" |
+
+## 2. Read the paginator in the controller
+
+`$request->paginator()` returns a `PagePaginator`, `OffsetPaginator`, or `CursorPaginator` depending on the route's strategy.
+
+### Page
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $paginator = $request->paginator(); // PagePaginator
+
+    $page  = $paginator->getPage();   // int — 1-based
+    $limit = $paginator->getLimit();  // int — capped by setMaxLimit
+
+    $rows  = $this->animals->findPage(($page - 1) * $limit, $limit);
+    $total = $this->animals->count();
+    $totalPages = (int)\ceil($total / $limit);
+
+    $response = new ListAnimalsResponse($rows);
+    $response->setPaginationResponse(
+        new PagePaginationPaginationResponse(
+            $page,
+            $limit,
+            $page < $totalPages,
+            $totalPages
+        )
+    );
+
+    return $response;
+}
+```
+
+### Offset
+
+```php
+$paginator = $request->paginator(); // OffsetPaginator
+$rows = $this->animals->findRange($paginator->getOffset(), $paginator->getLimit());
+$total = $this->animals->count();
+
+$response->setPaginationResponse(
+    new OffsetPaginationPaginationResponse(
+        $paginator->getLimit(),
+        $paginator->getOffset(),
+        $paginator->getOffset() + $paginator->getLimit() < $total,
+        $total
+    )
+);
+```
+
+### Cursor
+
+```php
+$paginator = $request->paginator(); // CursorPaginator
+$rows = $this->animals->findAfter($paginator->getCursor(), $paginator->getLimit());
+
+$nextCursor = \end($rows) !== false ? \end($rows)['id'] : null;
+
+$response->setPaginationResponse(
+    new CursorPaginationPaginationResponse(
+        $paginator->getLimit(),
+        $paginator->getCursor(),
+        $nextCursor,
+        $nextCursor !== null
+    )
+);
+```
+
+## 3. The JSON envelope
+
+`setPaginationResponse()` merges a `pagination` key into the response next to `data`:
+
+```json
+{
+  "data": [/* ... */],
+  "pagination": {
+    "page": 1,
+    "page_size": 20,
+    "has_more": true,
+    "total_pages": 5
+  }
+}
+```
+
+Exact keys depend on the strategy — `limit` / `offset` / `total` for offset, `current_cursor` / `next_cursor` / `has_more` for cursor.
+
+## Inside a resource
+
+`AbstractListResourceController::pagination()` is the hook:
+
+```php
+/**
+ * @extends AbstractListResourceController<AnimalResource>
+ */
+final class ListAnimalController extends AbstractListResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function pagination(): ?Pagination
+    {
+        return Pagination::page()->setMaxLimit(50);
+    }
+
+    // __invoke() reads $request->paginator() as normal
+}
+```
+
+Pair the result with a `ResourceListResponse`, which takes the `PaginationResponseInterface` directly in its constructor. See [the resource CRUD how-to](/how-to/resource-crud).
+
+## OpenAPI side effects
+
+Apivalk injects the relevant query parameters (`page`, `limit`, `offset`, `cursor`) into the generated spec, typed and documented, with the `setMaxLimit` constraint reflected. The response schema gets the correct `pagination` envelope.
+
+## Reference
+
+[HTTP / Pagination](/http/pagination) documents every field of every strategy's envelope.
