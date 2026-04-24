@@ -1,0 +1,619 @@
+---
+title: "Build a full CRUD surface without resources"
+description: "The explicit variant: four controllers, four requests, four responses for a single entity. Use this when you need full control over request/response shape, or the endpoints don't all map to the same payload."
+---
+
+The [resource-based approach](/how-to/resource-crud) is the default for CRUD. This guide is for the cases where it doesn't fit — e.g. endpoints don't share the same payload shape, you need custom request bodies per operation, or you need custom response envelopes.
+
+We'll build CRUD for a `Pet`: **Create**, **View**, **Update**, **Delete**. That's **4 controllers + 4 requests + 4 responses** = 12 classes. (List is a natural fifth — add it the same way.)
+
+## Directory layout
+
+```text
+src/Http/
+├── Controller/Pet/
+│   ├── CreatePetController.php
+│   ├── ViewPetController.php
+│   ├── UpdatePetController.php
+│   └── DeletePetController.php
+├── Request/Pet/
+│   ├── CreatePetRequest.php
+│   ├── ViewPetRequest.php
+│   ├── UpdatePetRequest.php
+│   └── DeletePetRequest.php
+└── Response/Pet/
+    ├── CreatePetResponse.php
+    ├── ViewPetResponse.php
+    ├── UpdatePetResponse.php
+    └── DeletePetResponse.php
+```
+
+## Shared pieces
+
+Everything below assumes JWT auth using the same `BearerAuth` scheme across all four routes — swap in [your authenticator of choice](/how-to/auth).
+
+```php
+use apivalk\apivalk\Security\RouteAuthorization;
+
+$readAuth   = new RouteAuthorization('BearerAuth', ['pet'], ['pet:read']);
+$writeAuth  = new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']);
+$deleteAuth = new RouteAuthorization('BearerAuth', ['pet'], ['pet:delete']);
+```
+
+In real code these would live inline in the controller's `getRoute()` method — they're split out here to keep the snippets compact.
+
+## Create
+
+### `CreatePetRequest`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+class CreatePetRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addBodyProperty(new StringProperty('name', 'Pet name'));
+        $doc->addBodyProperty(new EnumProperty('species', 'Species', ['cat', 'dog', 'fish']));
+        $doc->addBodyProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+
+        return $doc;
+    }
+}
+```
+
+### `CreatePetResponse`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Response\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class CreatePetResponse extends AbstractApivalkResponse
+{
+    /** @var array{pet_uuid: string, name: string, species: string} */
+    private $pet;
+
+    public function __construct(array $pet)
+    {
+        $this->pet = $pet;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_201_CREATED;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->setDescription('The newly created pet.');
+        $doc->addProperty(new StringProperty('pet_uuid', 'Unique identifier'));
+        $doc->addProperty(new StringProperty('name', 'Pet name'));
+        $doc->addProperty(new StringProperty('species', 'Species'));
+
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return $this->pet;
+    }
+}
+```
+
+### `CreatePetController`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Pet;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\BadRequestApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Pet\PetRepository;
+use App\Http\Request\Pet\CreatePetRequest;
+use App\Http\Response\Pet\CreatePetResponse;
+
+final class CreatePetController extends AbstractApivalkController
+{
+    /** @var PetRepository */
+    private $repository;
+
+    public function __construct(PetRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::post('/api/v1/pets')
+            ->summary('Create a pet')
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']));
+    }
+
+    public static function getRequestClass(): string
+    {
+        return CreatePetRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [
+            CreatePetResponse::class,
+            BadRequestApivalkResponse::class,
+            ForbiddenApivalkResponse::class,
+        ];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $pet = $this->repository->create([
+            'name'    => $request->body()->name,
+            'species' => $request->body()->species,
+            'weight'  => $request->body()->weight,
+        ]);
+
+        return new CreatePetResponse($pet);
+    }
+}
+```
+
+## View
+
+### `ViewPetRequest`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+class ViewPetRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
+
+        return $doc;
+    }
+}
+```
+
+### `ViewPetResponse`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Response\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class ViewPetResponse extends AbstractApivalkResponse
+{
+    /** @var array<string, mixed> */
+    private $pet;
+
+    public function __construct(array $pet)
+    {
+        $this->pet = $pet;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->addProperty(new StringProperty('pet_uuid', 'Unique identifier'));
+        $doc->addProperty(new StringProperty('name', 'Pet name'));
+        $doc->addProperty(new StringProperty('species', 'Species'));
+        $doc->addProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return $this->pet;
+    }
+}
+```
+
+### `ViewPetController`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Pet;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Pet\PetRepository;
+use App\Http\Request\Pet\ViewPetRequest;
+use App\Http\Response\Pet\ViewPetResponse;
+
+final class ViewPetController extends AbstractApivalkController
+{
+    /** @var PetRepository */
+    private $repository;
+
+    public function __construct(PetRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::get('/api/v1/pets/{pet_uuid}')
+            ->summary('Get a pet by UUID')
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:read']));
+    }
+
+    public static function getRequestClass(): string
+    {
+        return ViewPetRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [
+            ViewPetResponse::class,
+            NotFoundApivalkResponse::class,
+            ForbiddenApivalkResponse::class,
+        ];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $pet = $this->repository->findByUuid($request->path()->pet_uuid);
+        if ($pet === null) {
+            return new NotFoundApivalkResponse();
+        }
+
+        return new ViewPetResponse($pet);
+    }
+}
+```
+
+## Update
+
+### `UpdatePetRequest`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+class UpdatePetRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
+
+        // Patch semantics — every body field is optional
+        $doc->addBodyProperty((new StringProperty('name', 'Pet name'))->setIsRequired(false));
+        $doc->addBodyProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+
+        return $doc;
+    }
+}
+```
+
+### `UpdatePetResponse`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Response\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class UpdatePetResponse extends AbstractApivalkResponse
+{
+    /** @var array<string, mixed> */
+    private $pet;
+
+    public function __construct(array $pet)
+    {
+        $this->pet = $pet;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->addProperty(new StringProperty('pet_uuid', 'Unique identifier'));
+        $doc->addProperty(new StringProperty('name', 'Pet name'));
+
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return $this->pet;
+    }
+}
+```
+
+### `UpdatePetController`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Pet;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Pet\PetRepository;
+use App\Http\Request\Pet\UpdatePetRequest;
+use App\Http\Response\Pet\UpdatePetResponse;
+
+final class UpdatePetController extends AbstractApivalkController
+{
+    /** @var PetRepository */
+    private $repository;
+
+    public function __construct(PetRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::patch('/api/v1/pets/{pet_uuid}')
+            ->summary('Update a pet')
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']));
+    }
+
+    public static function getRequestClass(): string
+    {
+        return UpdatePetRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [
+            UpdatePetResponse::class,
+            NotFoundApivalkResponse::class,
+            ForbiddenApivalkResponse::class,
+        ];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $uuid = $request->path()->pet_uuid;
+
+        if (!$this->repository->exists($uuid)) {
+            return new NotFoundApivalkResponse();
+        }
+
+        $patch = [];
+        if ($request->body()->has('name')) {
+            $patch['name'] = $request->body()->name;
+        }
+        if ($request->body()->has('weight')) {
+            $patch['weight'] = $request->body()->weight;
+        }
+
+        $pet = $this->repository->update($uuid, $patch);
+
+        return new UpdatePetResponse($pet);
+    }
+}
+```
+
+## Delete
+
+### `DeletePetRequest`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+class DeletePetRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
+
+        return $doc;
+    }
+}
+```
+
+### `DeletePetResponse`
+
+For idempotent deletes you can return the built-in `DeletedApivalkResponse` (204) instead of writing your own. If you want to emit a confirmation payload, write one like the others:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Response\Pet;
+
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+
+class DeletePetResponse extends AbstractApivalkResponse
+{
+    /** @var string */
+    private $uuid;
+
+    public function __construct(string $uuid)
+    {
+        $this->uuid = $uuid;
+    }
+
+    public static function getStatusCode(): int
+    {
+        return self::HTTP_200_OK;
+    }
+
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        $doc = new ApivalkResponseDocumentation();
+        $doc->addProperty(new StringProperty('pet_uuid', 'Deleted identifier'));
+
+        return $doc;
+    }
+
+    public function toArray(): array
+    {
+        return ['pet_uuid' => $this->uuid];
+    }
+}
+```
+
+### `DeletePetController`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controller\Pet;
+
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Pet\PetRepository;
+use App\Http\Request\Pet\DeletePetRequest;
+use App\Http\Response\Pet\DeletePetResponse;
+
+final class DeletePetController extends AbstractApivalkController
+{
+    /** @var PetRepository */
+    private $repository;
+
+    public function __construct(PetRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::delete('/api/v1/pets/{pet_uuid}')
+            ->summary('Delete a pet')
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:delete']));
+    }
+
+    public static function getRequestClass(): string
+    {
+        return DeletePetRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [
+            DeletePetResponse::class,
+            NotFoundApivalkResponse::class,
+            ForbiddenApivalkResponse::class,
+        ];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $uuid = $request->path()->pet_uuid;
+
+        if (!$this->repository->exists($uuid)) {
+            return new NotFoundApivalkResponse();
+        }
+
+        $this->repository->delete($uuid);
+
+        return new DeletePetResponse($uuid);
+    }
+}
+```
+
+## When to use this over a resource
+
+Use the manual variant when:
+
+- **Payloads differ between endpoints** — e.g. `Create` accepts `species` but `Update` doesn't, or the view response returns an expanded shape with joined data.
+- **Responses need custom envelopes** — `{"data": ...}` is fine for resources, but a legacy API might expect `{"pet": ...}` with metadata at the root.
+- **You want complete control over validation** — per-endpoint `getDocumentation()` gives you surgical control over required/optional fields, descriptions, and examples.
+
+For uniform entities (same shape across operations), prefer [resources](/how-to/resource-crud) — the 12-class scaffold collapses to 6.

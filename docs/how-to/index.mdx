@@ -1,0 +1,40 @@
+---
+title: "How-To Guides"
+description: "Task-focused walkthroughs for the most common things you'll build with Apivalk. Each guide is self-contained and shows working code end-to-end."
+---
+
+The rest of the documentation is organised by concept (one page per class or module). These how-tos are organised by **task** — "I want to build X" — and pull together everything you need in one place.
+
+Pick the guide that matches what you're doing right now:
+
+## Setup
+
+- [Configure Apivalk](/how-to/configure) — bootstrap the framework, register middlewares, and how to extend the configuration in larger apps.
+
+## Your first endpoints
+
+- [Build a public endpoint (`GET /health`)](/how-to/public-endpoint) — the shortest possible controller + request + response.
+- [Build a protected CRUD surface with resources](/how-to/resource-crud) — an `Animal` resource across all five CRUD endpoints with ~100 lines of code.
+- [Build a full CRUD surface without resources](/how-to/manual-crud) — the four-controller / four-request / four-response variant when you need full control.
+
+## Shaping requests and responses
+
+- [Model complex objects with PropertyCollection](/how-to/complex-objects) — nested objects, arrays of objects, and reusable shapes.
+
+## Security
+
+- [Authenticate, authorize, and inspect identity](/how-to/auth) — how authenticator, identity, route authorization, and middleware fit together.
+- [Authenticate with JWT (JWKS)](/how-to/jwt-auth) — wire up `JwtAuthenticator` against an OAuth2 provider.
+- [Authenticate with a custom API key header](/how-to/api-key-auth) — implement `AuthenticatorInterface` for `X-Api-Key`.
+
+## List endpoint features
+
+- [Add filtering](/how-to/filtering) — declare typed filters and consume them in a controller.
+- [Add sorting](/how-to/sorting) — declare sortable fields and read the resolved `SortBag`.
+- [Add pagination](/how-to/pagination) — page, offset, and cursor strategies, with response envelopes.
+- [Add rate limiting](/how-to/rate-limiting) — per-IP limits and custom strategies.
+
+## Extending Apivalk
+
+- [Write a custom middleware](/how-to/custom-middleware) — the `MiddlewareInterface` contract, ordering, and request/response mutation.
+- [Generate OpenAPI and request docblocks](/how-to/generate-openapi) — a small PHP script you can drop in `bin/` to render `openapi.json` and generate IDE autocomplete shapes.

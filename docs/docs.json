@@ -129,6 +129,26 @@
             ]
           },
           {
+            "group": "How-To Guides",
+            "pages": [
+              "how-to/index",
+              "how-to/configure",
+              "how-to/public-endpoint",
+              "how-to/resource-crud",
+              "how-to/manual-crud",
+              "how-to/complex-objects",
+              "how-to/auth",
+              "how-to/jwt-auth",
+              "how-to/api-key-auth",
+              "how-to/filtering",
+              "how-to/sorting",
+              "how-to/pagination",
+              "how-to/rate-limiting",
+              "how-to/custom-middleware",
+              "how-to/generate-openapi"
+            ]
+          },
+          {
             "group": "API Standards",
             "pages": [
               "open-api-best-practices/01-overview",

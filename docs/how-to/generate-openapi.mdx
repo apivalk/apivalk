@@ -1,0 +1,187 @@
+---
+title: "Generate OpenAPI and request docblocks"
+description: "A small PHP script that boots Apivalk, runs OpenAPIGenerator to write `openapi.json`, and runs DocBlockGenerator to emit IDE autocomplete shapes. Drop it in `bin/` and wire it to a CI step."
+---
+
+Apivalk doesn't ship a CLI binary — the generators are plain PHP. The pattern is: boot the same `Apivalk` instance your app uses, then call the generator. That way routes, middleware, and auth are always in sync with production.
+
+## 1. Extract bootstrapping
+
+You want a single factory that both `public/index.php` and your generator script can call. If you already have one per [Configure Apivalk → extending your configuration](/how-to/configure#how-to-extend-your-configuration), skip this step.
+
+```php
+// src/Bootstrap/ApivalkBootstrap.php
+namespace App\Bootstrap;
+
+use apivalk\apivalk\Apivalk;
+// ...
+
+final class ApivalkBootstrap
+{
+    public static function create(string $rootDir): Apivalk
+    {
+        // build router, middlewares, container, etc.
+        // return new Apivalk($configuration);
+    }
+}
+```
+
+## 2. The generator script
+
+```php
+#!/usr/bin/env php
+<?php
+
+// bin/generate-openapi
+
+declare(strict_types=1);
+
+use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
+use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+
+$rootDir = \dirname(__DIR__);
+
+require $rootDir . '/vendor/autoload.php';
+
+$apivalk = App\Bootstrap\ApivalkBootstrap::create($rootDir);
+
+// 1. Describe the API
+$info = new InfoObject(
+    'Example API',
+    '1.0.0',
+    'Example',
+    'Internal reference API powered by Apivalk'
+);
+
+// 2. Declare security schemes so Swagger UI knows how to authorize
+$components = new ComponentsObject();
+$components->setSecuritySchemes([
+    new SecuritySchemeObject(
+        'http',         // type
+        'BearerAuth',   // name — must match RouteAuthorization('BearerAuth', ...)
+        'JWT Bearer',
+        'header',
+        'bearer',
+        'JWT',
+        null,
+        null
+    ),
+]);
+
+// 3. List the servers clients can use
+$servers = [
+    new ServerObject('https://api.example.com', 'Production'),
+    new ServerObject('http://localhost:8080', 'Local'),
+];
+
+// 4. Generate
+$generator = new OpenAPIGenerator($apivalk, $info, $servers, $components);
+$json = $generator->generate('json');
+
+// 5. Write to disk
+$outputPath = $rootDir . '/public/openapi.json';
+\file_put_contents($outputPath, $json);
+
+\fwrite(\STDERR, \sprintf("Wrote %s (%d bytes)\n", $outputPath, \strlen($json)));
+```
+
+Make it executable and run it:
+
+```bash
+chmod +x bin/generate-openapi
+docker compose run --rm php72 php bin/generate-openapi
+```
+
+## 3. Regenerate docblocks
+
+The `DocBlockGenerator` walks your controllers and rewrites request classes (and resource classes) with `@property` / `@method` annotations plus typed `Shape/` classes. Running it is identical in spirit: boot Apivalk, point at your controller directory, run.
+
+Because `DocBlockGenerator` uses its own `ClassLocator`, you can invoke it without a full bootstrap — but running it after you've loaded the router guarantees you're operating against the exact same tree the framework saw.
+
+```php
+#!/usr/bin/env php
+<?php
+
+// bin/generate-docblocks
+
+declare(strict_types=1);
+
+use apivalk\apivalk\Documentation\DocBlock\DocBlockGenerator;
+
+$rootDir = \dirname(__DIR__);
+
+require $rootDir . '/vendor/autoload.php';
+
+// Booting Apivalk isn't strictly required here, but it keeps your autoload / env
+// consistent with runtime and lets you reuse App\Bootstrap\ApivalkBootstrap.
+App\Bootstrap\ApivalkBootstrap::create($rootDir);
+
+$generator = new DocBlockGenerator();
+$generator->run(
+    $rootDir . '/src/Http/Controller',   // directory to scan
+    'App\\Http\\Controller'               // PSR-4 namespace prefix for that directory
+);
+```
+
+What you get:
+
+- For every non-resource request class: a rewritten docblock with `@method` annotations and shape classes in `…/Request/Shape/`.
+- For every `AbstractResource` subclass touched by a resource controller: `@property` annotations on the resource so `$animal->name`, `$animal->status` autocomplete.
+- For every `AbstractListResourceController`: a generated (or updated) `*ListRequest` class with `@method sorting()` / `filtering()` / `paginator()` tied to typed shape interfaces.
+
+Run both scripts together as a single build step:
+
+```bash
+docker compose run --rm php72 php bin/generate-docblocks && \
+docker compose run --rm php72 php bin/generate-openapi
+```
+
+## 4. Wiring into CI
+
+Two things you want to guard against:
+
+1. **Stale `openapi.json`.** If the file is committed, fail CI when regenerating produces a diff. If it isn't committed, publish it as a build artifact.
+2. **Stale docblocks.** Same pattern — `git diff --quiet` after regeneration.
+
+Sketch:
+
+```yaml
+# .github/workflows/openapi.yml
+- name: Regenerate OpenAPI + docblocks
+  run: |
+    docker compose run --rm php72 php bin/generate-docblocks
+    docker compose run --rm php72 php bin/generate-openapi
+    git diff --exit-code public/openapi.json src/
+```
+
+## 5. Serving the spec to Swagger UI
+
+The generator emits a plain JSON string; serve it from wherever. A one-endpoint controller works fine:
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $json = \file_get_contents($this->rootDir . '/public/openapi.json');
+
+    return new RawJsonResponse($json); // a custom response class that emits $json verbatim
+}
+```
+
+Or regenerate on-the-fly in a non-production environment:
+
+```php
+$generator = new OpenAPIGenerator($apivalk, $info, $servers, $components);
+
+return new RawJsonResponse($generator->generate('json'));
+```
+
+The runtime cost is one pass over every route and its request/response documentation — fine for dev, measurably expensive once you're over a few hundred routes. Cache the output to disk in anything resembling production.
+
+## Related
+
+- [OpenAPI Generator](/documentation/openapi-generator) — constructor arguments and object model in detail.
+- [DocBlock Generator](/documentation/docblock-generator) — what the generator rewrites and which shapes it emits.
+- [Resource CRUD how-to](/how-to/resource-crud) — the docblock generator is especially valuable for resources, where the request shapes don't exist as hand-written classes.

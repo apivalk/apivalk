@@ -1,0 +1,91 @@
+---
+title: "Add sorting to a list endpoint"
+description: "Declare the sortable fields on the route, let the framework validate `order_by`, and read the resolved SortBag in your controller."
+---
+
+Sorting is route-level. You declare which fields the endpoint will sort by (and their default direction); clients send `?order_by=...` to override it; the framework parses, validates, and populates `$request->sorting()` for you.
+
+## 1. Declare sortable fields
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\Sort;
+
+public static function getRoute(): Route
+{
+    return Route::get('/api/v1/animals')
+        ->sorting([
+            Sort::asc('name'),
+            Sort::desc('created_at'),
+        ]);
+}
+```
+
+`Sort::asc('name')` means: "sortable on `name`; if the client doesn't override, default direction is ascending". `Sort::desc(...)` is the reverse.
+
+## 2. Clients pass `order_by`
+
+The format is a comma-separated list of field names, each optionally prefixed with `+` (ascending, default) or `-` (descending):
+
+```
+GET /api/v1/animals                              # default sorting
+GET /api/v1/animals?order_by=name                # name ASC
+GET /api/v1/animals?order_by=-created_at         # created_at DESC
+GET /api/v1/animals?order_by=name,-created_at    # name ASC, created_at DESC
+```
+
+`RequestValidationMiddleware` rejects anything not declared — `?order_by=hacked_field` → `422`. Routes without `sorting([...])` skip this check entirely (nothing to validate against).
+
+## 3. Read the resolved sorts
+
+`$request->sorting()` returns a `SortBag`. It implements `IteratorAggregate`, so iterate directly:
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $qb = $this->animals->query();
+
+    foreach ($request->sorting() as $field => $sort) {
+        $qb->orderBy($field, $sort->isAsc() ? 'ASC' : 'DESC');
+    }
+
+    // ...
+}
+```
+
+The bag is **always populated** — if the client omits `order_by`, it contains the defaults from `Sort::asc(...)` / `Sort::desc(...)` in the order you declared them.
+
+## 4. Check a specific field
+
+```php
+if ($request->sorting()->has('created_at')) {
+    $isAsc = $request->sorting()->created_at->isAsc();
+}
+```
+
+The magic getter returns `Sort|null`. `has()` returns `true` if the field was declared on the route **and** is either defaulted or requested by the client.
+
+## Inside a resource
+
+Resources expose `availableSortings()`:
+
+```php
+public function availableSortings(): array
+{
+    return [Sort::asc('name'), Sort::desc('created_at')];
+}
+```
+
+`AbstractListResourceController` reads this and calls `$route->sorting([...])` for you. The `DocBlock` generator also emits typed `@method` annotations on `*ListRequest` so `$request->sorting()->name` autocompletes. See [generate OpenAPI + docblocks](/how-to/generate-openapi).
+
+## OpenAPI side effects
+
+One query parameter — `order_by` — is added to the operation with:
+
+- `type: string`
+- Description listing supported fields and the `+` / `-` syntax.
+- Example matching your declared defaults.
+
+## Reference
+
+Full behaviour and edge cases live at [HTTP / Sorting](/http/sorting).

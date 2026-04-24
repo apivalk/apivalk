@@ -22,15 +22,15 @@ class CreatePetRequest extends AbstractApivalkRequest
     public static function getDocumentation(): ApivalkRequestDocumentation
     {
         $doc = new ApivalkRequestDocumentation();
-        
-        // Body parameters
-        $doc->addProperty(
-            (new StringProperty('name', 'Pet name'))->setRequired(true)
+
+        // Body parameters — addBodyProperty (body), addQueryProperty (query),
+        // addPathProperty (path). `setIsRequired(true)` is the default; call
+        // `setIsRequired(false)` to mark a property as optional.
+        $doc->addBodyProperty(new StringProperty('name', 'Pet name'));
+        $doc->addBodyProperty(
+            (new StringProperty('type', 'Species of the pet'))->setIsRequired(false)
         );
-        $doc->addProperty(
-            new StringProperty('type', 'Species of the pet')
-        );
-        
+
         // Path parameters (matched from route like /pet/{id})
         $doc->addPathProperty(
             new IntegerProperty('id', 'Internal ID')
@@ -63,11 +63,11 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     // Access uploaded files (returns File object)
     $image = $request->file()->get('avatar');
 
-    // Access populated sorting (as defined in Route).
-    // Note: The sorting bag is always populated. If the user does not provide an order_by parameter,
-    // the bag will contain the default sorting defined on the route.
-    foreach ($request->sorting()->all() as $sort) {
-        $field = $sort->getField();
+    // Access populated sorting (as defined in Route). SortBag is iterable —
+    // iterate directly. The bag is always populated: if the user does not
+    // provide an order_by parameter, it contains the default sorting defined
+    // on the route.
+    foreach ($request->sorting() as $field => $sort) {
         $isAsc = $sort->isAsc();
     }
 }

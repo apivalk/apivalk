@@ -1,0 +1,277 @@
+---
+title: "Model complex objects with PropertyCollection"
+description: "When a request body or response carries nested objects or arrays of objects, compose them with AbstractPropertyCollection + AbstractObjectProperty + ArrayProperty. This keeps the OpenAPI schema and runtime validation in sync."
+---
+
+Flat properties (`StringProperty`, `IntegerProperty`, `EnumProperty`, ...) cover most fields. When a payload carries structured data — a nested object or a list of objects — you compose it with three classes:
+
+- **`AbstractPropertyCollection`** — an iterable container of properties, mode-aware so you can vary fields between `CREATE`, `UPDATE`, `VIEW`, `LIST`, `DELETE`.
+- **`AbstractObjectProperty`** — a property whose value is an object; it returns a collection.
+- **`ArrayProperty`** — a property whose value is an array of objects; it wraps an `AbstractObjectProperty`.
+
+## Scenario
+
+We'll model a `POST /api/v1/orders` request that looks like this:
+
+```json
+{
+  "customer": {
+    "email": "jane@example.com",
+    "shipping_address": {
+      "line1": "1 Main St",
+      "city": "Berlin",
+      "country": "DE"
+    }
+  },
+  "items": [
+    {"sku": "ABC-123", "quantity": 2},
+    {"sku": "XYZ-999", "quantity": 1}
+  ]
+}
+```
+
+Two nested shapes: a single `customer` object (with a nested `shipping_address`), and an `items` array of uniform objects.
+
+## 1. Leaf collection: `AddressPropertyCollection`
+
+Start with the innermost shape. A collection takes a mode constant in its constructor — you only need to branch when a field is present in some modes but not others.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Schema\Order;
+
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+
+class AddressPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
+        $this->addProperty(new StringProperty('line1', 'Street address line 1'));
+        $this->addProperty((new StringProperty('line2', 'Optional second line'))->setIsRequired(false));
+        $this->addProperty(new StringProperty('city', 'City'));
+        $this->addProperty(new EnumProperty('country', 'ISO-3166 alpha-2 code', ['DE', 'AT', 'CH', 'FR', 'NL']));
+    }
+}
+```
+
+## 2. Object wrapper: `AddressObjectProperty`
+
+The property that lives inside another schema and plugs the collection into the framework's object machinery:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Schema\Order;
+
+use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+
+class AddressObjectProperty extends AbstractObjectProperty
+{
+    /** @var string */
+    private $mode;
+
+    public function __construct(string $propertyName, string $description, string $mode)
+    {
+        parent::__construct($propertyName, $description);
+
+        $this->mode = $mode;
+    }
+
+    public function getPropertyCollection(): AbstractPropertyCollection
+    {
+        return new AddressPropertyCollection($this->mode);
+    }
+
+    public function toArray(): array
+    {
+        // Rarely used — subclass only needs it if you plan to emit instances from response classes.
+        return [];
+    }
+}
+```
+
+## 3. Composite collection: `CustomerPropertyCollection`
+
+Customer contains `email` plus the nested `shipping_address` object. Compose via `addProperty(new AddressObjectProperty(...))`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Schema\Order;
+
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+
+class CustomerPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
+        $this->addProperty(new StringProperty('email', 'Customer email'));
+        $this->addProperty(new AddressObjectProperty('shipping_address', 'Where to ship', $mode));
+    }
+}
+```
+
+And the wrapper:
+
+```php
+class CustomerObjectProperty extends AbstractObjectProperty
+{
+    /** @var string */
+    private $mode;
+
+    public function __construct(string $propertyName, string $description, string $mode)
+    {
+        parent::__construct($propertyName, $description);
+        $this->mode = $mode;
+    }
+
+    public function getPropertyCollection(): AbstractPropertyCollection
+    {
+        return new CustomerPropertyCollection($this->mode);
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+```
+
+## 4. Line items: `ArrayProperty` of objects
+
+For `"items": [...]` you wrap an `AbstractObjectProperty` in an `ArrayProperty`.
+
+```php
+class OrderItemPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
+        $this->addProperty(new StringProperty('sku', 'Stock keeping unit'));
+        $this->addProperty(
+            (new IntegerProperty('quantity', 'Units to buy', IntegerProperty::FORMAT_INT32))
+                ->setExample('1')
+        );
+    }
+}
+
+class OrderItemObjectProperty extends AbstractObjectProperty
+{
+    /** @var string */
+    private $mode;
+
+    public function __construct(string $propertyName, string $description, string $mode)
+    {
+        parent::__construct($propertyName, $description);
+        $this->mode = $mode;
+    }
+
+    public function getPropertyCollection(): AbstractPropertyCollection
+    {
+        return new OrderItemPropertyCollection($this->mode);
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+```
+
+## 5. Use them in a request
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Request\Order;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
+use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use App\Http\Schema\Order\CustomerObjectProperty;
+use App\Http\Schema\Order\OrderItemObjectProperty;
+
+class CreateOrderRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        $doc = new ApivalkRequestDocumentation();
+
+        $doc->addBodyProperty(
+            new CustomerObjectProperty('customer', 'The purchaser', AbstractPropertyCollection::MODE_CREATE)
+        );
+
+        $doc->addBodyProperty(
+            new ArrayProperty(
+                'items',
+                'Line items to purchase',
+                new OrderItemObjectProperty('item', 'A single line item', AbstractPropertyCollection::MODE_CREATE)
+            )
+        );
+
+        return $doc;
+    }
+}
+```
+
+## Reading nested data in the controller
+
+The `ParameterBag` magic getter returns the raw typed value. For nested objects and arrays of objects, it returns an array:
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $customer = $request->body()->customer;               // array{email, shipping_address: array{...}}
+    $items    = $request->body()->items;                  // list<array{sku, quantity}>
+
+    $shippingCountry = $customer['shipping_address']['country'];
+    $totalQty = \array_sum(\array_column($items, 'quantity'));
+
+    // ...
+}
+```
+
+`RequestValidationMiddleware` already validated every level before you got here — `line1` is a non-empty string, `country` is one of the enum values, `quantity` is an integer. If anything was wrong the client got a `422` with a field path like `items.0.quantity`.
+
+## Mode-specific fields
+
+Branch on the `$mode` you pass down from the top:
+
+```php
+class CustomerPropertyCollection extends AbstractPropertyCollection
+{
+    public function __construct(string $mode)
+    {
+        // Show the customer_uuid in responses but not in create bodies
+        if (\in_array($mode, [self::MODE_VIEW, self::MODE_LIST], true)) {
+            $this->addProperty(new StringProperty('customer_uuid', 'Internal identifier'));
+        }
+
+        $this->addProperty(new StringProperty('email', 'Customer email'));
+        $this->addProperty(new AddressObjectProperty('shipping_address', 'Where to ship', $mode));
+    }
+}
+```
+
+Pass `AbstractPropertyCollection::MODE_VIEW` when composing the response, `MODE_CREATE` when composing the request — same collection class, correct schema in each place.
+
+## Tips
+
+- **Keep wrappers boring.** An `AbstractObjectProperty` subclass usually only carries the `$mode` and delegates to a collection. Logic belongs in the collection (or the domain).
+- **Reuse wrappers across requests and responses.** `CustomerObjectProperty` used in `CreateOrderRequest` is the same class you'd use in a `ViewOrderResponse` — swap the mode.
+- **Validators stay per-property.** Call `setMinLength`, `setMaxLength`, `setPattern`, `setIsRequired`, etc. on the individual `StringProperty` / `IntegerProperty` / etc. instances inside the collection.
+
+See also: the [Property reference](/documentation/property) and [Property Collection reference](/documentation/property-collection).

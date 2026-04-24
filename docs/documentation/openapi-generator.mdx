@@ -3,14 +3,14 @@ title: "OpenAPI Generator"
 description: "The `OpenAPIGenerator` is the component responsible for converting your code-based documentation into a standardized OpenAPI 3.0 (Swagger) specification."
 ---
 
+<Tip>For a ready-to-run script and CI wiring, see [Generate OpenAPI and docblocks](/how-to/generate-openapi).</Tip>
+
 ## How it Works
 
 The generator leverages the existing framework infrastructure to discover and process your API metadata:
 
 1. **Route Discovery**: It uses the `Router` to find all registered routes and their corresponding controller classes.
-2. **Metadata Extraction**: For each discovered route, it calls:
-   - `AbstractApivalkController::getRequestDocumentation()`
-   - `AbstractApivalkController::getResponseDocumentation()`
+2. **Metadata Extraction**: For each route, it resolves the associated request and response classes via `AbstractApivalkController::getRequestClass()` and `::getResponseClasses()`, then calls `getDocumentation()` on those classes to obtain the declared `ApivalkRequestDocumentation` / `ApivalkResponseDocumentation`. Route-level metadata (filters, sortings, pagination, rate limit, authorization) is merged in from the `Route` object itself.
 3. **Object Mapping**: It maps the Apivalk `Property` system to OpenAPI objects (Schemas, Parameters, RequestBodies, Responses).
 4. **Serialization**: It assembles these objects into a final `OpenAPI` object and serializes it to JSON.
 
@@ -37,6 +37,8 @@ The `OpenAPIGenerator` coordinates several specialized generators:
 - `ResponseGenerator`: Converts response documentation to OpenAPI response schemas.
 
 ## Usage Example
+
+For a copy-paste `bin/generate-openapi` script and a complementary docblock-generation script, see the [how-to: generate OpenAPI + docblocks](/how-to/generate-openapi).
 
 ```php
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
@@ -321,4 +323,4 @@ The header descriptions include the configured window duration from the `RateLim
 
 ## Automated Pagination Envelope
 
-If a response documentation has `setHasResponsePagination(true)`, the generator automatically wraps the properties in a standard pagination envelope containing `data`, `total`, `page`, `limit`, etc.
+When a route has a pagination strategy attached via `Route::pagination(...)`, the generator automatically wraps the matching list response's schema in the standard pagination envelope (`data`, plus a `pagination` object whose shape matches the chosen strategy — `page`/`page_size`/`total_pages` for `Pagination::page()`, `limit`/`offset`/`total` for `Pagination::offset()`, `limit`/`current_cursor`/`next_cursor` for `Pagination::cursor()`). At runtime, attach the matching `PaginationResponseInterface` to your response via `setPaginationResponse(...)` — see [pagination](/http/pagination) for the end-to-end flow.

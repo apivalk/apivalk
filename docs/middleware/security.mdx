@@ -58,10 +58,10 @@ If you want a route to be public but also optionally use identity information wh
 
 ## Status Codes
 
-When authorization fails, the middleware throws an exception that results in one of two HTTP status codes:
+When authorization fails, the middleware returns an error response directly — it does not throw. The status code depends on whether the request was authenticated:
 
-1.  **401 Unauthorized**: Thrown when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
-2.  **403 Forbidden**: Thrown when an authenticated [UserAuthIdentity](/security/identity) does not have the required scopes for the route.
+1.  **401 Unauthorized**: Returned when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
+2.  **403 Forbidden**: Returned when an authenticated identity (e.g. [JwtAuthIdentity](/security/identity)) does not have the required scopes or permissions for the route.
 
 ## Scopes and Permissions
 
@@ -72,6 +72,6 @@ While many frameworks use roles (e.g., `ROLE_ADMIN`), Apivalk follows the OpenAP
 The `SecurityMiddleware` should always be placed **after** your authentication middleware in the stack.
 
 ```php
-$configuration->addMiddleware(new AuthenticationMiddleware($authenticator));
-$configuration->addMiddleware(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
 ```

@@ -36,10 +36,12 @@ When `MiddlewareStack::handle()` is called, it wraps the controller and all midd
 Middlewares are typically configured via the `ApivalkConfiguration` object during the bootstrapping phase.
 
 ```php
-$configuration = new ApivalkConfiguration();
-$configuration->addMiddleware(new SanitizeMiddleware());
-$configuration->addMiddleware(new RequestValidationMiddleware());
+$configuration = new ApivalkConfiguration($router);
+$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
+$configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
 ```
+
+See [Write a custom middleware](/how-to/custom-middleware) for a step-by-step guide, including recommended order.
 
 ## Built-in Middlewares
 

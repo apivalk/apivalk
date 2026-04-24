@@ -1,0 +1,116 @@
+---
+title: "Add filtering to a list endpoint"
+description: "Declare typed filters on a route, validate client input automatically, and read the resolved values with the right PHP type inside your controller."
+---
+
+Filtering in Apivalk is route-level: you tell the route which filters it accepts, the framework validates and resolves them, and your controller reads typed values from `$request->filtering()`.
+
+## 1. Declare filters on the route
+
+```php
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Route;
+
+public static function getRoute(): Route
+{
+    return Route::get('/api/v1/animals')
+        ->filtering([
+            EnumFilter::equals(new EnumProperty('status', 'Lifecycle status', ['active', 'archived'])),
+            StringFilter::contains(new StringProperty('name', 'Name contains')),
+            IntegerFilter::greaterThan(new IntegerProperty('age', 'Minimum age (years)')),
+            DateFilter::greaterThan(new DateProperty('born_after', 'Born on or after')),
+        ]);
+}
+```
+
+Each factory (`::equals`, `::in`, `::like`, `::contains`, `::greaterThan`, `::lessThan`) binds a filter operator to a property. Not all filters support all operators — match them by type:
+
+| Filter class | Operators |
+|---|---|
+| `StringFilter` | `equals`, `in`, `like`, `contains` |
+| `EnumFilter` | `equals`, `in` |
+| `IntegerFilter`, `FloatFilter`, `DateFilter`, `DateTimeFilter` | `equals`, `in`, `greaterThan`, `lessThan` |
+| `ByteFilter`, `BinaryFilter` | `equals`, `in` |
+
+## 2. Clients send filters as flat query parameters
+
+```
+GET /api/v1/animals?status=active&name=leo&age=3&born_after=2020-01-01
+```
+
+`RequestValidationMiddleware` rejects anything you didn't declare. Wrong type (`age=not-an-integer`) → `422`. Unknown filter (`?foo=bar` where `foo` isn't declared) is silently ignored.
+
+## 3. Read values in the controller
+
+`$request->filtering()` returns a `FilterBag`. Each filter exposes its operator via the `isType*()` methods and its value via `getValue()`, already cast to the correct PHP type.
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $filters = $request->filtering();
+
+    $qb = $this->animals->query();
+
+    if ($filters->has('status')) {
+        $qb->where('status', '=', $filters->status->getValue()); // string
+    }
+
+    if ($filters->has('name')) {
+        $qb->where('name', 'LIKE', '%' . $filters->name->getValue() . '%'); // string
+    }
+
+    if ($filters->has('age')) {
+        $qb->where('age', '>', $filters->age->getValue()); // int
+    }
+
+    if ($filters->has('born_after')) {
+        $qb->where('born_at', '>=', $filters->born_after->getValue()); // \DateTime
+    }
+
+    // ...
+}
+```
+
+If the client didn't send a filter, `$filters->has('name')` returns `false` and `$filters->name` returns `null` — the bag is not populated with defaults for filters (unlike sorting).
+
+## 4. Iterate when you want to apply them generically
+
+```php
+foreach ($filters as $field => $filter) {
+    $operator = $filter->getType();        // 'equals' | 'in' | 'contains' | ...
+    $value    = $filter->getValue();       // already typed
+
+    // fan out to your query builder
+}
+```
+
+## Inside a resource
+
+Resources expose `availableFilters()`:
+
+```php
+public function availableFilters(): array
+{
+    return [
+        EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'archived'])),
+        StringFilter::contains(new StringProperty('name', 'Name contains')),
+    ];
+}
+```
+
+`AbstractListResourceController` wires them into the route for you — the controller reads from `$request->filtering()` exactly the same way. See [the resource CRUD how-to](/how-to/resource-crud).
+
+## OpenAPI side effects
+
+Each declared filter becomes a dedicated query parameter in the generated spec, typed from the underlying `AbstractProperty`. Descriptions include the operator (`"Name contains"`, `"Minimum age (years)"`). Swagger UI will render a separate input per filter — you can't generate `?filter[name]=...` style syntax with this system.
+
+## Reference
+
+Full operator / property matrix lives at [HTTP / Filtering](/http/filtering).
