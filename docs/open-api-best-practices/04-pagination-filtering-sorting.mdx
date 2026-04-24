@@ -78,7 +78,7 @@ Use '+' (ASC) or '-' (DESC) as a prefix for each field. If not specified, defaul
 GET /users?order_by=+id,-price
 ```
 
-In Apivalk, this `order_by` parameter automatically populates the `sorting()` bag on the request object, based on the fields allowed in the `Route` definition.
+In Apivalk, this `order_by` parameter automatically populates the `sorting()` bag on the request object, based on the fields allowed in the `Route` definition. Any field not declared via `Route::sorting([...])` (or `AbstractResource::availableSortings()`) is rejected by the validation middleware with a `422`.
 
 ### Filtering
 

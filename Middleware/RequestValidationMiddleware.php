@@ -8,12 +8,14 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 
 class RequestValidationMiddleware implements MiddlewareInterface
 {
@@ -27,24 +29,13 @@ class RequestValidationMiddleware implements MiddlewareInterface
     ): AbstractApivalkResponse {
         $this->errors = [];
 
-        $documentation = $request::getDocumentation();
+        $documentation = $request->getRuntimeDocumentation();
 
-        $this->validateProperties(
-            $documentation->getBodyProperties(),
-            $request->body()
-        );
-
-        $this->validateProperties(
-            $documentation->getQueryProperties(),
-            $request->query()
-        );
-
-        $this->validateProperties(
-            $documentation->getPathProperties(),
-            $request->path()
-        );
-
-        $this->validateFilters($request->filtering()->all());
+        $this->validateProperties($documentation->getBodyProperties(), $request->body());
+        $this->validateProperties($documentation->getQueryProperties(), $request->query());
+        $this->validateProperties($documentation->getPathProperties(), $request->path());
+        $this->validateFilters($request->filtering());
+        $this->validateSortings($request->sorting(), $documentation->getAvailableSortFields());
 
         if (\count($this->errors) > 0) {
             return new BadValidationApivalkResponse($this->errors);
@@ -54,11 +45,28 @@ class RequestValidationMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param FilterInterface[] $filters
+     * @param string[] $availableSortFields
      */
-    private function validateFilters(array $filters): void
+    private function validateSortings(SortBag $sortBag, array $availableSortFields): void
     {
-        foreach ($filters as $filter) {
+        if (empty($availableSortFields)) {
+            return;
+        }
+
+        foreach ($sortBag as $sort) {
+            if (!\in_array($sort->getField(), $availableSortFields, true)) {
+                $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                    'order_by',
+                    new ValidatorResult(false, \sprintf('Invalid sort field "%s"', $sort->getField()))
+                );
+            }
+        }
+    }
+
+    private function validateFilters(FilterBag $filterBag): void
+    {
+        /** @var FilterInterface $filter */
+        foreach ($filterBag->getIterator() as $filter) {
             $value = $filter->getValue();
             $property = $filter->getProperty();
 
@@ -68,24 +76,18 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
             if ($value === null && $property->isRequired()) {
                 $this->errors[] = ValidationErrorObject::createByValidatorResult(
-                    $property->getPropertyName(),
+                    $filter->getField(),
                     new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
                 );
-
                 continue;
             }
 
-            $parameter = new Parameter($property->getPropertyName(), $value, $value);
+            $parameter = new Parameter($filter->getField(), $value, (string)$value);
 
             foreach ($property->getValidators() as $validator) {
-                /** @var ValidatorResult $validatorResult */
-                $validatorResult = $validator->validate($parameter);
-
-                if (!$validatorResult->isSuccess()) {
-                    $this->errors[] = ValidationErrorObject::createByValidatorResult(
-                        $property->getPropertyName(),
-                        $validatorResult
-                    );
+                $result = $validator->validate($parameter);
+                if (!$result->isSuccess()) {
+                    $this->errors[] = ValidationErrorObject::createByValidatorResult($filter->getField(), $result);
                 }
             }
         }

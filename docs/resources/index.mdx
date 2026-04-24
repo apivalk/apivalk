@@ -1,0 +1,63 @@
+---
+title: "Resources"
+description: "Resources are Apivalk's declarative model for CRUD endpoints. You describe a resource once and get type-safe, validated, OpenAPI-documented Create / Read / Update / Delete / List endpoints with no per-endpoint boilerplate."
+---
+
+## What Is a Resource?
+
+In Apivalk, a **resource** is a concrete subclass of `AbstractResource` that describes one domain entity:
+
+- its **identifier property** (e.g. `animal_uuid`);
+- its **data properties** (name, type, weight, ...);
+- which properties are **excluded from a given mode** (e.g. hide `password` from list responses);
+- the **filters** and **sortings** list endpoints expose;
+- the OpenAPI **tags** for grouping.
+
+One resource declaration powers five controllers — Create, View, Update, Delete, List — and the matching response envelopes. The framework derives URLs, request validation, response shapes, and OpenAPI documentation from that single source of truth.
+
+## Why Use Resources?
+
+Without resources, building a full CRUD surface for one entity means authoring ~15 classes: five controllers, five request classes with property documentation, and five response classes. Resources collapse that to one resource class plus five thin controller subclasses.
+
+Benefits:
+
+- **Zero duplicate documentation**: identifier, properties, filters, and sortings are declared once.
+- **Consistent URLs and methods**: `Route::resource()` picks the correct URL template and HTTP verb per mode.
+- **Built-in validation**: `RequestValidationMiddleware` validates body, path, filters, and sort fields — all derived from the resource.
+- **Built-in OpenAPI**: request and response schemas are emitted for all five modes automatically.
+- **Shared response envelopes**: `ResourceCreated/View/Updated/Deleted/ListResponse` wrap the `data` key and pagination envelope for you.
+
+## Big Picture
+
+```text
+AbstractResource (your declaration)
+   ├─ getIdentifierProperty()  ── path param on view/update/delete
+   ├─ init() + addProperty()   ── body fields on create/update, response fields on all modes
+   ├─ excludeFromMode($mode)   ── per-mode field visibility
+   ├─ availableFilters()       ── list endpoint query params
+   ├─ availableSortings()      ── order_by fields
+   └─ tags()                   ── OpenAPI grouping
+
+    ▲
+    │ paired with one of
+    │
+Abstract{Create,View,Update,Delete,List}ResourceController
+   ├─ getRoute()         ── built by Route::resource($resource, $mode)
+   ├─ getRequestClass()  ── always ResourceRequest
+   ├─ getResponseClasses ── mode-specific Resource*Response
+   └─ __invoke()         ── your business logic (only thing you implement)
+```
+
+## Learn More
+
+<CardGroup cols={3}>
+  <Card title="Defining a Resource" href="/resources/resource">
+    How to subclass `AbstractResource`: identifier, properties, filters, sortings, per-mode exclusions.
+  </Card>
+  <Card title="Resource Controllers" href="/resources/controllers">
+    The five CRUD controller bases, how they wire up, and what you override.
+  </Card>
+  <Card title="Resource Responses" href="/resources/responses">
+    The five pre-built response envelopes and how to attach pagination.
+  </Card>
+</CardGroup>

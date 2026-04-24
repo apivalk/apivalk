@@ -147,6 +147,23 @@ public static function getRoute(): Route
 
 When pagination is enabled, the framework automatically handles the `page`, `limit`, `offset`, or `cursor` query parameters and includes them in the OpenAPI documentation. See the [Pagination](/http/pagination) guide for more details.
 
+## Resource Routes
+
+For CRUD endpoints against an `AbstractResource`, use `Route::resource()` to build a route pre-configured for one of the five resource modes. It derives the URL, HTTP method, and default configuration from the resource:
+
+```php
+use apivalk\apivalk\Resource\AbstractResource;
+use apivalk\apivalk\Router\Route\Route;
+use App\Resource\AnimalResource;
+
+public static function getRoute(): Route
+{
+    return Route::resource(new AnimalResource(), AbstractResource::MODE_LIST);
+}
+```
+
+In practice you won't call `Route::resource()` yourself — `AbstractResourceController::getRoute()` does it for you. See [Resources](/resources/index).
+
 ## Filtering
 
 You can define which fields are allowed for filtering by using the `filtering()` method. This takes an array of `FilterInterface` instances:

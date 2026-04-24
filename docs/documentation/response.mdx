@@ -1,6 +1,6 @@
 ---
 title: "Response"
-description: "The `ApivalkResponseDocumentation` class defines the structure of the data returned by an API endpoint. It is used within your controller's `getResponseDocumentation()` method."
+description: "The `ApivalkResponseDocumentation` class defines the structure of the data returned by an API endpoint. It is returned by the static `getDocumentation()` method on your response class."
 ---
 
 ## Purpose
@@ -26,32 +26,28 @@ You can set a human-readable description for the response, which will appear in 
 $doc->setDescription('Returns the profile of the authenticated user');
 ```
 
-### Pagination Support
+### Pagination Envelopes
 
-If your endpoint returns a list of items and uses the Apivalk pagination system, you can enable the pagination envelope.
+Response pagination envelopes are produced automatically when your controller attaches a `PaginationResponseInterface` via `$response->setPaginationResponse(...)`. The `JsonRenderer` emits the `pagination` key and the OpenAPI generator adds the corresponding envelope schema — no flag needs to be set on the documentation.
 
-```php
-$doc->setHasResponsePagination(true);
-```
-
-When this is set to `true`, the `OpenAPIGenerator` will wrap your defined properties in a standard `data` array and include metadata fields like `total`, `page`, `limit`, and `pages`.
+See [Pagination](/http/pagination) for the concrete response objects.
 
 ## Full Example
 
 ```php
-public static function getResponseDocumentation(): ApivalkResponseDocumentation
+public static function getDocumentation(): ApivalkResponseDocumentation
 {
     $doc = new ApivalkResponseDocumentation();
     $doc->setDescription('Successfully retrieved the list of posts');
-    
-    // Add properties that will be inside each item of the 'data' array 
-    // if pagination is enabled, or in the root object if not.
+
     $doc->addProperty(new StringProperty('title', 'The post title'));
     $doc->addProperty(new StringProperty('content', 'The post body'));
     $doc->addProperty(new StringProperty('created_at', 'ISO 8601 date'));
-    
-    $doc->setHasResponsePagination(true);
-    
+
     return $doc;
 }
 ```
+
+## Tip: Use Resource Responses for CRUD
+
+If your endpoint follows the standard CRUD shape, use the pre-built `Resource*Response` classes instead of authoring response documentation yourself — they wire the `data` envelope, pagination, and OpenAPI schema from the resource definition. See [Resource Responses](/resources/responses).

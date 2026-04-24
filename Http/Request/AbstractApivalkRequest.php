@@ -8,22 +8,18 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
-use apivalk\apivalk\Http\Request\File\FileBagFactory;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
 use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
-use apivalk\apivalk\Http\Request\Pagination\PaginatorFactory;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
-use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
+use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
+use apivalk\apivalk\Http\Request\Population\RequestPopulationStrategyCollection;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
-use apivalk\apivalk\Router\Route\Sort\Sort;
-use apivalk\apivalk\Router\Route\Sort\SortBag;
-use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
-use apivalk\apivalk\Util\IpResolver;
 
 abstract class AbstractApivalkRequest implements ApivalkRequestInterface
 {
@@ -53,101 +49,24 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     private $filterBag;
     /** @var CursorPaginator|PagePaginator|OffsetPaginator|null */
     private $paginator;
+    /** @var ApivalkRequestDocumentation */
+    private $documentation;
 
-    abstract public static function getDocumentation(): ApivalkRequestDocumentation;
-
-    public function populate(Route $route): void
+    public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
     {
-        $documentation = static::getDocumentation();
+        $this->documentation = $documentation;
 
-        // ToDo: Write Populator Logic/Strategy for this, it gets messy by now
+        $requestPopulationContext = new RequestPopulationContext($route, $documentation);
+        $requestPopulationStrategyCollection = new RequestPopulationStrategyCollection();
 
-        $this->method = $route->getMethod();
-        $this->headerBag = ParameterBagFactory::createHeaderBag();
-        $this->queryParameterBag = ParameterBagFactory::createQueryBag($route, $documentation);
-        $this->pathParameterBag = ParameterBagFactory::createPathBag($route, $documentation);
-        $this->bodyParameterBag = ParameterBagFactory::createBodyBag($documentation);
-        $this->fileBag = FileBagFactory::create();
-        $this->authIdentity = new GuestAuthIdentity([]);
-        $this->ip = IpResolver::getClientIp();
-        $this->sortBag = new SortBag();
-        $this->filterBag = new FilterBag();
-
-        $this->populateOrderBag($route);
-        $this->populateFilterBag($route);
-        $this->createPaginator($route);
-    }
-
-    private function populateOrderBag(Route $route): void
-    {
-        foreach ($route->getSortings() as $ordering) {
-            if (!$this->sortBag->has($ordering->getField())) {
-                $this->sortBag->set($ordering);
-            }
-        }
-
-        $orderBy = $this->queryParameterBag->get('order_by');
-
-        if ($orderBy === null) {
-            return;
-        }
-
-        foreach (explode(',', $orderBy->getRawValue()) as $curOrderByField) {
-            $curOrderByField = trim($curOrderByField);
-
-            if ($curOrderByField === '') {
-                continue;
-            }
-
-            if ($curOrderByField[0] !== '+' && $curOrderByField[0] !== '-') {
-                $direction = '+';
-                $field = $curOrderByField;
-            } else {
-                $direction = $curOrderByField[0];
-                $field = substr($curOrderByField, 1);
-            }
-
-            if ($field === '') {
-                continue;
-            }
-
-            $this->sortBag->set($direction === '-' ? Sort::desc($field) : Sort::asc($field));
+        foreach ($requestPopulationStrategyCollection->getAll() as $populationStrategy) {
+            $populationStrategy->populate($this, $requestPopulationContext);
         }
     }
 
-    private function populateFilterBag(Route $route): void
+    public function getRuntimeDocumentation(): ApivalkRequestDocumentation
     {
-        foreach ($route->getFilters() as $filter) {
-            $field = $filter->getField();
-            $queryParameter = $this->queryParameterBag->get($field);
-
-            $clonedFilter = clone $filter;
-            if ($queryParameter !== null) {
-                $clonedFilter->setValue(
-                    ParameterBagFactory::typeCastValueByProperty($queryParameter->getRawValue(), $filter->getProperty())
-                );
-            }
-            $this->filterBag->set($clonedFilter);
-        }
-    }
-
-    private function createPaginator(Route $route): void
-    {
-        $pagination = $route->getPagination();
-
-        if ($pagination !== null) {
-            switch ($pagination->getType()) {
-                case Pagination::TYPE_OFFSET:
-                    $this->paginator = PaginatorFactory::offset($this, $pagination->getMaxLimit());
-                    break;
-                case Pagination::TYPE_CURSOR:
-                    $this->paginator = PaginatorFactory::cursor($this, $pagination->getMaxLimit());
-                    break;
-                case Pagination::TYPE_PAGE:
-                    $this->paginator = PaginatorFactory::page($this, $pagination->getMaxLimit());
-                    break;
-            }
-        }
+        return $this->documentation;
     }
 
     public function getMethod(): MethodInterface
@@ -195,9 +114,6 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
         return $this->filterBag;
     }
 
-    /**
-     * @return mixed|null
-     */
     public function paginator()
     {
         return $this->paginator;
@@ -231,5 +147,58 @@ abstract class AbstractApivalkRequest implements ApivalkRequestInterface
     public function setLocale(Locale $locale): void
     {
         $this->locale = $locale;
+    }
+
+    public function setMethod(MethodInterface $method): void
+    {
+        $this->method = $method;
+    }
+
+    public function setHeaderBag(ParameterBag $headerBag): void
+    {
+        $this->headerBag = $headerBag;
+    }
+
+    public function setQueryParameterBag(ParameterBag $queryParameterBag): void
+    {
+        $this->queryParameterBag = $queryParameterBag;
+    }
+
+    public function setPathParameterBag(ParameterBag $pathParameterBag): void
+    {
+        $this->pathParameterBag = $pathParameterBag;
+    }
+
+    public function setBodyParameterBag(ParameterBag $bodyParameterBag): void
+    {
+        $this->bodyParameterBag = $bodyParameterBag;
+    }
+
+    public function setFileBag(FileBag $fileBag): void
+    {
+        $this->fileBag = $fileBag;
+    }
+
+    public function setIp(?string $ip): void
+    {
+        $this->ip = $ip;
+    }
+
+    public function setSortBag(SortBag $sortBag): void
+    {
+        $this->sortBag = $sortBag;
+    }
+
+    public function setFilterBag(FilterBag $filterBag): void
+    {
+        $this->filterBag = $filterBag;
+    }
+
+    /**
+     * @param CursorPaginator|OffsetPaginator|PagePaginator|null $paginator
+     */
+    public function setPaginator($paginator): void
+    {
+        $this->paginator = $paginator;
     }
 }

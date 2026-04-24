@@ -11,15 +11,17 @@ use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
-use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 interface ApivalkRequestInterface
 {
     public static function getDocumentation(): ApivalkRequestDocumentation;
 
-    public function populate(Route $route): void;
+    public function populate(Route $route, ApivalkRequestDocumentation $documentation): void;
+
+    public function getRuntimeDocumentation(): ApivalkRequestDocumentation;
 
     public function getMethod(): MethodInterface;
 

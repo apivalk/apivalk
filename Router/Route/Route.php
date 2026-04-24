@@ -11,10 +11,11 @@ use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
+use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
 use apivalk\apivalk\Router\Route\Filter\FilterInterface;
-use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Security\RouteAuthorization;
 
 class Route
@@ -99,6 +100,38 @@ class Route
     public static function put(string $url): self
     {
         return new self($url, new PutMethod());
+    }
+
+    public static function resource(AbstractResource $resource, string $mode): self
+    {
+        $route = null;
+        $url = \sprintf('%s/%s', $resource->getBaseUrl(), $resource->getPluralName());
+
+        if ($mode === AbstractResource::MODE_DELETE) {
+            $route = self::delete($url);
+        }
+
+        if ($mode === AbstractResource::MODE_LIST) {
+            $route = self::get($url);
+        }
+
+        if ($mode === AbstractResource::MODE_CREATE) {
+            $route = self::post($url);
+        }
+
+        if ($mode === AbstractResource::MODE_UPDATE) {
+            $route = self::patch(\sprintf('%s/{%s}', $url, $resource->getIdentifierProperty()->getPropertyName()));
+        }
+
+        if ($mode === AbstractResource::MODE_VIEW) {
+            $route = self::get(\sprintf('%s/{%s}', $url, $resource->getIdentifierProperty()->getPropertyName()));
+        }
+
+        if ($route === null) {
+            throw new \InvalidArgumentException(\sprintf('Resource Mode "%s" not supported', $mode));
+        }
+
+        return $route;
     }
 
     /**

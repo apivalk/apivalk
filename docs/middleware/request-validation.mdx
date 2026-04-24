@@ -7,11 +7,12 @@ description: "The `RequestValidationMiddleware` is a core component of Apivalk's
 
 The middleware intercepts the request before it reaches the controller and performs the following steps:
 
-1. **Extract Documentation**: It retrieves the property definitions for Body, Query, and Path parameters from the Request object.
-2. **Iterative Validation**: It iterates through each defined property and checks the corresponding value in the `ParameterBag`.
-3. **Required Field Check**: If a property is marked as `required` but missing from the request, a validation error is recorded.
-4. **Validator Execution**: If the value is present, it runs all validators attached to that property (e.g., `StringValidator`, `IntegerValidator`, `FloatValidator`, `EnumValidator`, `DateValidator`).
-5. **Error Collection**: If any validation fails, the middleware collects the errors into an array of `ValidationErrorObject` instances.
+1. **Extract Runtime Documentation**: It retrieves the **merged** documentation from `$request->getRuntimeDocumentation()` — the developer-declared properties plus route-derived metadata (filters, pagination params, available sort fields).
+2. **Property Validation**: It iterates Body, Query, and Path properties and checks each corresponding value in the `ParameterBag` — running all validators attached to the property (`StringValidator`, `IntegerValidator`, `EnumValidator`, ...).
+3. **Required Field Check**: If a property is marked `required` but missing, a validation error is recorded.
+4. **Filter Validation**: Each filter in `$request->filtering()` is validated against its underlying property (required / type / custom validators).
+5. **Sort Field Validation**: Each `Sort` in `$request->sorting()` must correspond to a field declared on the route via `Route::sorting([...])`. Unknown fields sent via `?order_by=...` produce a validation error (key `order_by`, message `Invalid sort field "X"`). Routes without declared sortings skip this check.
+6. **Error Collection**: All errors are collected into `ValidationErrorObject[]`.
 
 ## Automatic Response
 

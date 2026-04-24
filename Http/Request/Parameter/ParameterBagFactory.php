@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Http\Request\Parameter;
 
-use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
 use apivalk\apivalk\Router\Route\Route;
@@ -26,9 +25,11 @@ final class ParameterBagFactory
         return $headerBag;
     }
 
-    public static function createQueryBag(Route $route, ApivalkRequestDocumentation $documentation): ParameterBag
+    /**
+     * @param AbstractProperty[] $queryProperties
+     */
+    public static function createQueryBag(Route $route, array $queryProperties): ParameterBag
     {
-        $properties = $documentation->getQueryProperties();
         $queryBag = new ParameterBag();
 
         foreach ($_GET as $key => $value) {
@@ -36,11 +37,11 @@ final class ParameterBagFactory
                 continue;
             }
 
-            if (isset($properties[$key])) {
+            if (isset($queryProperties[$key])) {
                 $queryBag->set(
                     new Parameter(
                         $key,
-                        self::typeCastValueByProperty($value, $properties[$key]),
+                        self::typeCastValueByProperty($value, $queryProperties[$key]),
                         $value
                     )
                 );
@@ -63,22 +64,14 @@ final class ParameterBagFactory
             }
         }
 
-        if (isset($_GET['order_by']) && $_GET['order_by'] !== null) {
-            $queryBag->set(
-                new Parameter(
-                    'order_by',
-                    $_GET['order_by'],
-                    $_GET['order_by']
-                )
-            );
-        }
-
         return $queryBag;
     }
 
-    public static function createPathBag(Route $route, ApivalkRequestDocumentation $documentation): ParameterBag
+    /**
+     * @param AbstractProperty[] $pathProperties
+     */
+    public static function createPathBag(Route $route, array $pathProperties): ParameterBag
     {
-        $properties = $documentation->getPathProperties();
         $pathBag = new ParameterBag();
 
         preg_match_all('/\{([a-zA-Z0-9]+)\}/', $route->getUrl(), $keyMatches);
@@ -113,7 +106,7 @@ final class ParameterBagFactory
         }
 
         foreach ($result as $parameterName => $parameterValue) {
-            if (!isset($properties[$parameterName])) {
+            if (!isset($pathProperties[$parameterName])) {
                 continue;
             }
 
@@ -124,7 +117,7 @@ final class ParameterBagFactory
             $pathBag->set(
                 new Parameter(
                     $parameterName,
-                    self::typeCastValueByProperty($parameterValue, $properties[$parameterName]),
+                    self::typeCastValueByProperty($parameterValue, $pathProperties[$parameterName]),
                     $parameterValue
                 )
             );
@@ -133,7 +126,10 @@ final class ParameterBagFactory
         return $pathBag;
     }
 
-    public static function createBodyBag(ApivalkRequestDocumentation $documentation): ParameterBag
+    /**
+     * @param AbstractProperty[] $bodyProperties
+     */
+    public static function createBodyBag(array $bodyProperties): ParameterBag
     {
         $inputValues = [];
 
@@ -150,7 +146,7 @@ final class ParameterBagFactory
 
         $inputBag = new ParameterBag();
 
-        foreach ($documentation->getBodyProperties() as $inputProperty) {
+        foreach ($bodyProperties as $inputProperty) {
             $value = $inputValues[$inputProperty->getPropertyName()] ?? null;
 
             if ($value === null) {
@@ -170,6 +166,8 @@ final class ParameterBagFactory
     }
 
     /**
+     * ToDo: Refactor this, move this to a class. Something like PropertyTypeCaster or so
+     *
      * @return bool|float|int|object|array|string|null
      */
     public static function typeCastValueByProperty($value, AbstractProperty $property)

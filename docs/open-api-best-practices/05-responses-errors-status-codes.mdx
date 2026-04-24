@@ -36,6 +36,8 @@ description: Standard response envelopes, error objects, validation errors, and 
 }
 ```
 
+> The pre-built [resource responses](/resources/responses) (`ResourceListResponse`, `ResourceViewResponse`, ...) emit exactly this shape — the `data` envelope and pagination wrapper come from the framework, not your controller code.
+
 Empty response must be an empty array:
 
 ```json

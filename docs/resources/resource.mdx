@@ -1,0 +1,161 @@
+---
+title: "Defining a Resource"
+description: "Every CRUD surface starts with a single class extending `AbstractResource`. This page walks through each hook."
+---
+
+## Minimal Resource
+
+```php
+namespace App\Resource;
+
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Resource\AbstractResource;
+
+class AnimalResource extends AbstractResource
+{
+    public function getIdentifierProperty(): AbstractProperty
+    {
+        return new StringProperty('animal_uuid', 'Unique identifier of the animal');
+    }
+
+    public function getBaseUrl(): string
+    {
+        return '/api/v1';
+    }
+
+    public function getName(): string
+    {
+        return 'animal';
+    }
+
+    public function excludeFromMode(string $mode): array
+    {
+        if ($mode === self::MODE_LIST) {
+            return ['weight'];
+        }
+
+        return [];
+    }
+
+    protected function init(): void
+    {
+        $this->addProperty(new StringProperty('name', 'Name of the animal'));
+        $this->addProperty(new StringProperty('type', 'Type of the animal'));
+        $this->addProperty(
+            (new FloatProperty('weight', 'Weight of the animal in kg'))->setIsRequired(false)
+        );
+    }
+}
+```
+
+That's it — five CRUD endpoints' worth of documentation.
+
+## Hook Reference
+
+### `init(): void` (required)
+
+Declare data properties with `$this->addProperty(...)`. The constructor is `final` — all setup happens here.
+
+### `getIdentifierProperty(): AbstractProperty` (required)
+
+The property used for view / update / delete path parameters (`/animals/{animal_uuid}`) and the resource's identity in response bodies.
+
+Use UUID-typed identifiers (`StringProperty`) rather than integer IDs to comply with the framework's [REST naming standards](/open-api-best-practices/02-rest-design-and-naming#resource-identifiers-ids-vs-uuids).
+
+### `getBaseUrl(): string` (required)
+
+The URL prefix used by `Route::resource()` when building paths. Example: `/api/v1` produces `/api/v1/animals`, `/api/v1/animals/{animal_uuid}`.
+
+### `getName(): string` (required)
+
+Singular resource name. Used in descriptions ("Create animal"), OpenAPI response names, generated request class names (e.g. `AnimalListRequest`), and plural URL derivation.
+
+### `getPluralName(): string` (optional)
+
+Defaults to `getName() . 's'`. Override for irregular plurals:
+
+```php
+public function getPluralName(): string
+{
+    return 'children';
+}
+```
+
+### `excludeFromMode(string $mode): array` (required)
+
+Return an array of property names to exclude from a given mode. Typical uses:
+
+- Hide `password` from **every** response.
+- Hide `weight` from **list** responses only.
+- Exclude `created_at` / `updated_at` from **create** bodies because the server sets them.
+
+Modes are constants on `AbstractResource`: `MODE_CREATE`, `MODE_VIEW`, `MODE_UPDATE`, `MODE_DELETE`, `MODE_LIST`.
+
+### `availableFilters(): FilterInterface[]`
+
+Declare filters exposed on the list endpoint. Use the typed filter builders from `Router\Route\Filter\`:
+
+```php
+public function availableFilters(): array
+{
+    return [
+        EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'archived'])),
+        StringFilter::contains(new StringProperty('name', 'Name contains')),
+    ];
+}
+```
+
+Each filter becomes a typed query parameter with full OpenAPI documentation and is accessible in the controller as `$request->filtering()->status`.
+
+### `availableSortings(): Sort[]`
+
+Declare sortable fields for the list endpoint:
+
+```php
+public function availableSortings(): array
+{
+    return [
+        Sort::asc('name'),
+        Sort::desc('created_at'),
+    ];
+}
+```
+
+Any sort field sent via `?order_by=...` that isn't in this list is rejected by the validation middleware with a 422.
+
+### `tags(): TagObject[]`
+
+OpenAPI tags for grouping operations. All five CRUD endpoints for one resource inherit these.
+
+```php
+public function tags(): array
+{
+    return [new TagObject('Animals', 'Animal management')];
+}
+```
+
+## Working with Instances
+
+Controllers build resource instances from requests and arrays:
+
+```php
+$resource = AnimalResource::byRequest($request);   // from path + body
+$resource = AnimalResource::byArray($row);         // from a database row
+```
+
+And serialize them per mode:
+
+```php
+$resource->toArray(AbstractResource::MODE_LIST);   // respects excludeFromMode()
+```
+
+Fields are accessed as dynamic properties:
+
+```php
+$resource->name = 'Leo';
+echo $resource->name;
+```
+
+With the [docblock generator](/documentation/docblock-generator#resource-docblock-generation) run, these also autocomplete in your IDE.

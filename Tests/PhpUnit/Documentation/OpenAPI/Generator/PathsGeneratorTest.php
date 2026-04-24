@@ -11,9 +11,9 @@ use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
-use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
@@ -62,8 +62,13 @@ class PathsTestRequest implements ApivalkRequestInterface
         return new ApivalkRequestDocumentation();
     }
 
-    public function populate(Route $route): void
+    public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
     {
+    }
+
+    public function getRuntimeDocumentation(): ApivalkRequestDocumentation
+    {
+        return self::getDocumentation();
     }
 
     public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
@@ -78,19 +83,24 @@ class PathsTestRequest implements ApivalkRequestInterface
 
     public function query(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createQueryBag(self::getDocumentation());
+        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createQueryBag(
+            new Route('', new GetMethod()),
+            self::getDocumentation()->getQueryProperties()
+        );
     }
 
     public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createBodyBag(self::getDocumentation());
+        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createBodyBag(
+            self::getDocumentation()->getBodyProperties()
+        );
     }
 
     public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
     {
         return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createPathBag(
             new Route('', new GetMethod()),
-            self::getDocumentation()
+            self::getDocumentation()->getPathProperties()
         );
     }
 

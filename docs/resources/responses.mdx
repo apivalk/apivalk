@@ -1,0 +1,74 @@
+---
+title: "Resource Responses"
+description: "Five response classes in `Http/Response/Resource/` mirror the five CRUD modes. They wrap `$resource->toArray($mode)` in the standard `data` envelope and emit matching OpenAPI schemas."
+---
+
+## The Five Responses
+
+| Class | Status | Payload | Typical controller |
+|---|---|---|---|
+| `ResourceCreatedResponse` | 201 | `{"data": {...}}` | `AbstractCreateResourceController` |
+| `ResourceViewResponse` | 200 | `{"data": {...}}` | `AbstractViewResourceController` |
+| `ResourceUpdatedResponse` | 200 | `{"data": {...}}` | `AbstractUpdateResourceController` |
+| `ResourceDeletedResponse` | 200 | `{"data": {...}}` | `AbstractDeleteResourceController` |
+| `ResourceListResponse` | 200 | `{"data": [...], "pagination": {...}}` | `AbstractListResourceController` |
+
+Each single-resource response takes the resource instance in its constructor. `ResourceListResponse` additionally requires a `PaginationResponseInterface`.
+
+## Usage
+
+### Create / View / Update / Delete
+
+```php
+return new ResourceCreatedResponse($animal);
+return new ResourceViewResponse($animal);
+return new ResourceUpdatedResponse($animal);
+return new ResourceDeletedResponse($animal);
+```
+
+Internally, each calls `$animal->toArray($mode)` with the matching mode constant, so per-mode field exclusions from `$resource->excludeFromMode($mode)` are applied automatically.
+
+### List
+
+```php
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+
+return new ResourceListResponse(
+    $animals,
+    new PagePaginationPaginationResponse($page, $pageSize, $hasMore, $totalPages)
+);
+```
+
+Or with offset / cursor pagination: swap in `OffsetPaginationPaginationResponse` / `CursorPaginationPaginationResponse`. The `JsonRenderer` adds the `pagination` key to the output automatically.
+
+Output shape:
+
+```json
+{
+  "data": [
+    { "animal_uuid": "...", "name": "Leo", "type": "lion" }
+  ],
+  "pagination": {
+    "page": 1,
+    "page_size": 20,
+    "has_more": true,
+    "total_pages": 5
+  }
+}
+```
+
+## OpenAPI Schema
+
+You do **not** call `addProperty(...)` or `setDescription(...)` on these response classes. Their `getDocumentation()` returns an empty `ApivalkResponseDocumentation` as a placeholder; the actual schema for OpenAPI is built by `ResponseDocumentationFactory::create($resource, $mode)` during spec generation, using the resource's properties and per-mode exclusions as the source of truth.
+
+This means a documentation change on the resource (adding a field, excluding one from list, etc.) updates every relevant CRUD response schema at once.
+
+## Writing a Custom Response
+
+If you need a response shape that doesn't fit these five envelopes (e.g. a bulk-import result), just return any subclass of `AbstractApivalkResponse` as normal — see the [Response](/http/response) page. You're not forced into the resource responses.
+
+## Related
+
+- [Resource Controllers](/resources/controllers)
+- [Defining a Resource](/resources/resource)
+- [Pagination](/http/pagination)

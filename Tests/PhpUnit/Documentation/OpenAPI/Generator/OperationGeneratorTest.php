@@ -12,8 +12,8 @@ use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
-use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use PHPUnit\Framework\TestCase;
 
 class TestResponse extends AbstractApivalkResponse
@@ -110,7 +110,7 @@ class OperationGeneratorTest extends TestCase
         );
         $this->assertFalse($orderByParameter->isRequired());
         $this->assertEquals(
-            '^([+-](id|price))(,([+-](id|price)))*$',
+            '/^([+-](id|price))(,([+-](id|price)))*$/',
             $orderByParameter->toArray()['schema']['pattern']
         );
     }
@@ -313,5 +313,90 @@ class OperationGeneratorTest extends TestCase
         foreach ($operation->getResponses() as $response) {
             $this->assertArrayHasKey('Content-Language', $response->getHeaders());
         }
+    }
+
+    public function testGenerateFromDocumentationProducesEquivalentOperation(): void
+    {
+        $generator = new OperationGenerator();
+        $route = $this->createRouteMock();
+
+        $documentations = [[
+            'statusCode' => TestResponse::getStatusCode(),
+            'documentation' => TestResponse::getDocumentation(),
+        ]];
+
+        $operation = $generator->generateFromDocumentation(
+            $route,
+            $this->createRequestDocMock(),
+            $documentations
+        );
+
+        $this->assertEquals('Route desc', $operation->getDescription());
+        $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
+    }
+
+    public function testGenerateFromDocumentationSupportsMultipleResponseDocumentations(): void
+    {
+        $generator = new OperationGenerator();
+        $route = $this->createRouteMock();
+
+        $createDoc = new ApivalkResponseDocumentation();
+        $createDoc->setDescription('Created');
+
+        $viewDoc = new ApivalkResponseDocumentation();
+        $viewDoc->setDescription('Viewed');
+
+        $documentations = [
+            ['statusCode' => 201, 'documentation' => $createDoc],
+            ['statusCode' => 200, 'documentation' => $viewDoc],
+        ];
+
+        $operation = $generator->generateFromDocumentation(
+            $route,
+            $this->createRequestDocMock(),
+            $documentations
+        );
+
+        $statusCodes = [];
+        foreach ($operation->getResponses() as $response) {
+            $statusCodes[] = $response->getStatusCode();
+        }
+
+        $this->assertContains(200, $statusCodes);
+        $this->assertContains(201, $statusCodes);
+    }
+
+    public function testGenerateFromDocumentationStillEmitsAcceptLanguageParameter(): void
+    {
+        $generator = new OperationGenerator();
+        $route = $this->createRouteMock();
+
+        $operation = $generator->generateFromDocumentation(
+            $route,
+            $this->createRequestDocMock(),
+            []
+        );
+
+        $names = [];
+        foreach ($operation->getParameters() as $parameter) {
+            $names[] = $parameter->getName();
+        }
+
+        $this->assertContains('Accept-Language', $names);
+    }
+
+    public function testGenerateFromDocumentationWithoutCustomResponsesStillIncludesDefaults(): void
+    {
+        $generator = new OperationGenerator();
+        $route = $this->createRouteMock();
+
+        $operation = $generator->generateFromDocumentation(
+            $route,
+            $this->createRequestDocMock(),
+            []
+        );
+
+        // 0 custom + 5 default
+        $this->assertCount(5, $operation->getResponses());
     }
 }
