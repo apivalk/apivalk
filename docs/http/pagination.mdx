@@ -59,7 +59,7 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 After fetching your data, you must create a `PaginationResponse` object and attach it to your response. This ensures the pagination metadata (like `total_pages` or `has_more`) is included in the JSON output.
 
 ```php
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 
 // Inside Controller:
 $totalEntries = $this->petRepository->count();
@@ -68,7 +68,7 @@ $hasMore = $paginator->getPage() < $totalPages;
 
 $response = new GetPetsResponse($pets);
 $response->setPaginationResponse(
-    new PagePaginationPaginationResponse(
+    new PagePaginationResponse(
         $paginator->getPage(),
         $paginator->getLimit(),
         $hasMore,

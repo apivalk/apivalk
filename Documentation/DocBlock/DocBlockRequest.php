@@ -88,7 +88,7 @@ PHP;
                 $shapeNamespace . '\\' . $this->bodyShape->getClassName(),
                 $shapeNamespace . '\\' . $this->sortingShape->getClassName(),
                 $shapeNamespace . '\\' . $this->filteringShape->getClassName(),
-                $this->paginatorClass !== null ? $this->paginatorClass . '|null' : 'null',
+                $this->paginatorClass !== null ? $this->paginatorClass : 'null',
             ],
             $string
         );

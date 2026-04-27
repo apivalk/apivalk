@@ -110,10 +110,10 @@ If the rate limit is exceeded (429 Too Many Requests), the `Retry-After` header 
 If a route has [pagination enabled](/http/pagination), you can attach a pagination response object to your response. This will automatically inject the `pagination` metadata into the JSON output and the OpenAPI documentation.
 
 ```php
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 
 $response->setPaginationResponse(
-    new PagePaginationPaginationResponse($page, $limit, $hasMore, $totalPages)
+    new PagePaginationResponse($page, $limit, $hasMore, $totalPages)
 );
 ```
 

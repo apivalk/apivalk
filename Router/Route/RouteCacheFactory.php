@@ -41,6 +41,10 @@ class RouteCacheFactory
                 continue;
             }
 
+            if ((new \ReflectionClass($className))->isAbstract()) {
+                continue;
+            }
+
             $route = $className::getRoute();
 
             $routeCacheKey = $this->getRouteCacheKey($route);

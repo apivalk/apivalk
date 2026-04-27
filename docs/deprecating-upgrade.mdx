@@ -15,7 +15,6 @@ This section lists major changes and steps required to upgrade from Apivalk v1 t
 - **Renamed `MODE_EDIT` to `MODE_UPDATE`**: All occurrences of `MODE_EDIT` in `AbstractPropertyCollection` and related security permissions (e.g., `asset:edit` to `asset:update`) have been renamed.
 - **Renamed "Ordering" to "Sorting"**: The terminology and related classes/methods have been updated from "Ordering" to "Sorting" (e.g., `Order` is now `Sort`).
 - **Property System Refactor**: `NumberProperty` has been split into `IntegerProperty` and `FloatProperty`. `StringProperty` now has specialized variants like `EnumProperty`, `DateProperty`, `DateTimeProperty`, `ByteProperty`, and `BinaryProperty`.
-- **Pagination Refactor**: `ResponsePagination` was replaced by dedicated response interfaces (`CursorPaginationPaginationResponse`, `OffsetPaginationPaginationResponse`, `PagePaginationPaginationResponse`).
 
 #### New Features
 

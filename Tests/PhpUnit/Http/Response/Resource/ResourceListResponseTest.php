@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Response\Resource;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
@@ -23,7 +23,7 @@ class ResourceListResponseTest extends TestCase
         $resource->name = 'Leo';
         $resource->type = 'lion';
 
-        $pagination = new PagePaginationPaginationResponse(1, 10, false);
+        $pagination = new PagePaginationResponse(1, 10, false);
         $response = new ResourceListResponse([$resource], $pagination);
 
         $array = $response->toArray();

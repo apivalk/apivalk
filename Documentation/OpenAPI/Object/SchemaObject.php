@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Http\Response\Pagination\CursorPaginationPaginationResponse;
-use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationPaginationResponse;
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\CursorPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 
 /**
@@ -77,13 +77,13 @@ class SchemaObject implements ObjectInterface
 
             switch ($this->pagination->getType()) {
                 case Pagination::TYPE_PAGE:
-                    $paginationProperties = PagePaginationPaginationResponse::getResponseDocumentationProperties();
+                    $paginationProperties = PagePaginationResponse::getResponseDocumentationProperties();
                     break;
                 case Pagination::TYPE_OFFSET:
-                    $paginationProperties = OffsetPaginationPaginationResponse::getResponseDocumentationProperties();
+                    $paginationProperties = OffsetPaginationResponse::getResponseDocumentationProperties();
                     break;
                 case Pagination::TYPE_CURSOR:
-                    $paginationProperties = CursorPaginationPaginationResponse::getResponseDocumentationProperties();
+                    $paginationProperties = CursorPaginationResponse::getResponseDocumentationProperties();
                     break;
             }
 

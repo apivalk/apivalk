@@ -8,7 +8,7 @@ use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 
-class CursorPaginationPaginationResponse implements PaginationResponseInterface
+class CursorPaginationResponse implements PaginationResponseInterface
 {
     /** @var int */
     private $limit;
