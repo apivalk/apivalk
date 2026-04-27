@@ -54,7 +54,7 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 
     $response = new ListAnimalsResponse($rows);
     $response->setPaginationResponse(
-        new PagePaginationPaginationResponse(
+        new PagePaginationResponse(
             $page,
             $limit,
             $page < $totalPages,
@@ -74,7 +74,7 @@ $rows = $this->animals->findRange($paginator->getOffset(), $paginator->getLimit(
 $total = $this->animals->count();
 
 $response->setPaginationResponse(
-    new OffsetPaginationPaginationResponse(
+    new OffsetPaginationResponse(
         $paginator->getLimit(),
         $paginator->getOffset(),
         $paginator->getOffset() + $paginator->getLimit() < $total,
@@ -92,7 +92,7 @@ $rows = $this->animals->findAfter($paginator->getCursor(), $paginator->getLimit(
 $nextCursor = \end($rows) !== false ? \end($rows)['id'] : null;
 
 $response->setPaginationResponse(
-    new CursorPaginationPaginationResponse(
+    new CursorPaginationResponse(
         $paginator->getLimit(),
         $paginator->getCursor(),
         $nextCursor,

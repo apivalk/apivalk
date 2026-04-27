@@ -16,6 +16,10 @@ use apivalk\apivalk\Router\Route\RouteCacheFactory;
 use apivalk\apivalk\Util\ClassLocator;
 use PHPUnit\Framework\TestCase;
 
+abstract class AbstractIntermediateStubController extends AbstractApivalkController
+{
+}
+
 class RouteCacheFactoryTest extends TestCase
 {
     public function testBuildCache(): void
@@ -49,6 +53,31 @@ class RouteCacheFactoryTest extends TestCase
         // Expect cache sets
         $cache->expects($this->atLeastOnce())->method('set');
         $cache->expects($this->once())->method('clear');
+
+        $factory = new RouteCacheFactory($router);
+        $factory->build();
+    }
+
+    public function testBuildCacheSkipsAbstractControllerSubclasses(): void
+    {
+        $cache = $this->createMock(CacheInterface::class);
+        $classLocator = $this->createMock(ClassLocator::class);
+
+        $cache->method('get')->with(AbstractRouter::CACHE_INDEX_KEY)->willReturn(null);
+
+        $classLocator->method('find')->willReturn([
+            ['className' => AbstractIntermediateStubController::class, 'path' => 'path/to/abstract.php'],
+        ]);
+
+        $router = $this->getMockBuilder(AbstractRouter::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $router->method('getCache')->willReturn($cache);
+        $router->method('getClassLocator')->willReturn($classLocator);
+
+        $cache->expects($this->once())->method('clear');
+        // Only the index entry is written; no per-route cache entry for the abstract class.
+        $cache->expects($this->once())->method('set');
 
         $factory = new RouteCacheFactory($router);
         $factory->build();

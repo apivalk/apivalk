@@ -314,7 +314,7 @@ namespace App\Http\Controller\Animal;
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -367,7 +367,7 @@ final class ListAnimalController extends AbstractListResourceController
 
         return new ResourceListResponse(
             $resources,
-            new PagePaginationPaginationResponse(
+            new PagePaginationResponse(
                 $paginator->getPage(),
                 $paginator->getLimit(),
                 $paginator->getPage() < $totalPages,

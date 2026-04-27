@@ -31,15 +31,15 @@ Internally, each calls `$animal->toArray($mode)` with the matching mode constant
 ### List
 
 ```php
-use apivalk\apivalk\Http\Response\Pagination\PagePaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 
 return new ResourceListResponse(
     $animals,
-    new PagePaginationPaginationResponse($page, $pageSize, $hasMore, $totalPages)
+    new PagePaginationResponse($page, $pageSize, $hasMore, $totalPages)
 );
 ```
 
-Or with offset / cursor pagination: swap in `OffsetPaginationPaginationResponse` / `CursorPaginationPaginationResponse`. The `JsonRenderer` adds the `pagination` key to the output automatically.
+Or with offset / cursor pagination: swap in `OffsetPaginationResponse` / `CursorPaginationResponse`. The `JsonRenderer` adds the `pagination` key to the output automatically.
 
 Output shape:
 

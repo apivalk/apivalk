@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Response\Pagination;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Http\Response\Pagination\CursorPaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\CursorPaginationResponse;
 
-class CursorPaginationPaginationResponseTest extends TestCase
+class CursorPaginationResponseTest extends TestCase
 {
     public function testToArray(): void
     {
-        $response = new CursorPaginationPaginationResponse(15, 'cur', 'nxt', true);
+        $response = new CursorPaginationResponse(15, 'cur', 'nxt', true);
         $expected = [
             'limit' => 15,
             'current_cursor' => 'cur',
@@ -24,7 +24,7 @@ class CursorPaginationPaginationResponseTest extends TestCase
     public function testToArrayFiltersEmptyStrings(): void
     {
         // currentCursor is required in constructor, but if we pass empty string it might be filtered
-        $response = new CursorPaginationPaginationResponse(15, '', '', false);
+        $response = new CursorPaginationResponse(15, '', '', false);
         $result = $response->toArray();
         
         $this->assertEquals(15, $result['limit']);
@@ -35,7 +35,7 @@ class CursorPaginationPaginationResponseTest extends TestCase
 
     public function testGetResponseDocumentationProperties(): void
     {
-        $properties = CursorPaginationPaginationResponse::getResponseDocumentationProperties();
+        $properties = CursorPaginationResponse::getResponseDocumentationProperties();
         $this->assertCount(3, $properties);
         $this->assertEquals('limit', $properties[0]->getPropertyName());
         $this->assertEquals('next_cursor', $properties[1]->getPropertyName());

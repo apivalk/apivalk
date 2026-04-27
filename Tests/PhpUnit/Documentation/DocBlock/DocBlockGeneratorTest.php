@@ -162,7 +162,7 @@ use apivalk\\apivalk\\Http\\Controller\\Resource\\AbstractListResourceController
 use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
 use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
 use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceListResponse;
-use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationPaginationResponse;
+use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationResponse;
 use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$controllerClassName} extends AbstractListResourceController
@@ -174,7 +174,7 @@ class {$controllerClassName} extends AbstractListResourceController
 
     public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
     {
-        return new ResourceListResponse([], new PagePaginationPaginationResponse(1, 25, false, 0));
+        return new ResourceListResponse([], new PagePaginationResponse(1, 25, false, 0));
     }
 }
 PHP;
@@ -247,7 +247,7 @@ use apivalk\\apivalk\\Http\\Controller\\Resource\\AbstractListResourceController
 use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
 use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
 use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceListResponse;
-use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationPaginationResponse;
+use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationResponse;
 use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$listClassName} extends AbstractListResourceController
@@ -255,7 +255,7 @@ class {$listClassName} extends AbstractListResourceController
     public static function getResourceClass(): string { return {$resourceClassName}::class; }
     public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
     {
-        return new ResourceListResponse([], new PagePaginationPaginationResponse(1, 25, false, 0));
+        return new ResourceListResponse([], new PagePaginationResponse(1, 25, false, 0));
     }
 }
 PHP;

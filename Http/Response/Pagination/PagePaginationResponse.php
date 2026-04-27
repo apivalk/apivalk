@@ -8,7 +8,7 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
-class PagePaginationPaginationResponse implements PaginationResponseInterface
+class PagePaginationResponse implements PaginationResponseInterface
 {
     /** @var int */
     private $page;

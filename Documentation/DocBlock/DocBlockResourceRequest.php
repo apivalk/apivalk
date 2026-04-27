@@ -67,7 +67,7 @@ class DocBlockResourceRequest
         ];
 
         if ($this->paginatorClass !== null) {
-            $lines[] = ' * @method \\' . $this->paginatorClass . '|null paginator()';
+            $lines[] = ' * @method \\' . $this->paginatorClass . ' paginator()';
         }
 
         return "/**\n" . implode("\n", $lines) . "\n */";

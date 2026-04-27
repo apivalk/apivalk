@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Response\Pagination;
 
 use PHPUnit\Framework\TestCase;
-use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationPaginationResponse;
+use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationResponse;
 
-class OffsetPaginationPaginationResponseTest extends TestCase
+class OffsetPaginationResponseTest extends TestCase
 {
     public function testToArray(): void
     {
-        $response = new OffsetPaginationPaginationResponse(20, 40, true, 100);
+        $response = new OffsetPaginationResponse(20, 40, true, 100);
         $expected = [
             'limit' => 20,
             'offset' => 40,
@@ -23,7 +23,7 @@ class OffsetPaginationPaginationResponseTest extends TestCase
 
     public function testToArrayFiltersNull(): void
     {
-        $response = new OffsetPaginationPaginationResponse(20, 0, false, null);
+        $response = new OffsetPaginationResponse(20, 0, false, null);
         $result = $response->toArray();
         
         $this->assertEquals(20, $result['limit']);
@@ -35,7 +35,7 @@ class OffsetPaginationPaginationResponseTest extends TestCase
 
     public function testGetResponseDocumentationProperties(): void
     {
-        $properties = OffsetPaginationPaginationResponse::getResponseDocumentationProperties();
+        $properties = OffsetPaginationResponse::getResponseDocumentationProperties();
         $this->assertCount(4, $properties);
         $this->assertEquals('limit', $properties[0]->getPropertyName());
         $this->assertEquals('offset', $properties[1]->getPropertyName());

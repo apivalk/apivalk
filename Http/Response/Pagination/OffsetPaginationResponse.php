@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Http\Response\Pagination;
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
-class OffsetPaginationPaginationResponse implements PaginationResponseInterface
+class OffsetPaginationResponse implements PaginationResponseInterface
 {
     /** @var int */
     private $limit;
