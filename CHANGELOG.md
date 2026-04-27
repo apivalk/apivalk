@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.0.1](https://github.com/apivalk/apivalk/compare/v2.0.0...v2.0.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* skip abstract controllers, tighten paginator type, rename pagination responses ([#110](https://github.com/apivalk/apivalk/issues/110)) ([744ebc0](https://github.com/apivalk/apivalk/commit/744ebc0711bf344afb3900b8ef1c7115c7379d9d)), closes [#104](https://github.com/apivalk/apivalk/issues/104) [#109](https://github.com/apivalk/apivalk/issues/109) [#108](https://github.com/apivalk/apivalk/issues/108)
+
 ## [2.0.0](https://github.com/apivalk/apivalk/compare/v1.6.0...v2.0.0) (2026-04-24)
 
 
