@@ -17,11 +17,17 @@ class HeaderObject implements ObjectInterface
     private $description;
     /** @var bool */
     private $required;
+    /** @var array<string, mixed>|null */
+    private $schema;
 
-    public function __construct(?string $description, bool $required = false)
+    /**
+     * @param array<string, mixed>|null $schema
+     */
+    public function __construct(?string $description, bool $required = false, ?array $schema = null)
     {
         $this->description = $description;
         $this->required = $required;
+        $this->schema = $schema;
     }
 
     public function getDescription(): ?string
@@ -34,11 +40,25 @@ class HeaderObject implements ObjectInterface
         return $this->required;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getSchema(): ?array
+    {
+        return $this->schema;
+    }
+
     public function toArray(): array
     {
-        return [
+        $array = [
             'description' => $this->description,
-            'required' => $this->required
+            'required' => $this->required,
         ];
+
+        if ($this->schema !== null) {
+            $array['schema'] = $this->schema;
+        }
+
+        return $array;
     }
 }

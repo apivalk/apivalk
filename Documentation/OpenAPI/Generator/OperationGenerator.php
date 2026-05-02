@@ -336,8 +336,11 @@ class OperationGenerator
         $headers = [];
 
         if ($this->documentLocaleHeaders) {
-            $headers['Content-Language'] =
-                new HeaderObject('The locale of the response content (BCP 47 language tag).');
+            $headers['Content-Language'] = new HeaderObject(
+                'The locale of the response content (BCP 47 language tag).',
+                false,
+                ['type' => 'string', 'example' => 'en']
+            );
         }
 
         if ($route->getRateLimit() !== null) {
