@@ -55,15 +55,11 @@ $info = new InfoObject('My nice api', '1.0.0', 'Nice', 'Best API in ze world');
 // in RouteAuthorization on your routes. See "Security Schemes and Components" below.
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'http',                        // type
+    SecuritySchemeObject::http(
         'api',                         // name — referenced by RouteAuthorization('api', ...)
-        'OAuth2 Bearer Authorization', // description
-        'header',                      // in
         'bearer',                      // scheme
-        'JWT',                         // bearerFormat
-        null,                          // flows
-        null                           // openIdConnectUrl
+        'OAuth2 Bearer Authorization', // description
+        'JWT'                          // bearerFormat
     )
 ]);
 
@@ -92,13 +88,132 @@ The `ComponentsObject` is where you define reusable elements for your OpenAPI sp
 The key concept: **the `name` you give a `SecuritySchemeObject` is the same `name` you pass to `RouteAuthorization` on your routes.** This is how Apivalk knows which security scheme protects which route, and how Swagger UI knows when to show the "Authorize" button.
 
 ```
-SecuritySchemeObject('http', 'api', ...)     ← defines a scheme named "api"
-                                  │
-                                  ▼
+SecuritySchemeObject::http('api', ...)       ← defines a scheme named "api"
+                              │
+                              ▼
 RouteAuthorization('api', ['contract'], ...) ← this route requires the "api" scheme
 ```
 
 When the OpenAPI spec is generated, Apivalk matches these names to produce the correct `security` entries per operation. Swagger UI then renders the "Authorize" button and applies the right credentials to the right endpoints.
+
+### Factory Methods
+
+`SecuritySchemeObject` ships four static factories — one per scheme type. Each factory only exposes the parameters that are valid for that type, so you can't accidentally pass `bearerFormat` to an `apiKey` scheme or `in` to an `http` scheme. The raw constructor still works but requires you to pass every field positionally, including nulls for fields that don't apply.
+
+Use `SecuritySchemeObject::TYPE_*` constants wherever you need to reference a type string in your own code.
+
+---
+
+#### `SecuritySchemeObject::http($name, $scheme, $description, $bearerFormat)`
+
+For HTTP authentication schemes (Basic, Bearer, Digest, …). The `scheme` value must be a registered [IANA HTTP Authentication Scheme](https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml) and is placed in the `Authorization` header by the client. `bearerFormat` is optional — it is a documentation hint only and has no effect on validation.
+
+```php
+// JWT Bearer
+SecuritySchemeObject::http('BearerAuth', 'bearer', 'JWT Bearer token', 'JWT');
+
+// HTTP Basic
+SecuritySchemeObject::http('BasicAuth', 'basic', 'HTTP Basic authentication');
+```
+
+Emits:
+```json
+{
+  "type": "http",
+  "description": "JWT Bearer token",
+  "scheme": "bearer",
+  "bearerFormat": "JWT"
+}
+```
+
+`name` and `in` are **not** emitted — they are invalid for `http` per the OpenAPI spec. The `name` is used only as the key in `components.securitySchemes` and to match `RouteAuthorization`.
+
+---
+
+#### `SecuritySchemeObject::apiKey($name, $in, $description)`
+
+For raw API keys passed as a header, query parameter, or cookie. `in` must be one of `"header"`, `"query"`, or `"cookie"`. The `name` is emitted in the spec as the actual header/parameter name the client must send (e.g. `X-Api-Key`).
+
+```php
+// API key in a custom header
+SecuritySchemeObject::apiKey('X-Api-Key', 'header', 'API key authentication');
+
+// API key in a query string
+SecuritySchemeObject::apiKey('api_key', 'query', 'API key as query parameter');
+```
+
+Emits:
+```json
+{
+  "type": "apiKey",
+  "description": "API key authentication",
+  "name": "X-Api-Key",
+  "in": "header"
+}
+```
+
+Note that for `apiKey`, `name` **is** emitted — it is the required field that tells the client which header or parameter to set.
+
+---
+
+#### `SecuritySchemeObject::oauth2($name, $flows, $description)`
+
+For OAuth2. Requires an `OAuthFlowsObject` describing which grant types are supported. Each flow has its own URLs and scopes; pass `null` for flows you don't support.
+
+```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowsObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowObject;
+
+SecuritySchemeObject::oauth2(
+    'oauth2Auth',
+    new OAuthFlowsObject(
+        null,                         // implicit (deprecated, avoid)
+        new OAuthFlowObject(          // authorization code
+            'https://auth.example.com/authorize',
+            'https://auth.example.com/token',
+            'https://auth.example.com/token', // refresh
+            ['read' => 'Read access', 'write' => 'Write access']
+        ),
+        null,                         // client credentials
+        null                          // password
+    ),
+    'OAuth2 Authorization Code'
+);
+```
+
+Emits:
+```json
+{
+  "type": "oauth2",
+  "description": "OAuth2 Authorization Code",
+  "flows": { ... }
+}
+```
+
+---
+
+#### `SecuritySchemeObject::openIdConnect($name, $openIdConnectUrl, $description)`
+
+For OpenID Connect. Requires the well-known discovery URL of the provider. Swagger UI uses this URL to fetch scopes automatically.
+
+```php
+SecuritySchemeObject::openIdConnect(
+    'oidc',
+    'https://auth.example.com/.well-known/openid-configuration',
+    'OpenID Connect'
+);
+```
+
+Emits:
+```json
+{
+  "type": "openIdConnect",
+  "description": "OpenID Connect",
+  "openIdConnectUrl": "https://auth.example.com/.well-known/openid-configuration"
+}
+```
+
+---
 
 ### End-to-End Example: JWT Bearer
 
@@ -110,15 +225,11 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'http',                        // type
+    SecuritySchemeObject::http(
         'api',                         // name — this is the link to your routes
-        'OAuth2 Bearer Authorization', // description
-        'header',                      // in
         'bearer',                      // scheme
-        'JWT',                         // bearerFormat
-        null,                          // flows (not needed for http/bearer)
-        null                           // openIdConnectUrl
+        'OAuth2 Bearer Authorization', // description
+        'JWT'                          // bearerFormat
     )
 ]);
 ```
@@ -171,15 +282,10 @@ Not every API uses JWT. If your API authenticates via a raw API key sent in a cu
 ```php
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'apiKey',              // type
-        'apiKeyAuth',          // name — the link to your routes
-        'API Key Authentication', // description
-        'header',              // in — where the key is sent
-        null,                  // scheme (not used for apiKey type)
-        null,                  // bearerFormat (not used for apiKey type)
-        null,                  // flows
-        null                   // openIdConnectUrl
+    SecuritySchemeObject::apiKey(
+        'apiKeyAuth',             // name — the link to your routes
+        'header',                 // in — where the key is sent
+        'API Key Authentication'  // description
     )
 ]);
 ```
@@ -211,13 +317,8 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\OAuthFlowObject;
 
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'oauth2',                  // type
+    SecuritySchemeObject::oauth2(
         'oauth2Auth',              // name — the link to your routes
-        'OAuth2 Authentication',   // description
-        null,                      // in (not used for oauth2)
-        null,                      // scheme (not used for oauth2)
-        null,                      // bearerFormat (not used for oauth2)
         new OAuthFlowsObject(
             null,                  // implicit flow
             new OAuthFlowObject(   // authorization code flow
@@ -232,7 +333,7 @@ $components->setSecuritySchemes([
             null,                  // client credentials flow
             null                   // password flow
         ),
-        null                       // openIdConnectUrl
+        'OAuth2 Authentication'    // description
     )
 ]);
 ```
@@ -257,8 +358,8 @@ You can define multiple security schemes in a single `ComponentsObject` and use 
 ```php
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject('http', 'api', 'JWT Bearer', 'header', 'bearer', 'JWT', null, null),
-    new SecuritySchemeObject('apiKey', 'apiKeyAuth', 'API Key', 'header', null, null, null, null),
+    SecuritySchemeObject::http('api', 'bearer', 'JWT Bearer', 'JWT'),
+    SecuritySchemeObject::apiKey('apiKeyAuth', 'header', 'API Key'),
 ]);
 
 // Route using JWT Bearer

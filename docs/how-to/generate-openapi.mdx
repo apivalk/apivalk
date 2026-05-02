@@ -59,15 +59,11 @@ $info = new InfoObject(
 // 2. Declare security schemes so Swagger UI knows how to authorize
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'http',         // type
-        'BearerAuth',   // name — must match RouteAuthorization('BearerAuth', ...)
-        'JWT Bearer',
-        'header',
+    SecuritySchemeObject::http(
+        'BearerAuth',  // name — must match RouteAuthorization('BearerAuth', ...)
         'bearer',
-        'JWT',
-        null,
-        null
+        'JWT Bearer',
+        'JWT'
     ),
 ]);
 
