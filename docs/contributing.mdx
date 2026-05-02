@@ -1,4 +1,202 @@
 ---
 title: "Contributing"
-description: "Coming soon."
+description: "How to contribute to Apivalk — bug reports, feature proposals, pull requests, and coding standards."
 ---
+
+Thank you for your interest in contributing to Apivalk. All contributions are welcome: bug fixes, documentation improvements, new features, and test coverage. This guide covers everything you need to get started.
+
+## Getting Started
+
+### 1. Fork and Clone
+
+Contributions come from forks — never push directly to `apivalk/apivalk`.
+
+1. Click **Fork** on [github.com/apivalk/apivalk](https://github.com/apivalk/apivalk).
+2. Clone your fork locally:
+
+```bash
+git clone git@github.com:<your-username>/apivalk.git
+cd apivalk
+```
+
+3. Add the upstream remote so you can stay in sync:
+
+```bash
+git remote add upstream git@github.com:apivalk/apivalk.git
+```
+
+### 2. Create a Branch
+
+Branch off `main`. Format: `<type>/<issue-id>-<short-description>`. **If the work has a GitHub issue, the issue ID is required.**
+
+```bash
+git checkout -b feat/2312-cursor-pagination-metadata
+git checkout -b fix/2315-jwt-expiry-validation
+git checkout -b docs/add-rate-limit-example   # no issue → description only
+```
+
+### 3. Set Up the Development Environment
+
+**Docker (recommended):**
+
+```bash
+docker compose build
+docker compose run --rm php72 composer install
+```
+
+**Native PHP 7.2+ / DDEV / Lando** — Docker is optional. Install via `composer install` with your local setup.
+
+### 4. Make Your Changes
+
+Write code, add tests, update docs. See the [standards](#standards) section below before submitting.
+
+### 5. Run the Test Suite and Static Analysis
+
+All of the following must pass before opening a PR:
+
+```bash
+# Unit tests
+docker compose run --rm php72 composer test
+
+# Static analysis (PHPStan level 6)
+docker compose run --rm php72 composer phpstan
+```
+
+New code must not introduce PHPStan violations. A baseline (`phpstan-baseline.neon`) covers pre-existing issues — do not add to it.
+
+### 6. Open a Pull Request
+
+Push your branch to your fork and open a PR against `apivalk/apivalk:main`:
+
+```bash
+git push origin feat/cursor-pagination-metadata
+```
+
+Then go to your fork on GitHub and click **Compare & pull request**.
+
+**PR checklist:**
+- [ ] Tests pass (`composer test`)
+- [ ] PHPStan passes (`composer phpstan`)
+- [ ] Commit messages follow [Conventional Commits](#commit-messages)
+- [ ] Breaking changes are flagged with `BREAKING CHANGE:` in the commit footer
+- [ ] New public APIs have corresponding test coverage
+- [ ] Docs updated if behaviour changed
+
+---
+
+## Commit Messages
+
+Apivalk uses **[Conventional Commits](https://www.conventionalcommits.org/)**.
+
+### Format
+
+```
+<type>(<optional scope>): <short summary>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+
+| Type | When to use |
+|---|---|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation only |
+| `test` | Adding or fixing tests |
+| `refactor` | Code change that is neither a fix nor a feature |
+| `chore` | Build process, tooling, dependency updates |
+| `perf` | Performance improvement |
+
+### Examples
+
+No issue:
+```
+feat(pagination): add cursor-based paginator
+docs(routing): add caching example to router guide
+```
+
+With an issue — reference goes in the **footer** as `Issue: #<id>`:
+```
+fix(jwt): handle expired tokens without throwing uncaught exception
+
+Issue: #2315
+```
+
+```
+test(validation): cover missing required body property case
+
+Issue: #2318
+```
+
+### Breaking Changes
+
+If your change is not backwards-compatible, add `BREAKING CHANGE:` in the commit **footer** and use `!` after the type. When an issue is also involved, include both footer lines:
+
+```
+feat(request)!: remove deprecated getBody() alias
+
+BREAKING CHANGE: getBody() was removed. Use body() instead.
+Issue: #2312
+```
+
+This ensures the changelog and semantic versioning are generated correctly.
+
+---
+
+## Issues
+
+### Reporting a Bug
+
+Open an issue at [github.com/apivalk/apivalk/issues](https://github.com/apivalk/apivalk/issues) and include:
+
+- PHP version and Apivalk version (`composer show apivalk/apivalk`)
+- A minimal reproducible example
+- What you expected vs. what happened
+- Stack trace if applicable
+
+### Proposing a Feature
+
+Open an issue before writing code for anything non-trivial. Describe the problem you're solving, not just the solution. This avoids wasted effort if the direction doesn't fit the project's goals.
+
+---
+
+## Standards
+
+All contributions must follow these standards. Reviewers will check them.
+
+### Coding Standards
+
+See the full [Coding Standards](/concepts/coding-standards) guide. Key rules:
+
+- `declare(strict_types=1)` on every file.
+- PSR-1 / PSR-12 formatting.
+- PHPStan level 6 — no new violations.
+- **Single Responsibility**: one controller per route/method, one request per endpoint, one validator per property type.
+- **Fail fast**: validation happens in middleware, never inside controllers.
+- **No raw `$_POST` / `$_GET` / `$_SERVER`** in framework code — go through the request abstraction.
+- Type hints on all method signatures, including return types.
+
+### OpenAPI & REST Standards
+
+New endpoints, properties, and response shapes added to examples or how-to guides must comply with the [REST API Standards](/open-api-best-practices/01-overview):
+
+- [REST Design and Naming](/open-api-best-practices/02-rest-design-and-naming) — resource-oriented URLs, correct HTTP verbs, noun-based naming.
+- [Versioning and Structure](/open-api-best-practices/03-versioning-and-structure) — `/v1/` prefix, no breaking changes within a version.
+- [Pagination, Filtering, Sorting](/open-api-best-practices/04-pagination-filtering-sorting) — use Apivalk's built-in strategies; don't invent custom query param conventions.
+- [Responses, Errors, Status Codes](/open-api-best-practices/05-responses-errors-status-codes) — use the correct HTTP status code and the built-in typed error responses.
+- [Localization / i18n](/open-api-best-practices/06-localization-i18n) — `Accept-Language` / `Content-Language` via `LocalizationConfiguration`.
+
+### Test Coverage
+
+- New features need tests. Follow the existing structure: `Tests/PhpUnit/` mirrors the source tree.
+- Tests must be runnable with `vendor/bin/phpunit` and pass on PHP 7.2.
+- Unit test individual classes; integration tests go through the full `Apivalk::run()` lifecycle where relevant.
+
+---
+
+## Questions
+
+Stuck or unsure whether something is worth a PR? Open a discussion/issue.
