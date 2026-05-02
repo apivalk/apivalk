@@ -182,15 +182,10 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'apiKey',        // type
-        'ApiKeyAuth',    // name — link to routes
-        'API key',       // description
-        'header',        // in
-        null,            // scheme (not used for apiKey)
-        null,            // bearerFormat (not used for apiKey)
-        null,
-        null
+    SecuritySchemeObject::apiKey(
+        'ApiKeyAuth',  // name — link to routes
+        'header',      // in
+        'API key'      // description
     ),
 ]);
 ```

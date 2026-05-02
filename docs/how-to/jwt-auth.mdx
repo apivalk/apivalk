@@ -38,15 +38,11 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 
 $components = new ComponentsObject();
 $components->setSecuritySchemes([
-    new SecuritySchemeObject(
-        'http',         // type
-        'BearerAuth',   // name — referenced by RouteAuthorization('BearerAuth', ...)
-        'JWT Bearer',   // description
-        'header',       // in
-        'bearer',       // scheme
-        'JWT',          // bearerFormat
-        null,           // flows
-        null            // openIdConnectUrl
+    SecuritySchemeObject::http(
+        'BearerAuth',  // name — referenced by RouteAuthorization('BearerAuth', ...)
+        'bearer',      // scheme
+        'JWT Bearer',  // description
+        'JWT'          // bearerFormat
     ),
 ]);
 ```

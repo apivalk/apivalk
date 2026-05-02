@@ -14,12 +14,18 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class SecuritySchemeObject implements ObjectInterface
 {
+    const TYPE_HTTP = 'http';
+    const TYPE_API_KEY = 'apiKey';
+    const TYPE_OAUTH2 = 'oauth2';
+    const TYPE_OPEN_ID_CONNECT = 'openIdConnect';
+    const TYPE_MUTUAL_TLS = 'mutualTLS';
+
     /** @var string */
     private $type;
-    /** @var string|null */
-    private $description;
     /** @var string */
     private $name;
+    /** @var string|null */
+    private $description;
     /** @var null|string */
     private $in;
     /** @var null|string */
@@ -51,19 +57,53 @@ class SecuritySchemeObject implements ObjectInterface
         $this->openIdConnectUrl = $openIdConnectUrl;
     }
 
+    public static function http(
+        string $name,
+        string $scheme,
+        ?string $description = null,
+        ?string $bearerFormat = null
+    ): self {
+        return new self(self::TYPE_HTTP, $name, $description, null, $scheme, $bearerFormat, null, null);
+    }
+
+    public static function apiKey(
+        string $name,
+        string $in,
+        ?string $description = null
+    ): self {
+        return new self(self::TYPE_API_KEY, $name, $description, $in, null, null, null, null);
+    }
+
+    public static function oauth2(
+        string $name,
+        OAuthFlowsObject $flows,
+        ?string $description = null
+    ): self {
+        return new self(self::TYPE_OAUTH2, $name, $description, null, null, null, $flows, null);
+    }
+
+    public static function openIdConnect(
+        string $name,
+        string $openIdConnectUrl,
+        ?string $description = null
+    ): self {
+        return new self(self::TYPE_OPEN_ID_CONNECT, $name, $description, null, null, null, null, $openIdConnectUrl);
+    }
+
     public function getType(): string
     {
         return $this->type;
     }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
+    /** Used internally to key the securitySchemes map and match RouteAuthorization — not emitted in toArray(). */
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 
     public function getIn(): ?string
@@ -93,17 +133,46 @@ class SecuritySchemeObject implements ObjectInterface
 
     public function toArray(): array
     {
-        return array_filter(
+        $base = array_filter(
             [
                 'type' => $this->type,
                 'description' => $this->description,
-                'name' => $this->name,
-                'in' => $this->in,
-                'scheme' => $this->scheme,
-                'bearerFormat' => $this->bearerFormat,
-                'flows' => $this->flows !== null ? array_filter($this->flows->toArray()) : null,
-                'openIdConnectUrl' => $this->openIdConnectUrl,
             ]
         );
+
+        switch ($this->type) {
+            case self::TYPE_API_KEY:
+                return array_filter(
+                    $base + [
+                        'name' => $this->name,
+                        'in' => $this->in,
+                    ]
+                );
+
+            case self::TYPE_HTTP:
+                return array_filter(
+                    $base + [
+                        'scheme' => $this->scheme,
+                        'bearerFormat' => $this->bearerFormat,
+                    ]
+                );
+
+            case self::TYPE_OAUTH2:
+                return array_filter(
+                    $base + [
+                        'flows' => $this->flows !== null ? array_filter($this->flows->toArray()) : null,
+                    ]
+                );
+
+            case self::TYPE_OPEN_ID_CONNECT:
+                return array_filter(
+                    $base + [
+                        'openIdConnectUrl' => $this->openIdConnectUrl,
+                    ]
+                );
+
+            default:
+                return $base;
+        }
     }
 }

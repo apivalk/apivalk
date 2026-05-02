@@ -75,9 +75,9 @@ In this example, the route requires a security scheme named `BearerAuth` with th
 The first argument of `RouteAuthorization` is the security scheme name. **This name must match the `name` parameter of a `SecuritySchemeObject` in your `ComponentsObject`.** This is how Apivalk connects a route to its security definition in the generated OpenAPI spec, and how Swagger UI knows to show the "Authorize" button for that endpoint.
 
 ```
-ComponentsObject → SecuritySchemeObject('http', 'api', ...)
-                                                  │
-                                                  ▼
+ComponentsObject → SecuritySchemeObject::http('api', ...)
+                                              │
+                                              ▼
 Route → routeAuthorization(new RouteAuthorization('api', [...], [...]))
 ```
 
