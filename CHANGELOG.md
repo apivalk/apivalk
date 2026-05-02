@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.0](https://github.com/apivalk/apivalk/compare/v2.0.1...v2.1.0) (2026-05-02)
+
+
+### Features
+
+* boolean filter and unit tests for filters ([#118](https://github.com/apivalk/apivalk/issues/118)) ([3d6a8c3](https://github.com/apivalk/apivalk/commit/3d6a8c31e1526892fb79b721d04d00a40f15ce78)), closes [#103](https://github.com/apivalk/apivalk/issues/103)
+
+
+### Bug Fixes
+
+* add schema to Content-Language response header ([#114](https://github.com/apivalk/apivalk/issues/114)) ([af8a08c](https://github.com/apivalk/apivalk/commit/af8a08c355fa4f943dbe08924362eaede13d96be)), closes [#111](https://github.com/apivalk/apivalk/issues/111)
+* fix SecuritySchemeObject spec compliance and add typed factories ([#115](https://github.com/apivalk/apivalk/issues/115)) ([f0248c2](https://github.com/apivalk/apivalk/commit/f0248c2ad2d80ed0b51b4998b7df572e0e6c39d6)), closes [#112](https://github.com/apivalk/apivalk/issues/112)
+
 ## [2.0.1](https://github.com/apivalk/apivalk/compare/v2.0.0...v2.0.1) (2026-04-27)
 
 
