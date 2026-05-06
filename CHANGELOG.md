@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.1](https://github.com/apivalk/apivalk/compare/v2.1.0...v2.1.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* add raw value support to filters and improve validation middleware) ([#124](https://github.com/apivalk/apivalk/issues/124)) ([3843931](https://github.com/apivalk/apivalk/commit/384393178c1021bbdea488b80188469b5e3a37a4)), closes [#120](https://github.com/apivalk/apivalk/issues/120)
+* add user-requested sort tracking and route default handling in `SortBag` ([#122](https://github.com/apivalk/apivalk/issues/122)) ([b857a7c](https://github.com/apivalk/apivalk/commit/b857a7c6b7f4e63d9a29e6eb12b5ce85d42714a4)), closes [#121](https://github.com/apivalk/apivalk/issues/121)
+
 ## [2.1.0](https://github.com/apivalk/apivalk/compare/v2.0.1...v2.1.0) (2026-05-02)
 
 
