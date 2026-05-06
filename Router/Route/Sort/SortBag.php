@@ -10,21 +10,50 @@ namespace apivalk\apivalk\Router\Route\Sort;
 class SortBag implements \IteratorAggregate, \Countable
 {
     /** @var Sort[] */
-    private $orders = [];
+    private $sorts = [];
+    /** @var null|Sort[] */
+    private $requested = null;
 
-    public function set(Sort $order): void
+    public function set(Sort $sort): void
     {
-        $this->orders[$order->getField()] = $order;
+        $this->sorts[$sort->getField()] = $sort;
+        $this->requested = null;
     }
 
     public function has(string $field): bool
     {
-        return isset($this->orders[$field]);
+        return isset($this->sorts[$field]);
     }
 
     public function get(string $field): ?Sort
     {
-        return $this->orders[$field] ?? null;
+        return $this->sorts[$field] ?? null;
+    }
+
+    /**
+     * Sorts the user explicitly requested via `?order_by=…`, in submission order.
+     *
+     * Empty if the user did not provide `order_by`. Route-default sorts are excluded.
+     *
+     * @return list<Sort>
+     */
+    public function getRequested(): array
+    {
+        if ($this->requested !== null) {
+            return $this->requested;
+        }
+
+        $requested = [];
+
+        foreach ($this->sorts as $sort) {
+            if ($sort->isRequested()) {
+                $requested[] = $sort;
+            }
+        }
+
+        $this->requested = $requested;
+
+        return $this->requested;
     }
 
     /**
@@ -32,12 +61,12 @@ class SortBag implements \IteratorAggregate, \Countable
      */
     public function getIterator(): \Iterator
     {
-        return new \ArrayIterator($this->orders);
+        return new \ArrayIterator($this->sorts);
     }
 
     public function count(): int
     {
-        return \count($this->orders);
+        return \count($this->sorts);
     }
 
     /**
@@ -52,11 +81,8 @@ class SortBag implements \IteratorAggregate, \Countable
      */
     public function __get(string $key): ?Sort
     {
-        $order = $this->get($key);
-        if ($order === null) {
-            return null;
-        }
+        $sort = $this->get($key);
 
-        return $order;
+        return $sort ?? null;
     }
 }

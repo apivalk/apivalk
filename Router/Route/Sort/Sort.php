@@ -10,6 +10,8 @@ class Sort
     private $asc = true;
     /** @var string */
     private $field;
+    /** @var bool */
+    private $requested = false;
 
     public function __construct(string $field)
     {
@@ -53,5 +55,21 @@ class Sort
     public function getField(): string
     {
         return $this->field;
+    }
+
+    /**
+     * True only if this sort was set by the user via `?order_by=…`.
+     * False for sorts seeded from the route's default declaration.
+     */
+    public function isRequested(): bool
+    {
+        return $this->requested;
+    }
+
+    public function markAsRequested(): self
+    {
+        $this->requested = true;
+
+        return $this;
     }
 }

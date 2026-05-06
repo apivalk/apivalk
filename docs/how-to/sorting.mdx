@@ -55,15 +55,29 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 
 The bag is **always populated** — if the client omits `order_by`, it contains the defaults from `Sort::asc(...)` / `Sort::desc(...)` in the order you declared them.
 
-## 4. Check a specific field
+Iteration order matches user intent: any sorts the client submitted via `?order_by=` come first (in submission order), followed by the route's defaults for fields the client didn't specify. So `foreach` produces the right `ORDER BY` sequence — primary user choice first, defaults as tiebreakers — without you having to merge anything.
+
+## 4. Tell user-requested sorts from defaults
+
+Each `Sort` knows whether it came from `?order_by=` or from the route declaration. Branch on `isRequested()` when you need to:
 
 ```php
-if ($request->sorting()->has('created_at')) {
-    $isAsc = $request->sorting()->created_at->isAsc();
+if ($request->sorting()->created_at->isRequested()) {
+    // The client explicitly asked to sort by created_at.
 }
 ```
 
-The magic getter returns `Sort|null`. `has()` returns `true` if the field was declared on the route **and** is either defaulted or requested by the client.
+To get only the user's submitted sorts (without route defaults), use `getRequested()`:
+
+```php
+foreach ($request->sorting()->getRequested() as $sort) {
+    // Empty array if the client did not send order_by at all.
+}
+```
+
+<Note>
+`has($field)` only tells you whether the field is in the bag at all — for declared fields, that's always `true` because defaults seed the bag. Use `isRequested()` to ask "did the user ask for this?".
+</Note>
 
 ## Inside a resource
 

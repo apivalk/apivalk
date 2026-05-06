@@ -30,29 +30,50 @@ By default, an `Sort` object just defines that a field is "sortable".
 
 ## Usage in Controller
 
-When a route has sorting enabled, you can access the resolved sortings from the request via the `sorting()` method, which returns an `SortBag`.
+When a route has sorting enabled, you can access the resolved sortings from the request via the `sorting()` method, which returns a `SortBag`.
+
+The bag is **always populated** for declared fields. If the client omits `order_by`, the bag holds the route's defaults; if the client sends `order_by`, the requested sorts come first in iteration order, followed by any remaining defaults as tiebreakers.
 
 ```php
 public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
 {
     $sorting = $request->sorting();
 
-    // Check if a specific field was sorted by the client
-    if ($sorting->has('name')) {
-        $nameSort = $sorting->name; // returns Sort|null
-        $direction = $nameSort->isAsc() ? 'ASC' : 'DESC';
+    // Iterate over all sortings (user-requested first, then route defaults).
+    // Perfect for building an ORDER BY: the user's primary intent comes first.
+    foreach ($sorting as $field => $sort) {
+        $direction = $sort->isAsc() ? 'ASC' : 'DESC';
         // apply to your query...
     }
 
-    // Iterate over all provided sortings (SortBag implements IteratorAggregate)
-    foreach ($sorting as $field => $sort) {
-        $direction = $sort->isAsc() ? 'ASC' : 'DESC';
-        // ...
-    }
+    // Or read a specific field directly via the magic getter.
+    $direction = $sorting->name->isAsc() ? 'ASC' : 'DESC';
 
     // ...
 }
 ```
+
+### Did the user pick this sort, or is it a default?
+
+Each `Sort` knows whether it came from the user (`?order_by=…`) or from the route declaration. Use `isRequested()` when behavior should depend on user intent:
+
+```php
+if ($sorting->status->isRequested()) {
+    // The user explicitly asked to sort by status.
+}
+```
+
+`SortBag::getRequested()` returns only the user-submitted sorts in the order they were sent — useful when you need user intent without route defaults mixed in:
+
+```php
+foreach ($sorting->getRequested() as $sort) {
+    // Only user-submitted sorts. Empty if the client did not send order_by.
+}
+```
+
+<Note>
+`has($field)` only tells you whether the field is in the bag at all (which, for declared fields, is always `true`). To check whether the **user** requested a field, use `isRequested()` on the corresponding `Sort`.
+</Note>
 
 ---
 

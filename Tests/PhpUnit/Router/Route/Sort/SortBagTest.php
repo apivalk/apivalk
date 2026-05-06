@@ -88,4 +88,44 @@ class SortBagTest extends TestCase
 
         $this->assertNull($sortBag->unknown);
     }
+
+    public function testGetRequestedReturnsOnlyRequestedSortsInInsertionOrder(): void
+    {
+        $sortBag = new SortBag();
+        $sortBag->set(Sort::asc('id')->markAsRequested());
+        $sortBag->set(Sort::desc('created_at')); // route default
+        $sortBag->set(Sort::asc('name')->markAsRequested());
+
+        $requested = $sortBag->getRequested();
+
+        $this->assertCount(2, $requested);
+        $this->assertSame('id', $requested[0]->getField());
+        $this->assertSame('name', $requested[1]->getField());
+    }
+
+    public function testGetRequestedReturnsEmptyArrayWhenNoneAreRequested(): void
+    {
+        $sortBag = new SortBag();
+        $sortBag->set(Sort::asc('id'));
+        $sortBag->set(Sort::desc('created_at'));
+
+        $this->assertSame([], $sortBag->getRequested());
+    }
+
+    public function testGetRequestedCacheIsInvalidatedOnSet(): void
+    {
+        $sortBag = new SortBag();
+        $sortBag->set(Sort::asc('id'));
+
+        // Prime the cache.
+        $this->assertSame([], $sortBag->getRequested());
+
+        // Mutating the bag must invalidate the cached result.
+        $sortBag->set(Sort::desc('name')->markAsRequested());
+
+        $requested = $sortBag->getRequested();
+        $this->assertCount(1, $requested);
+        $this->assertSame('name', $requested[0]->getField());
+        $this->assertTrue($requested[0]->isDesc());
+    }
 }

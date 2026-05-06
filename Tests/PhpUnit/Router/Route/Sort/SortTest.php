@@ -46,4 +46,20 @@ class SortTest extends TestCase
         $this->assertSame(!$ascSort->isAsc(), $ascSort->isDesc());
         $this->assertSame(!$descSort->isAsc(), $descSort->isDesc());
     }
+
+    public function testIsRequestedDefaultsToFalse(): void
+    {
+        $this->assertFalse(Sort::asc('foo')->isRequested());
+        $this->assertFalse(Sort::desc('foo')->isRequested());
+        $this->assertFalse((new Sort('foo'))->isRequested());
+    }
+
+    public function testMarkAsRequestedFlipsFlagAndReturnsSelf(): void
+    {
+        $sort = Sort::asc('foo');
+        $returned = $sort->markAsRequested();
+
+        $this->assertSame($sort, $returned);
+        $this->assertTrue($sort->isRequested());
+    }
 }
