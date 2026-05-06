@@ -20,9 +20,11 @@ class FilteringPopulationStrategy implements PopulationStrategyInterface
 
             $clonedFilter = clone $filter;
             if ($queryParameter !== null) {
+                $rawValue = $queryParameter->getRawValue();
+                $clonedFilter->setRawValue(\is_scalar($rawValue) ? (string) $rawValue : null);
                 $clonedFilter->setValue(
                     ParameterBagFactory::typeCastValueByProperty(
-                        $queryParameter->getRawValue(),
+                        $rawValue,
                         $filter->getProperty()
                     )
                 );

@@ -15,6 +15,8 @@ class DateFilter implements FilterInterface
     private $property;
     /** @var \DateTime|null */
     private $value;
+    /** @var string|null */
+    private $rawValue;
 
     public function __construct(string $type, DateProperty $property)
     {
@@ -82,6 +84,16 @@ class DateFilter implements FilterInterface
     public function getValue(): ?\DateTime
     {
         return $this->value;
+    }
+
+    public function setRawValue(?string $rawValue): void
+    {
+        $this->rawValue = $rawValue;
+    }
+
+    public function getRawValue(): ?string
+    {
+        return $this->rawValue;
     }
 
     public function isTypeEquals(): bool

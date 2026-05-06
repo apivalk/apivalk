@@ -31,6 +31,10 @@ interface FilterInterface
      */
     public function getValue();
 
+    public function setRawValue(?string $rawValue): void;
+
+    public function getRawValue(): ?string;
+
     public function isTypeEquals(): bool;
 
     public function isTypeIn(): bool;
