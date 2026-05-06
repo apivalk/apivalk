@@ -15,6 +15,8 @@ class StringFilter implements FilterInterface
     private $property;
     /** @var string|null */
     private $value;
+    /** @var string|null */
+    private $rawValue;
 
     public function __construct(string $type, StringProperty $property)
     {
@@ -66,6 +68,16 @@ class StringFilter implements FilterInterface
     public function getValue(): ?string
     {
         return $this->value;
+    }
+
+    public function setRawValue(?string $rawValue): void
+    {
+        $this->rawValue = $rawValue;
+    }
+
+    public function getRawValue(): ?string
+    {
+        return $this->rawValue;
     }
 
     public function isTypeEquals(): bool

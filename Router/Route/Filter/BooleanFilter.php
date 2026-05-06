@@ -15,6 +15,8 @@ class BooleanFilter implements FilterInterface
     private $property;
     /** @var bool|null */
     private $value;
+    /** @var string|null */
+    private $rawValue;
 
     public function __construct(string $type, BooleanProperty $property)
     {
@@ -51,6 +53,16 @@ class BooleanFilter implements FilterInterface
     public function getValue(): ?bool
     {
         return $this->value;
+    }
+
+    public function setRawValue(?string $rawValue): void
+    {
+        $this->rawValue = $rawValue;
+    }
+
+    public function getRawValue(): ?string
+    {
+        return $this->rawValue;
     }
 
     public function isTypeEquals(): bool

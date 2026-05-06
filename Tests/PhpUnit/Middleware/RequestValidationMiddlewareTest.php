@@ -6,6 +6,14 @@ namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\BinaryProperty;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Documentation\Property\ByteProperty;
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\DateTimeProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
@@ -18,7 +26,16 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
+use apivalk\apivalk\Router\Route\Filter\BinaryFilter;
+use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
+use apivalk\apivalk\Router\Route\Filter\ByteFilter;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\FloatFilter;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Sort\SortBag;
@@ -403,6 +420,195 @@ class RequestValidationMiddlewareTest extends TestCase
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
         /** @var BadValidationApivalkResponse $response */
         $this->assertCount(1, $response->getErrors());
+    }
+
+    public function testDateTimeFilterDoesNotFatalOnTypedValue(): void
+    {
+        $property = new DateTimeProperty('started_from', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = DateTimeFilter::greaterThan($property);
+        $filter->setValue(new \DateTime('2024-01-15T14:30:00+00:00'));
+        $filter->setRawValue('2024-01-15T14:30:00+00:00');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testDateTimeFilterReportsErrorForUnparseableInput(): void
+    {
+        $property = new DateTimeProperty('started_from', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = DateTimeFilter::greaterThan($property);
+        $filter->setRawValue('not-a-datetime');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+        /** @var BadValidationApivalkResponse $response */
+        $this->assertCount(1, $response->getErrors());
+    }
+
+    public function testDateFilterDoesNotFatalOnTypedValue(): void
+    {
+        $property = new DateProperty('born_on', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = DateFilter::equals($property);
+        $filter->setValue(new \DateTime('2024-01-15'));
+        $filter->setRawValue('2024-01-15');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testDateFilterReportsErrorForUnparseableInput(): void
+    {
+        $property = new DateProperty('born_on', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = DateFilter::equals($property);
+        $filter->setRawValue('15/01/2024');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testIntegerFilterPassesValidValue(): void
+    {
+        $property = new IntegerProperty('age', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = IntegerFilter::equals($property);
+        $filter->setValue(42);
+        $filter->setRawValue('42');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testFloatFilterPassesValidValue(): void
+    {
+        $property = new FloatProperty('rating', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = FloatFilter::equals($property);
+        $filter->setValue(4.5);
+        $filter->setRawValue('4.5');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testBooleanFilterPassesValidValue(): void
+    {
+        $property = new BooleanProperty('is_active', '', false);
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = BooleanFilter::equals($property);
+        $filter->setValue(true);
+        $filter->setRawValue('true');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testEnumFilterPassesValidValue(): void
+    {
+        $property = new EnumProperty('status', '', ['active', 'inactive']);
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = EnumFilter::equals($property);
+        $filter->setValue('active');
+        $filter->setRawValue('active');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testEnumFilterRejectsValueOutsideAllowedSet(): void
+    {
+        $property = new EnumProperty('status', '', ['active', 'inactive']);
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = EnumFilter::equals($property);
+        $filter->setValue('archived');
+        $filter->setRawValue('archived');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testBinaryFilterPassesValidValue(): void
+    {
+        $property = new BinaryProperty('blob', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = BinaryFilter::equals($property);
+        $filter->setValue('payload');
+        $filter->setRawValue('payload');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testByteFilterPassesValidValue(): void
+    {
+        $property = new ByteProperty('blob', '');
+        $property->init();
+        $property->setIsRequired(false);
+
+        $filter = ByteFilter::equals($property);
+        $base64 = base64_encode('payload');
+        $filter->setValue($base64);
+        $filter->setRawValue($base64);
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testRawValueOnlyTriggersValidation(): void
+    {
+        $property = new StringProperty('status', '');
+        $property->setIsRequired(false);
+
+        $validator = $this->createMock(AbstractValidator::class);
+        $validator->method('validate')->willReturn(new ValidatorResult(false, 'Invalid value'));
+        $property->addValidator($validator);
+
+        $filter = StringFilter::equals($property);
+        $filter->setRawValue('something');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    private function runFilterMiddleware(FilterInterface $filter): AbstractApivalkResponse
+    {
+        $filterBag = new FilterBag();
+        $filterBag->set($filter);
+
+        $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
+
+        $next = function ($req) {
+            return $this->createMock(AbstractApivalkResponse::class);
+        };
+
+        return (new RequestValidationMiddleware())->process(
+            $request,
+            $this->createMock(AbstractApivalkController::class),
+            $next
+        );
     }
 
     private function createRequest(

@@ -15,6 +15,8 @@ class IntegerFilter implements FilterInterface
     private $property;
     /** @var int|null */
     private $value;
+    /** @var string|null */
+    private $rawValue;
 
     public function __construct(string $type, IntegerProperty $property)
     {
@@ -66,6 +68,16 @@ class IntegerFilter implements FilterInterface
     public function getValue(): ?int
     {
         return $this->value;
+    }
+
+    public function setRawValue(?string $rawValue): void
+    {
+        $this->rawValue = $rawValue;
+    }
+
+    public function getRawValue(): ?string
+    {
+        return $this->rawValue;
     }
 
     public function isTypeEquals(): bool

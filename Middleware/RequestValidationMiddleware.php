@@ -68,21 +68,22 @@ class RequestValidationMiddleware implements MiddlewareInterface
         /** @var FilterInterface $filter */
         foreach ($filterBag->getIterator() as $filter) {
             $value = $filter->getValue();
+            $rawValue = $filter->getRawValue();
             $property = $filter->getProperty();
 
-            if ($value === null && !$property->isRequired()) {
+            $isSupplied = $rawValue !== null || $value !== null;
+
+            if (!$isSupplied) {
+                if ($property->isRequired()) {
+                    $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                        $filter->getField(),
+                        new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
+                    );
+                }
                 continue;
             }
 
-            if ($value === null && $property->isRequired()) {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult(
-                    $filter->getField(),
-                    new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
-                );
-                continue;
-            }
-
-            $parameter = new Parameter($filter->getField(), $value, (string)$value);
+            $parameter = new Parameter($filter->getField(), $value, $rawValue);
 
             foreach ($property->getValidators() as $validator) {
                 $result = $validator->validate($parameter);
