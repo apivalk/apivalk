@@ -15,12 +15,6 @@ class SortingPopulationStrategy implements PopulationStrategyInterface
     {
         $sortBag = new SortBag();
 
-        foreach ($context->getRoute()->getSortings() as $ordering) {
-            if (!$sortBag->has($ordering->getField())) {
-                $sortBag->set($ordering);
-            }
-        }
-
         $rawOrderBy = isset($_GET['order_by']) ? (string)$_GET['order_by'] : null;
 
         if ($rawOrderBy !== null && $rawOrderBy !== '') {
@@ -42,7 +36,16 @@ class SortingPopulationStrategy implements PopulationStrategyInterface
                     continue;
                 }
 
-                $sortBag->set($direction === '-' ? Sort::desc($field) : Sort::asc($field));
+                $sort = $direction === '-' ? Sort::desc($field) : Sort::asc($field);
+                $sort->markAsRequested();
+
+                $sortBag->set($sort);
+            }
+        }
+
+        foreach ($context->getRoute()->getSortings() as $sort) {
+            if (!$sortBag->has($sort->getField())) {
+                $sortBag->set($sort);
             }
         }
 

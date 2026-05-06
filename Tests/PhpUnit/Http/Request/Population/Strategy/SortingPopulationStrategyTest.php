@@ -138,6 +138,79 @@ class SortingPopulationStrategyTest extends TestCase
         self::assertCount(1, $request->sorting());
     }
 
+    public function testUserRequestedSortsIterateBeforeDefaults(): void
+    {
+        $_GET['order_by'] = '-id';
+
+        $resource = new AnimalResource();
+        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
+
+        $request = $this->makeRequest();
+        $strategy = new SortingPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        $fields = [];
+        foreach ($request->sorting() as $sort) {
+            $fields[] = $sort->getField();
+        }
+
+        self::assertSame(['id', 'created_at', 'name'], $fields);
+        self::assertTrue($request->sorting()->get('id')->isDesc());
+    }
+
+    public function testIsRequestedFlagDiscriminatesUserVsDefault(): void
+    {
+        $_GET['order_by'] = '-id';
+
+        $resource = new AnimalResource();
+        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
+
+        $request = $this->makeRequest();
+        $strategy = new SortingPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        $bag = $request->sorting();
+        self::assertTrue($bag->get('id')->isRequested());
+        self::assertFalse($bag->get('created_at')->isRequested());
+        self::assertFalse($bag->get('name')->isRequested());
+    }
+
+    public function testGetRequestedReturnsOnlyUserSubmittedSortsInOrder(): void
+    {
+        $_GET['order_by'] = '-id,+name';
+
+        $resource = new AnimalResource();
+        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
+
+        $request = $this->makeRequest();
+        $strategy = new SortingPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        $requested = $request->sorting()->getRequested();
+
+        self::assertCount(2, $requested);
+        self::assertSame('id', $requested[0]->getField());
+        self::assertTrue($requested[0]->isDesc());
+        self::assertSame('name', $requested[1]->getField());
+        self::assertTrue($requested[1]->isAsc());
+    }
+
+    public function testGetRequestedIsEmptyWhenUserOmitsOrderBy(): void
+    {
+        $resource = new AnimalResource();
+        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route->sorting([Sort::asc('name')]);
+
+        $request = $this->makeRequest();
+        $strategy = new SortingPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        self::assertSame([], $request->sorting()->getRequested());
+    }
+
     private function makeRequest(): AbstractApivalkRequest
     {
         return new class extends AbstractApivalkRequest {

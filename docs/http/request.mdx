@@ -66,7 +66,8 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     // Access populated sorting (as defined in Route). SortBag is iterable —
     // iterate directly. The bag is always populated: if the user does not
     // provide an order_by parameter, it contains the default sorting defined
-    // on the route.
+    // on the route. User-requested sorts iterate first, route defaults last.
+    // Each Sort knows its origin via $sort->isRequested().
     foreach ($request->sorting() as $field => $sort) {
         $isAsc = $sort->isAsc();
     }
