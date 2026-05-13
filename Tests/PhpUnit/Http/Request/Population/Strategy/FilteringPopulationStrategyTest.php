@@ -11,11 +11,9 @@ use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\FilteringPopulationStrategy;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
 
 class FilteringPopulationStrategyTest extends TestCase
@@ -25,8 +23,7 @@ class FilteringPopulationStrategyTest extends TestCase
         $property = new StringProperty('status');
         $filter = StringFilter::equals($property);
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->filtering([$filter]);
 
         $queryBag = new ParameterBag();
@@ -45,8 +42,7 @@ class FilteringPopulationStrategyTest extends TestCase
         $property = new StringProperty('status');
         $filter = StringFilter::equals($property);
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->filtering([$filter]);
 
         $queryBag = new ParameterBag();
@@ -65,8 +61,7 @@ class FilteringPopulationStrategyTest extends TestCase
         $property = new StringProperty('status');
         $filter = StringFilter::equals($property);
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->filtering([$filter]);
 
         $queryBag = new ParameterBag();
@@ -81,8 +76,7 @@ class FilteringPopulationStrategyTest extends TestCase
 
     public function testEmptyRouteFiltersProducesEmptyFilterBag(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest(new ParameterBag());
 

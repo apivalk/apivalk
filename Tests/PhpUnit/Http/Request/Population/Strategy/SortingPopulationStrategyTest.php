@@ -8,11 +8,9 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\SortingPopulationStrategy;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Router\Route\Sort\SortBag;
-use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
 
 class SortingPopulationStrategyTest extends TestCase
@@ -29,8 +27,7 @@ class SortingPopulationStrategyTest extends TestCase
 
     public function testPopulatesDefaultSortingsFromRoute(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::asc('name'), Sort::desc('weight')]);
 
         $request = $this->makeRequest();
@@ -48,8 +45,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '-name';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::asc('name')]);
 
         $request = $this->makeRequest();
@@ -65,8 +61,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '+name';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new SortingPopulationStrategy();
@@ -81,8 +76,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = 'name';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new SortingPopulationStrategy();
@@ -97,8 +91,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '+name,-weight';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new SortingPopulationStrategy();
@@ -115,8 +108,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new SortingPopulationStrategy();
@@ -127,8 +119,7 @@ class SortingPopulationStrategyTest extends TestCase
 
     public function testNoOrderByLeavesRouteDefaults(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::asc('name')]);
 
         $request = $this->makeRequest();
@@ -142,8 +133,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '-id';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
 
         $request = $this->makeRequest();
@@ -163,8 +153,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '-id';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
 
         $request = $this->makeRequest();
@@ -181,8 +170,7 @@ class SortingPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = '-id,+name';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::desc('created_at'), Sort::asc('id'), Sort::asc('name')]);
 
         $request = $this->makeRequest();
@@ -200,8 +188,7 @@ class SortingPopulationStrategyTest extends TestCase
 
     public function testGetRequestedIsEmptyWhenUserOmitsOrderBy(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->sorting([Sort::asc('name')]);
 
         $request = $this->makeRequest();

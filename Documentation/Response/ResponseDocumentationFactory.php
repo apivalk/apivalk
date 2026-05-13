@@ -21,8 +21,6 @@ final class ResponseDocumentationFactory
 
         $excluded = $resource->excludeFromMode($mode);
 
-        $documentation->addProperty($resource->getIdentifierProperty());
-
         foreach ($resource->getProperties() as $property) {
             if (\in_array($property->getPropertyName(), $excluded, true)) {
                 continue;

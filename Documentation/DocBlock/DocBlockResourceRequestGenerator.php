@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\DocBlock;
 
+use apivalk\apivalk\Documentation\Request\RequestDocumentationFactory;
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
@@ -21,7 +22,7 @@ final class DocBlockResourceRequestGenerator
     public function generate(string $controllerClass): DocBlockResourceRequest
     {
         $resource = $controllerClass::getEmptyResource();
-        $requestName = \ucfirst($resource->getName()) . \ucfirst($controllerClass::getMode());
+        $requestName = \ucfirst($resource->getName()) . \ucfirst(RequestDocumentationFactory::getModeFromController($controllerClass));
 
         $sortingShape = new DocBlockShape($requestName, 'Sorting');
         $filteringShape = new DocBlockShape($requestName, 'Filtering');
@@ -36,7 +37,7 @@ final class DocBlockResourceRequestGenerator
         }
 
         $paginatorClass = null;
-        $pagination = $controllerClass::pagination();
+        $pagination = $controllerClass::getRoute()->getPagination();
 
         if ($pagination !== null) {
             switch ($pagination->getType()) {

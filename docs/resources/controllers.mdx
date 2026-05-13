@@ -5,138 +5,243 @@ description: "Five abstract controllers — Create, View, Update, Delete, List �
 
 ## The Five Controllers
 
-| Base class | HTTP | Path | Response (default) |
-|---|---|---|---|
-| `AbstractCreateResourceController` | `POST` | `/{base}/{plural}` | `ResourceCreatedResponse` (201) |
-| `AbstractViewResourceController` | `GET` | `/{base}/{plural}/{id}` | `ResourceViewResponse` (200) |
-| `AbstractUpdateResourceController` | `PATCH` | `/{base}/{plural}/{id}` | `ResourceUpdatedResponse` (200) |
-| `AbstractDeleteResourceController` | `DELETE` | `/{base}/{plural}/{id}` | `ResourceDeletedResponse` (200) |
-| `AbstractListResourceController` | `GET` | `/{base}/{plural}` | `ResourceListResponse` (200) |
+| Base class | HTTP | Default response |
+|---|---|---|
+| `AbstractCreateResourceController` | `POST` | `ResourceCreatedResponse` (201) |
+| `AbstractViewResourceController` | `GET` | `ResourceViewResponse` (200) |
+| `AbstractUpdateResourceController` | `PATCH` | `ResourceUpdatedResponse` (200) |
+| `AbstractDeleteResourceController` | `DELETE` | `DeletedApivalkResponse` (200) |
+| `AbstractListResourceController` | `GET` | `ResourceListResponse` (200) |
 
-`{base}` comes from `$resource->getBaseUrl()`, `{plural}` from `$resource->getPluralName()`, `{id}` from `$resource->getIdentifierProperty()->getPropertyName()`.
-
-All five are generic over the resource type: `@template TResource of AbstractResource`. When you subclass, declare your concrete resource so static analysis propagates the type through.
+All five are generic over the resource type: `@template TResource of AbstractResource`. Declare the concrete type via the `@extends` annotation so static analysis and IDE autocompletion work.
 
 ## What You Write
 
-A resource controller is **one small class** — a `getResourceClass()` method plus your business logic. The `@extends Abstract...<YourResource>` annotation is what gives you IDE autocompletion and static analysis on the typed helpers the base class exposes.
+Every resource controller implements three things:
 
-### Example: Create
+1. `getResourceClass(): string` — return your resource class name.
+2. `getRoute(): Route` — declare the URL, method, description, tags, auth, and (for list) filters/sortings/pagination.
+3. `__invoke(ApivalkRequestInterface $request): AbstractApivalkResponse` — your business logic.
 
-`AbstractCreateResourceController` provides `$this->getResource($request)` which builds a typed resource instance from the validated request body (and path, for `Update`). Because of the `@template TResource`, `$customer` below is known to be a `CustomerResource` — your IDE and PHPStan both know it.
+The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmptyResource()`. Everything else is explicit in your controller.
+
+## Examples
+
+### Create
 
 ```php
-namespace App\Http\Controller\Customer;
+namespace App\Http\Controller\Animal;
 
 use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceCreatedResponse;
-use App\Resource\CustomerResource;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
 
 /**
- * @extends AbstractCreateResourceController<CustomerResource>
+ * @extends AbstractCreateResourceController<AnimalResource>
  */
-final class CreateCustomerController extends AbstractCreateResourceController
+final class CreateAnimalController extends AbstractCreateResourceController
 {
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public static function getResourceClass(): string
     {
-        return CustomerResource::class;
+        return AnimalResource::class;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::post('/api/v1/animals')
+            ->description('Create animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        // CustomerResource (typed via the template parameter), built from
-        // the validated body + identifier path param. No manual property copying.
-        $customer = $this->getResource($request);
+        $animal = AnimalResource::byRequest($request); // hydrated from validated body
+        $animal->animal_uuid = $this->repository->persist($animal);
 
-        // ... persist $customer via your repository here ...
-
-        return new ResourceCreatedResponse($customer);
+        return new ResourceCreatedResponse($animal);
     }
 }
 ```
 
-That's the full controller. `AbstractUpdateResourceController` has the same `getResource($request)` helper; `AbstractView/Delete/ListResourceController` don't need it since they don't hydrate from a body.
-
-### Example: Update
-
-`AbstractUpdateResourceController` gives you **both** helpers: `$this->getResource($request)` hydrates a typed resource from the validated body **and** the identifier in the path, and `$this->getResourceIdentifier($request)` returns the raw identifier on its own (useful if you need to look up the existing row first, merge, and persist).
+### View
 
 ```php
-namespace App\Http\Controller\Customer;
+namespace App\Http\Controller\Animal;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
+use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
+
+/**
+ * @extends AbstractViewResourceController<AnimalResource>
+ */
+final class ViewAnimalController extends AbstractViewResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::get('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Get animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $uuid = $request->path()->get('animal_uuid')->getValue();
+        $row  = $this->repository->findByUuid($uuid);
+
+        if ($row === null) {
+            return new NotFoundApivalkResponse();
+        }
+
+        return new ResourceViewResponse(AnimalResource::byArray($row));
+    }
+}
+```
+
+### Update
+
+```php
+namespace App\Http\Controller\Animal;
+
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceUpdatedResponse;
-use App\Resource\CustomerResource;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
 
 /**
- * @extends AbstractUpdateResourceController<CustomerResource>
+ * @extends AbstractUpdateResourceController<AnimalResource>
  */
-final class UpdateCustomerController extends AbstractUpdateResourceController
+final class UpdateAnimalController extends AbstractUpdateResourceController
 {
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public static function getResourceClass(): string
     {
-        return CustomerResource::class;
+        return AnimalResource::class;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::patch('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Update animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        // CustomerResource with path id + body fields already merged in.
-        $customer = $this->getResource($request);
+        $animal = AnimalResource::byRequest($request); // body fields only
+        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
 
-        // ... persist updates via your repository here ...
+        $this->repository->update($animal);
 
-        return new ResourceUpdatedResponse($customer);
+        return new ResourceUpdatedResponse($animal);
     }
 }
 ```
 
-### Example: View
-
-`AbstractView/Delete/UpdateResourceController` expose `$this->getResourceIdentifier($request)` — a typed convenience for pulling the identifier path parameter (defined by `$resource->getIdentifierProperty()`) out of the request. It throws `InvalidArgumentException` if the parameter is missing, so the validation middleware has already ensured it's present by the time you reach `__invoke()`.
+### Delete
 
 ```php
-namespace App\Http\Controller\Customer;
+namespace App\Http\Controller\Animal;
 
-use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
-use App\Resource\CustomerResource;
+use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
+use App\Resource\AnimalResource;
 
 /**
- * @extends AbstractViewResourceController<CustomerResource>
+ * @extends AbstractDeleteResourceController<AnimalResource>
  */
-final class ViewCustomerController extends AbstractViewResourceController
+final class DeleteAnimalController extends AbstractDeleteResourceController
 {
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public static function getResourceClass(): string
     {
-        return CustomerResource::class;
+        return AnimalResource::class;
+    }
+
+    public static function getRoute(): Route
+    {
+        return Route::delete('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Delete animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $customerUuid = $this->getResourceIdentifier($request);
+        $this->repository->delete(
+            $request->path()->get('animal_uuid')->getValue()
+        );
 
-        // ... fetch the row from your repository here ...
-        $customer = CustomerResource::byArray([
-            'uuid'       => $customerUuid,
-            'first_name' => 'John',
-            'last_name'  => 'Doe',
-            'status'     => 'active',
-        ]);
-
-        return new ResourceViewResponse($customer);
+        return new DeletedApivalkResponse();
     }
 }
 ```
 
-`AbstractDeleteResourceController` follows the same pattern — call `$this->getResourceIdentifier($request)`, delete the row, return a `ResourceDeletedResponse`.
-
-### Example: List
+### List
 
 ```php
 namespace App\Http\Controller\Animal;
@@ -147,6 +252,9 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
 
 /**
@@ -154,68 +262,113 @@ use App\Resource\AnimalResource;
  */
 final class ListAnimalController extends AbstractListResourceController
 {
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public static function getResourceClass(): string
     {
         return AnimalResource::class;
     }
 
-    public static function pagination(): ?Pagination
+    public static function getRoute(): Route
     {
-        return new Pagination(Pagination::TYPE_PAGE, 100);
+        $resource = self::getEmptyResource();
+
+        return Route::get('/api/v1/animals')
+            ->description('List animals')
+            ->tags($resource->tags())
+            ->filtering($resource->availableFilters())
+            ->sorting($resource->availableSortings())
+            ->pagination(Pagination::page()->setMaxLimit(50))
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
         $paginator = $request->paginator();
+        $filters   = $request->filtering();
+        $sorting   = $request->sorting();
 
-        // $request->filtering()->status, $request->sorting() etc. are already typed
-        $animals = $this->repository->findAll(
-            $request->filtering(),
-            $request->sorting(),
-            $paginator->getLimit(),
-            ($paginator->getPage() - 1) * $paginator->getLimit()
-        );
+        $rows  = $this->repository->findPage($filters, $sorting, $paginator);
+        $total = $this->repository->countForFilters($filters);
+
+        $resources = [];
+        foreach ($rows as $row) {
+            $resources[] = AnimalResource::byArray($row);
+        }
+
+        $totalPages = (int)\ceil($total / $paginator->getLimit());
 
         return new ResourceListResponse(
-            $animals,
+            $resources,
             new PagePaginationResponse(
                 $paginator->getPage(),
                 $paginator->getLimit(),
-                /* hasMore */ true
+                $paginator->getPage() < $totalPages,
+                $totalPages
             )
         );
     }
 }
 ```
 
-The five things the base class handles for you:
+## Nested Resources
 
-1. `getRoute()` — built via `Route::resource($this->getEmptyResource(), static::getMode())`, wired with the resource's filters / sortings / pagination hook.
-2. `getRequestClass()` — returns `ResourceRequest::class` (a shared, empty request class).
-3. `getResponseClasses()` — the mode-specific response + standard error responses.
-4. `getMode()` — the constant for Create / View / Update / Delete / List.
-5. `getDescription()` — e.g. `"Create animal"`, `"List animals"`.
+Because `getRoute()` is fully explicit, nested URLs are straightforward — add more path segments and declare each path parameter:
 
-## What You Can Override
+```php
+/**
+ * GET /api/v1/users/{user_uuid}/authenticators/{authenticator_uuid}
+ *
+ * @extends AbstractViewResourceController<AuthenticatorResource>
+ */
+final class ViewUserAuthenticatorController extends AbstractViewResourceController
+{
+    public static function getResourceClass(): string
+    {
+        return AuthenticatorResource::class;
+    }
 
-- `pagination(): ?Pagination` — on `AbstractListResourceController`. Default `null` (no pagination).
-- `routeAuthorization(): ?RouteAuthorization` — declare required scopes/permissions.
-- `rateLimit(): ?RateLimitInterface` — per-endpoint rate limit.
-- `getDescription(): string` — override the auto-generated description if needed.
-- `configureRoute(Route $route): void` — for exotic tweaks. `AbstractListResourceController` uses this internally to wire filters/sortings/pagination; if you override it on `List`, call back into the parent or re-wire manually.
+    public static function getRoute(): Route
+    {
+        return Route::get('/api/v1/users/{user_uuid}/authenticators/{authenticator_uuid}')
+            ->pathProperty(new StringProperty('user_uuid', 'User UUID'))
+            ->pathProperty(new StringProperty('authenticator_uuid', 'Authenticator UUID'))
+            ->description('Get user authenticator')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['user'], ['user:read']));
+    }
 
-## The Shared `ResourceRequest`
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $userUuid          = $request->path()->get('user_uuid')->getValue();
+        $authenticatorUuid = $request->path()->get('authenticator_uuid')->getValue();
 
-All resource controllers return `ResourceRequest::class` from `getRequestClass()`. This is intentional: the runtime documentation (body fields for create/update, path id for view/update/delete, filters/sortings/pagination for list) is built from the **resource declaration**, not from per-mode request classes. You never need to author a resource request class yourself.
+        $row = $this->repository->findForUser($userUuid, $authenticatorUuid);
 
-The [docblock generator](/documentation/docblock-generator#resource-docblock-generation) can emit an optional per-resource `AnimalListRequest` subclass purely for IDE autocompletion — that file only carries `@method` annotations, no runtime behavior.
+        if ($row === null) {
+            return new NotFoundApivalkResponse();
+        }
 
-## Registering Controllers
+        return new ResourceViewResponse(AuthenticatorResource::byArray($row));
+    }
+}
+```
 
-Resource controllers are ordinary controllers — the `ClassLocator` finds them automatically during route cache building. No manual registration.
+The same pattern extends to any depth. Each `->pathProperty()` call documents the parameter in OpenAPI and registers it for validation.
+
+## What the Base Class Provides
+
+- `getRequestClass()` — returns `ResourceRequest::class` (a shared, empty request class; no per-endpoint request class needed).
+- `getResponseClasses()` — the mode-appropriate success response + `BadRequestApivalkResponse` + `ForbiddenApivalkResponse`.
+- `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `getRoute()`.
 
 ## Related
 
 - [Defining a Resource](/resources/resource)
 - [Resource Responses](/resources/responses)
-- [Route::resource()](/routing/route#resource-routes)

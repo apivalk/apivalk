@@ -13,6 +13,4 @@ interface ResourceControllerInterface
 {
     /** @return class-string<AbstractResource> */
     public static function getResourceClass(): string;
-
-    public static function getMode(): string;
 }

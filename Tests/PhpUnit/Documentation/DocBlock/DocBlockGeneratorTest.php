@@ -125,24 +125,18 @@ PHP;
 
 namespace TestNamespace\\Resource;
 
-use apivalk\\apivalk\\Documentation\\Property\\AbstractProperty;
 use apivalk\\apivalk\\Documentation\\Property\\FloatProperty;
 use apivalk\\apivalk\\Documentation\\Property\\StringProperty;
 use apivalk\\apivalk\\Resource\\AbstractResource;
 
 class {$resourceClassName} extends AbstractResource
 {
-    public function getIdentifierProperty(): AbstractProperty
-    {
-        return new StringProperty('thing_uuid', 'Identifier of the thing');
-    }
-
-    public function getBaseUrl(): string { return '/api/v1'; }
     public function getName(): string { return 'thing'; }
     public function excludeFromMode(string \$mode): array { return []; }
 
     protected function init(): void
     {
+        \$this->addProperty(new StringProperty('thing_uuid', 'Identifier of the thing'));
         \$this->addProperty(new StringProperty('name', 'Name of the thing'));
         \$this->addProperty((new FloatProperty('weight'))->setIsRequired(false));
     }
@@ -163,10 +157,16 @@ use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
 use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
 use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceListResponse;
 use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationResponse;
+use apivalk\\apivalk\\Router\\Route\\Route;
 use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$controllerClassName} extends AbstractListResourceController
 {
+    public static function getRoute(): Route
+    {
+        return Route::get('/api/v1/things');
+    }
+
     public static function getResourceClass(): string
     {
         return {$resourceClassName}::class;
@@ -208,23 +208,17 @@ PHP;
 
 namespace TestNamespace\\Resource;
 
-use apivalk\\apivalk\\Documentation\\Property\\AbstractProperty;
 use apivalk\\apivalk\\Documentation\\Property\\StringProperty;
 use apivalk\\apivalk\\Resource\\AbstractResource;
 
 class {$resourceClassName} extends AbstractResource
 {
-    public function getIdentifierProperty(): AbstractProperty
-    {
-        return new StringProperty('shared_uuid');
-    }
-
-    public function getBaseUrl(): string { return '/api/v1'; }
     public function getName(): string { return 'shared'; }
     public function excludeFromMode(string \$mode): array { return []; }
 
     protected function init(): void
     {
+        \$this->addProperty(new StringProperty('shared_uuid'));
         \$this->addProperty(new StringProperty('name'));
     }
 }
@@ -248,10 +242,12 @@ use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
 use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
 use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceListResponse;
 use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationResponse;
+use apivalk\\apivalk\\Router\\Route\\Route;
 use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$listClassName} extends AbstractListResourceController
 {
+    public static function getRoute(): Route { return Route::get('/api/v1/shareds'); }
     public static function getResourceClass(): string { return {$resourceClassName}::class; }
     public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
     {
@@ -269,10 +265,16 @@ use apivalk\\apivalk\\Http\\Controller\\Resource\\AbstractViewResourceController
 use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
 use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
 use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceViewResponse;
+use apivalk\\apivalk\\Router\\Route\\Route;
+use apivalk\\apivalk\\Documentation\\Property\\StringProperty;
 use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$viewClassName} extends AbstractViewResourceController
 {
+    public static function getRoute(): Route {
+        return Route::get('/api/v1/shareds/{shared_uuid}')
+            ->pathProperty(new StringProperty('shared_uuid', 'Shared UUID'));
+    }
     public static function getResourceClass(): string { return {$resourceClassName}::class; }
     public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
     {
