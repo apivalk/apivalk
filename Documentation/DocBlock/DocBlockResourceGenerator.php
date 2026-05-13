@@ -12,8 +12,6 @@ final class DocBlockResourceGenerator
     {
         $docBlockResource = new DocBlockResource();
 
-        $docBlockResource->addProperty($resource->getIdentifierProperty());
-
         foreach ($resource->getProperties() as $property) {
             $docBlockResource->addProperty($property);
         }

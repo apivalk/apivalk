@@ -10,17 +10,25 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Route;
 
 class ListAnimalsController extends AbstractListResourceController
 {
+    public static function getRoute(): Route
+    {
+        $resource = self::getEmptyResource();
+
+        return Route::get('/api/v1/animals')
+            ->description('List animals')
+            ->tags($resource->tags())
+            ->filtering($resource->availableFilters())
+            ->sorting($resource->availableSortings())
+            ->pagination(Pagination::page()->setMaxLimit(25));
+    }
+
     public static function getResourceClass(): string
     {
         return AnimalResource::class;
-    }
-
-    public static function pagination(): ?Pagination
-    {
-        return Pagination::page()->setMaxLimit(25);
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse

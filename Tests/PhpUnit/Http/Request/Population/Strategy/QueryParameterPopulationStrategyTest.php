@@ -10,9 +10,7 @@ use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\QueryParameterPopulationStrategy;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
 
 class QueryParameterPopulationStrategyTest extends TestCase
@@ -34,8 +32,7 @@ class QueryParameterPopulationStrategyTest extends TestCase
         $doc = new ApivalkRequestDocumentation();
         $doc->addQueryProperty(new StringProperty('search'));
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new QueryParameterPopulationStrategy();
@@ -49,8 +46,7 @@ class QueryParameterPopulationStrategyTest extends TestCase
     {
         $_GET['unknown'] = 'foo';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new QueryParameterPopulationStrategy();
@@ -63,8 +59,7 @@ class QueryParameterPopulationStrategyTest extends TestCase
     {
         $_GET['order_by'] = 'name';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new QueryParameterPopulationStrategy();

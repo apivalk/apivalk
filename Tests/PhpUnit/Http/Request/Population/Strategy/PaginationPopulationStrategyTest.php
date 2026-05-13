@@ -11,10 +11,8 @@ use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\PaginationPopulationStrategy;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
 
 class PaginationPopulationStrategyTest extends TestCase
@@ -31,8 +29,7 @@ class PaginationPopulationStrategyTest extends TestCase
 
     public function testNoPaginationOnRouteLeavesPaginatorNull(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new PaginationPopulationStrategy();
@@ -46,8 +43,7 @@ class PaginationPopulationStrategyTest extends TestCase
         $_GET['page'] = '2';
         $_GET['per_page'] = '10';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->pagination(new Pagination(Pagination::TYPE_PAGE, 100));
 
         $request = $this->makeRequest();
@@ -62,8 +58,7 @@ class PaginationPopulationStrategyTest extends TestCase
         $_GET['limit'] = '20';
         $_GET['offset'] = '40';
 
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
         $route->pagination(new Pagination(Pagination::TYPE_OFFSET, 100));
 
         $request = $this->makeRequest();

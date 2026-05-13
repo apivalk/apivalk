@@ -9,17 +9,14 @@ use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\MethodPopulationStrategy;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\AnimalResource;
 use PHPUnit\Framework\TestCase;
 
 class MethodPopulationStrategyTest extends TestCase
 {
     public function testSetsMethodFromRoute(): void
     {
-        $resource = new AnimalResource();
-        $route = Route::resource($resource, AbstractResource::MODE_LIST);
+        $route = Route::get('/api/v1/animals');
 
         $request = $this->makeRequest();
         $strategy = new MethodPopulationStrategy();

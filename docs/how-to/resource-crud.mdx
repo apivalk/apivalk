@@ -31,7 +31,6 @@ declare(strict_types=1);
 namespace App\Resource;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
-use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
@@ -42,16 +41,6 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
 
 class AnimalResource extends AbstractResource
 {
-    public function getIdentifierProperty(): AbstractProperty
-    {
-        return new StringProperty('animal_uuid', 'Unique identifier of the animal');
-    }
-
-    public function getBaseUrl(): string
-    {
-        return '/api/v1';
-    }
-
     public function getName(): string
     {
         return 'animal';
@@ -77,9 +66,12 @@ class AnimalResource extends AbstractResource
 
     public function excludeFromMode(string $mode): array
     {
-        // Hide heavy field from list responses to keep payloads small
+        if ($mode === self::MODE_CREATE) {
+            return ['animal_uuid']; // server generates the identifier
+        }
+
         if ($mode === self::MODE_LIST) {
-            return ['weight'];
+            return ['weight']; // keep list payloads small
         }
 
         return [];
@@ -87,6 +79,7 @@ class AnimalResource extends AbstractResource
 
     protected function init(): void
     {
+        $this->addProperty(new StringProperty('animal_uuid', 'Unique identifier of the animal'));
         $this->addProperty(new StringProperty('name', 'Animal name'));
         $this->addProperty(new EnumProperty('status', 'Lifecycle status', ['active', 'archived']));
         $this->addProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
@@ -94,11 +87,11 @@ class AnimalResource extends AbstractResource
 }
 ```
 
-`Route::resource()` uses `getBaseUrl()` + `getPluralName()` to build URLs: `/api/v1/animals` and `/api/v1/animals/{animal_uuid}`.
+The identifier (`animal_uuid`) is a regular property declared first by convention. Excluding it from `MODE_CREATE` removes it from the create request body documentation — the server generates it.
 
 ## 2. Wire the five controllers
 
-Each controller is a thin subclass. The base class fills in the route, request class, response classes, and OpenAPI schema.
+Each controller is a thin subclass. You implement `getResourceClass()`, `getRoute()`, and `__invoke()`.
 
 ### Create
 
@@ -113,6 +106,7 @@ use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceCreatedResponse;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
@@ -135,14 +129,17 @@ final class CreateAnimalController extends AbstractCreateResourceController
         return AnimalResource::class;
     }
 
-    public static function routeAuthorization(): ?RouteAuthorization
+    public static function getRoute(): Route
     {
-        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']);
+        return Route::post('/api/v1/animals')
+            ->description('Create animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = $this->getResource($request); // AnimalResource hydrated from body
+        $animal = AnimalResource::byRequest($request); // hydrated from validated body
         $animal->animal_uuid = $this->repository->persist($animal);
 
         return new ResourceCreatedResponse($animal);
@@ -159,11 +156,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Animal;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
@@ -186,14 +185,20 @@ final class ViewAnimalController extends AbstractViewResourceController
         return AnimalResource::class;
     }
 
-    public static function routeAuthorization(): ?RouteAuthorization
+    public static function getRoute(): Route
     {
-        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']);
+        return Route::get('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Get animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $row = $this->repository->findByUuid($this->getResourceIdentifier($request));
+        $uuid = $request->path()->get('animal_uuid')->getValue();
+        $row  = $this->repository->findByUuid($uuid);
+
         if ($row === null) {
             return new NotFoundApivalkResponse();
         }
@@ -212,10 +217,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Animal;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceUpdatedResponse;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
@@ -238,14 +245,20 @@ final class UpdateAnimalController extends AbstractUpdateResourceController
         return AnimalResource::class;
     }
 
-    public static function routeAuthorization(): ?RouteAuthorization
+    public static function getRoute(): Route
     {
-        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']);
+        return Route::patch('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Update animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = $this->getResource($request); // body + path identifier merged
+        $animal = AnimalResource::byRequest($request); // body fields only
+        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+
         $this->repository->update($animal);
 
         return new ResourceUpdatedResponse($animal);
@@ -262,10 +275,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Animal;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
@@ -288,14 +303,20 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
         return AnimalResource::class;
     }
 
-    public static function routeAuthorization(): ?RouteAuthorization
+    public static function getRoute(): Route
     {
-        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']);
+        return Route::delete('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->description('Delete animal')
+            ->tags(self::getEmptyResource()->tags())
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $this->repository->delete($this->getResourceIdentifier($request));
+        $this->repository->delete(
+            $request->path()->get('animal_uuid')->getValue()
+        );
 
         return new DeletedApivalkResponse();
     }
@@ -317,6 +338,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Animal\AnimalRepository;
 use App\Resource\AnimalResource;
@@ -339,14 +361,17 @@ final class ListAnimalController extends AbstractListResourceController
         return AnimalResource::class;
     }
 
-    public static function pagination(): ?Pagination
+    public static function getRoute(): Route
     {
-        return Pagination::page()->setMaxLimit(50);
-    }
+        $resource = self::getEmptyResource();
 
-    public static function routeAuthorization(): ?RouteAuthorization
-    {
-        return new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']);
+        return Route::get('/api/v1/animals')
+            ->description('List animals')
+            ->tags($resource->tags())
+            ->filtering($resource->availableFilters())
+            ->sorting($resource->availableSortings())
+            ->pagination(Pagination::page()->setMaxLimit(50))
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
@@ -380,11 +405,37 @@ final class ListAnimalController extends AbstractListResourceController
 
 ## What the framework handles for you
 
-- **URL + verb per mode** — `Route::resource()` picks `POST /api/v1/animals`, `GET /api/v1/animals/{animal_uuid}`, `PATCH` for update, `DELETE` for delete, `GET` collection for list. You can't accidentally violate REST conventions.
 - **Body / path / filter / sort validation** — `RequestValidationMiddleware` validates against the runtime documentation derived from `AnimalResource`. Unknown `?order_by=hacked_field` → 422 before your controller runs.
 - **Response envelope** — `Resource*Response` classes emit the standard `{"data": ...}` (and `"pagination"` for list). No `toArray()` to write.
-- **Per-mode field visibility** — `excludeFromMode()` hides `weight` from the list endpoint; the rest of the endpoints still see it.
+- **Per-mode field visibility** — `excludeFromMode()` hides `animal_uuid` from the create body and `weight` from list responses; the rest of the endpoints still see both.
 - **OpenAPI** — all five operations are generated from the single resource. Add a field to `AnimalResource::init()` and every operation updates at once.
+
+## Nested resources
+
+Because `getRoute()` is fully explicit, nested URLs require no special setup — add more path segments and declare each one via `->pathProperty()`:
+
+```php
+// GET /api/v1/animals/{animal_uuid}/kids/{kid_uuid}
+public static function getRoute(): Route
+{
+    return Route::get('/api/v1/animals/{animal_uuid}/kids/{kid_uuid}')
+        ->pathProperty(new StringProperty('animal_uuid', 'Parent animal UUID'))
+        ->pathProperty(new StringProperty('kid_uuid', 'Kid UUID'))
+        ->description('Get animal kid')
+        ->tags(self::getEmptyResource()->tags())
+        ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
+}
+
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $animalUuid = $request->path()->get('animal_uuid')->getValue();
+    $kidUuid    = $request->path()->get('kid_uuid')->getValue();
+
+    // ...
+}
+```
+
+Both path parameters are validated, documented in OpenAPI, and typed in the path bag.
 
 ## Optional: IDE autocomplete via the DocBlock generator
 

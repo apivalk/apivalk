@@ -11,13 +11,13 @@ use apivalk\apivalk\Documentation\Response\ResponseDocumentationFactory;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractResourceController;
+use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Http\Method\DeleteMethod;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
-use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
 
 class PathItemGenerator
@@ -136,9 +136,12 @@ class PathItemGenerator
         string $controllerClass
     ): OperationObject {
         $resource = $controllerClass::getEmptyResource();
-        $mode = $controllerClass::getMode();
+        $mode = RequestDocumentationFactory::getModeFromController($controllerClass);
 
         $requestDocumentation = RequestDocumentationFactory::createRequestDocumentation($resource, $mode);
+        foreach ($route->getPathProperties() as $property) {
+            $requestDocumentation->addPathProperty($property);
+        }
         $responseDocumentation = ResponseDocumentationFactory::create($resource, $mode);
 
         $responseDocumentations = [];

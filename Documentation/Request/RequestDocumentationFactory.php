@@ -6,14 +6,20 @@ namespace apivalk\apivalk\Documentation\Request;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\OperationGenerator;
+use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
+use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
+use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractResourceController;
+use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
+use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
 
 final class RequestDocumentationFactory
 {
     /**
-     * Request documentation for a resource in a given mode — path and body properties only.
+     * Request documentation for a resource in a given mode — body properties only.
+     * Path properties come from Route::getPathProperties() (declared explicitly in getRoute()).
      * Route-derived query properties (pagination, sorting, filtering) are intentionally excluded
      * so that OperationGenerator can add them without duplication when building OpenAPI specs.
      *
@@ -25,13 +31,6 @@ final class RequestDocumentationFactory
         string $mode
     ): ApivalkRequestDocumentation {
         $documentation = new ApivalkRequestDocumentation();
-
-        if ($mode === AbstractResource::MODE_VIEW
-            || $mode === AbstractResource::MODE_DELETE
-            || $mode === AbstractResource::MODE_UPDATE
-        ) {
-            $documentation->addPathProperty($resource->getIdentifierProperty());
-        }
 
         if ($mode === AbstractResource::MODE_CREATE || $mode === AbstractResource::MODE_UPDATE) {
             $excluded = $resource->excludeFromMode($mode);
@@ -55,8 +54,8 @@ final class RequestDocumentationFactory
 
     /**
      * Fully merged documentation for request population and validation at runtime. Combines base
-     * request documentation, resource path/body properties, and route-derived query properties
-     * (pagination, sorting, filtering).
+     * request documentation, resource body properties, and route-derived path/query properties
+     * (path params, pagination, sorting, filtering).
      *
      * @param Route  $route
      * @param string $controllerClass class-string<\apivalk\apivalk\Http\Controller\AbstractApivalkController>
@@ -71,12 +70,8 @@ final class RequestDocumentationFactory
 
         if (\is_subclass_of($controllerClass, AbstractResourceController::class)) {
             $resource = $controllerClass::getEmptyResource();
-            $mode = $controllerClass::getMode();
+            $mode = self::getModeFromController($controllerClass);
             $resourceDocumentation = self::createRequestDocumentation($resource, $mode);
-
-            foreach ($resourceDocumentation->getPathProperties() as $property) {
-                $documentation->addPathProperty($property);
-            }
 
             foreach ($resourceDocumentation->getBodyProperties() as $property) {
                 $documentation->addBodyProperty($property);
@@ -105,5 +100,29 @@ final class RequestDocumentationFactory
         }
 
         return $documentation;
+    }
+
+    /**
+     * @param class-string<AbstractResourceController<AbstractResource>> $controllerClass
+     */
+    public static function getModeFromController(string $controllerClass): string
+    {
+        if (\is_subclass_of($controllerClass, AbstractCreateResourceController::class)) {
+            return AbstractResource::MODE_CREATE;
+        }
+        if (\is_subclass_of($controllerClass, AbstractUpdateResourceController::class)) {
+            return AbstractResource::MODE_UPDATE;
+        }
+        if (\is_subclass_of($controllerClass, AbstractDeleteResourceController::class)) {
+            return AbstractResource::MODE_DELETE;
+        }
+        if (\is_subclass_of($controllerClass, AbstractViewResourceController::class)) {
+            return AbstractResource::MODE_VIEW;
+        }
+        if (\is_subclass_of($controllerClass, AbstractListResourceController::class)) {
+            return AbstractResource::MODE_LIST;
+        }
+
+        return AbstractResource::MODE_VIEW;
     }
 }

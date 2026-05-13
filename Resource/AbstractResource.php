@@ -39,11 +39,6 @@ abstract class AbstractResource
 
     abstract protected function init(): void;
 
-    abstract public function getIdentifierProperty(): AbstractProperty;
-
-    /** Returns base url for resource. Example: /api/v1 */
-    abstract public function getBaseUrl(): string;
-
     abstract public function getName(): string;
 
     public function getPluralName(): string
@@ -123,26 +118,16 @@ abstract class AbstractResource
     public static function byArray(array $data): self
     {
         $resource = new static();
-        $identifierPropertyName = $resource->getIdentifierProperty()->getPropertyName();
 
         foreach ($data as $propertyName => $value) {
-            if ($identifierPropertyName !== $propertyName
-                && !$resource->hasProperty($propertyName)
-            ) {
+            if (!$resource->hasProperty($propertyName)) {
                 continue;
             }
 
-            if ($identifierPropertyName === $propertyName) {
-                $resource->__set(
-                    $propertyName,
-                    ParameterBagFactory::typeCastValueByProperty($value, $resource->getIdentifierProperty())
-                );
-            } else {
-                $resource->__set(
-                    $propertyName,
-                    ParameterBagFactory::typeCastValueByProperty($value, $resource->getProperties()[$propertyName])
-                );
-            }
+            $resource->__set(
+                $propertyName,
+                ParameterBagFactory::typeCastValueByProperty($value, $resource->getProperties()[$propertyName])
+            );
         }
 
         return $resource;
@@ -158,13 +143,6 @@ abstract class AbstractResource
             }
 
             $resource->__set($bodyParameter->getName(), $bodyParameter->getValue());
-        }
-
-        $resourceIdentifierPropertyName = $resource->getIdentifierProperty()->getPropertyName();
-
-        $pathIdentifier = $apivalkRequest->path()->get($resourceIdentifierPropertyName);
-        if ($pathIdentifier !== null) {
-            $resource->__set($resourceIdentifierPropertyName, $pathIdentifier->getValue());
         }
 
         return $resource;

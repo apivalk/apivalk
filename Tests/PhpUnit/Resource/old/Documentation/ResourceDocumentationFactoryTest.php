@@ -76,7 +76,6 @@ class RequestDocumentationFactoryTest extends TestCase
         );
 
         $bodyPropertyNames = array_keys($doc->getBodyProperties());
-        $pathPropertyNames = array_keys($doc->getPathProperties());
 
         // All body properties present but not required
         $this->assertContains('name', $bodyPropertyNames);
@@ -90,8 +89,8 @@ class RequestDocumentationFactoryTest extends TestCase
             );
         }
 
-        // Identifier as path property
-        $this->assertContains('animal_uuid', $pathPropertyNames);
+        // Path properties come from the route's pathProperty() declarations, not from the resource
+        $this->assertEmpty($doc->getPathProperties());
     }
 
     public function testCreateRequestDocumentationViewMode(): void
@@ -102,11 +101,9 @@ class RequestDocumentationFactoryTest extends TestCase
             AbstractResource::MODE_VIEW
         );
 
-        $bodyPropertyNames = array_keys($doc->getBodyProperties());
-        $pathPropertyNames = array_keys($doc->getPathProperties());
-
-        $this->assertEmpty($bodyPropertyNames);
-        $this->assertContains('animal_uuid', $pathPropertyNames);
+        // View mode has no body and no path properties; path params come from the route
+        $this->assertEmpty($doc->getBodyProperties());
+        $this->assertEmpty($doc->getPathProperties());
     }
 
     public function testCreateRequestDocumentationDeleteMode(): void
@@ -117,11 +114,9 @@ class RequestDocumentationFactoryTest extends TestCase
             AbstractResource::MODE_DELETE
         );
 
-        $bodyPropertyNames = array_keys($doc->getBodyProperties());
-        $pathPropertyNames = array_keys($doc->getPathProperties());
-
-        $this->assertEmpty($bodyPropertyNames);
-        $this->assertContains('animal_uuid', $pathPropertyNames);
+        // Delete mode has no body and no path properties; path params come from the route
+        $this->assertEmpty($doc->getBodyProperties());
+        $this->assertEmpty($doc->getPathProperties());
     }
 
     public function testCreateRequestDocumentationListMode(): void

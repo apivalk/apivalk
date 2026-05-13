@@ -8,23 +8,13 @@ description: "Every CRUD surface starts with a single class extending `AbstractR
 ```php
 namespace App\Resource;
 
-use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Resource\AbstractResource;
 
 class AnimalResource extends AbstractResource
 {
-    public function getIdentifierProperty(): AbstractProperty
-    {
-        return new StringProperty('animal_uuid', 'Unique identifier of the animal');
-    }
-
-    public function getBaseUrl(): string
-    {
-        return '/api/v1';
-    }
-
     public function getName(): string
     {
         return 'animal';
@@ -41,36 +31,25 @@ class AnimalResource extends AbstractResource
 
     protected function init(): void
     {
-        $this->addProperty(new StringProperty('name', 'Name of the animal'));
-        $this->addProperty(new StringProperty('type', 'Type of the animal'));
-        $this->addProperty(
-            (new FloatProperty('weight', 'Weight of the animal in kg'))->setIsRequired(false)
-        );
+        $this->addProperty(new StringProperty('animal_uuid', 'Unique identifier of the animal'));
+        $this->addProperty(new StringProperty('name', 'Animal name'));
+        $this->addProperty(new StringProperty('type', 'Animal type'));
+        $this->addProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
     }
 }
 ```
 
-That's it — five CRUD endpoints' worth of documentation.
+The resource is a pure data shape — no URL knowledge, no routing. URLs live in controllers.
 
 ## Hook Reference
 
 ### `init(): void` (required)
 
-Declare data properties with `$this->addProperty(...)`. The constructor is `final` — all setup happens here.
-
-### `getIdentifierProperty(): AbstractProperty` (required)
-
-The property used for view / update / delete path parameters (`/animals/{animal_uuid}`) and the resource's identity in response bodies.
-
-Use UUID-typed identifiers (`StringProperty`) rather than integer IDs to comply with the framework's [REST naming standards](/open-api-best-practices/02-rest-design-and-naming#resource-identifiers-ids-vs-uuids).
-
-### `getBaseUrl(): string` (required)
-
-The URL prefix used by `Route::resource()` when building paths. Example: `/api/v1` produces `/api/v1/animals`, `/api/v1/animals/{animal_uuid}`.
+Declare all data properties with `$this->addProperty(...)`. This includes the resource identifier — it is a regular property like any other, declared first by convention. The constructor is `final` — all setup happens here.
 
 ### `getName(): string` (required)
 
-Singular resource name. Used in descriptions ("Create animal"), OpenAPI response names, generated request class names (e.g. `AnimalListRequest`), and plural URL derivation.
+Singular resource name. Used in descriptions ("Create animal") and OpenAPI response names.
 
 ### `getPluralName(): string` (optional)
 
@@ -85,17 +64,17 @@ public function getPluralName(): string
 
 ### `excludeFromMode(string $mode): array` (required)
 
-Return an array of property names to exclude from a given mode. Typical uses:
+Return property names to exclude from a given mode. Typical uses:
 
 - Hide `password` from **every** response.
 - Hide `weight` from **list** responses only.
-- Exclude `created_at` / `updated_at` from **create** bodies because the server sets them.
+- Exclude `animal_uuid` from **create** request bodies (the server generates the identifier; use `MODE_CREATE` to suppress it from the body documentation).
 
 Modes are constants on `AbstractResource`: `MODE_CREATE`, `MODE_VIEW`, `MODE_UPDATE`, `MODE_DELETE`, `MODE_LIST`.
 
 ### `availableFilters(): FilterInterface[]`
 
-Declare filters exposed on the list endpoint. Use the typed filter builders from `Router\Route\Filter\`:
+Declare filters exposed on the list endpoint:
 
 ```php
 public function availableFilters(): array
@@ -123,11 +102,11 @@ public function availableSortings(): array
 }
 ```
 
-Any sort field sent via `?order_by=...` that isn't in this list is rejected by the validation middleware with a 422.
+Any `?order_by=...` field not in this list is rejected by the validation middleware with a 422.
 
 ### `tags(): TagObject[]`
 
-OpenAPI tags for grouping operations. All five CRUD endpoints for one resource inherit these.
+OpenAPI tags for grouping operations.
 
 ```php
 public function tags(): array
@@ -141,11 +120,18 @@ public function tags(): array
 Controllers build resource instances from requests and arrays:
 
 ```php
-$resource = AnimalResource::byRequest($request);   // from path + body
+$resource = AnimalResource::byRequest($request);   // from request body only
 $resource = AnimalResource::byArray($row);         // from a database row
 ```
 
-And serialize them per mode:
+For view / update / delete, the identifier is a path parameter declared in `getRoute()`. Read it directly from the request and set it on the resource if needed:
+
+```php
+$resource = AnimalResource::byRequest($request);
+$resource->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+```
+
+Serialize per mode:
 
 ```php
 $resource->toArray(AbstractResource::MODE_LIST);   // respects excludeFromMode()
