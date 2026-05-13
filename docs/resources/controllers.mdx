@@ -23,7 +23,7 @@ Every resource controller implements three things:
 2. `getRoute(): Route` — declare the URL, method, description, tags, auth, and (for list) filters/sortings/pagination.
 3. `__invoke(ApivalkRequestInterface $request): AbstractApivalkResponse` — your business logic.
 
-The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmptyResource()`. Everything else is explicit in your controller.
+The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmptyResource()`. Create and Update also expose a `getResource()` helper — see below.
 
 ## Examples
 
@@ -69,7 +69,7 @@ final class CreateAnimalController extends AbstractCreateResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = AnimalResource::byRequest($request); // hydrated from validated body
+        $animal = $this->getResource($request); // typed AnimalResource, body only
         $animal->animal_uuid = $this->repository->persist($animal);
 
         return new ResourceCreatedResponse($animal);
@@ -122,7 +122,7 @@ final class ViewAnimalController extends AbstractViewResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $uuid = $request->path()->get('animal_uuid')->getValue();
+        $uuid = $request->path()->animal_uuid;
         $row  = $this->repository->findByUuid($uuid);
 
         if ($row === null) {
@@ -178,8 +178,8 @@ final class UpdateAnimalController extends AbstractUpdateResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = AnimalResource::byRequest($request); // body fields only
-        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+        // body fields + animal_uuid from path (matched by property name)
+        $animal = $this->getResource($request);
 
         $this->repository->update($animal);
 
@@ -232,9 +232,7 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $this->repository->delete(
-            $request->path()->get('animal_uuid')->getValue()
-        );
+        $this->repository->delete($request->path()->animal_uuid);
 
         return new DeletedApivalkResponse();
     }
@@ -346,8 +344,8 @@ final class ViewUserAuthenticatorController extends AbstractViewResourceControll
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $userUuid          = $request->path()->get('user_uuid')->getValue();
-        $authenticatorUuid = $request->path()->get('authenticator_uuid')->getValue();
+        $userUuid          = $request->path()->user_uuid;
+        $authenticatorUuid = $request->path()->authenticator_uuid;
 
         $row = $this->repository->findForUser($userUuid, $authenticatorUuid);
 
@@ -362,11 +360,52 @@ final class ViewUserAuthenticatorController extends AbstractViewResourceControll
 
 The same pattern extends to any depth. Each `->pathProperty()` call documents the parameter in OpenAPI and registers it for validation.
 
+## `getResource()` Helper
+
+`AbstractCreateResourceController` and `AbstractUpdateResourceController` expose a typed `$this->getResource($request)` method that returns a fully populated `TResource`.
+
+**Create** — body only. Path parameters are intentionally excluded because the identifier doesn't exist yet (the server generates it after persisting).
+
+**Update** — body fields first, then any path parameter whose name matches a resource property is automatically set. If your route has `{animal_uuid}` and `AnimalResource` declares an `animal_uuid` property, `$resource->animal_uuid` is already populated after calling `getResource()`. For nested resources with multiple path params (e.g. `{user_uuid}/{authenticator_uuid}`), only the ones whose names appear as resource properties are set — parent-scope params are ignored.
+
+If you need the raw path value directly without the helper, `$request->path()->key` always works.
+
 ## What the Base Class Provides
 
-- `getRequestClass()` — returns `ResourceRequest::class` (a shared, empty request class; no per-endpoint request class needed).
+- `getRequestClass()` — returns `ResourceRequest::class` by default (a shared, empty request class).
 - `getResponseClasses()` — the mode-appropriate success response + `BadRequestApivalkResponse` + `ForbiddenApivalkResponse`.
 - `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `getRoute()`.
+
+## IDE Autocomplete via the DocBlock Generator
+
+After running the docblock generator, a typed request class is generated for each controller that has path parameters, sorting, filtering, or pagination (e.g. `AnimalViewRequest`, `AnimalUpdateRequest`, `AnimalListRequest`). To get full IDE autocomplete in `__invoke`, add a `@param` annotation with the generated class:
+
+```php
+/**
+ * @param AnimalViewRequest $request
+ */
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $uuid = $request->path()->animal_uuid; // autocompletes
+    // ...
+}
+```
+
+For `Update`, the same annotation gives you both typed `$request->path()` and typed `$this->getResource($request)`:
+
+```php
+/**
+ * @param AnimalUpdateRequest $request
+ */
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $animal = $this->getResource($request);
+    // $animal->animal_uuid  ← from path (auto-merged)
+    // $animal->name         ← from body
+}
+```
+
+For `List`, annotate with `AnimalListRequest` to get typed `sorting()`, `filtering()`, and `paginator()`.
 
 ## Related
 

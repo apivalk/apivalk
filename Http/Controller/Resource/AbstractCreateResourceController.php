@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Http\Controller\Resource;
 
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\BadRequestApivalkResponse;
 use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
@@ -28,5 +29,18 @@ abstract class AbstractCreateResourceController extends AbstractResourceControll
             BadRequestApivalkResponse::class,
             ForbiddenApivalkResponse::class,
         ];
+    }
+
+    /**
+     * Build a resource instance from the validated request body.
+     * Path parameters are not included — on create the identifier does not exist yet.
+     *
+     * @return TResource
+     */
+    protected function getResource(ApivalkRequestInterface $request): AbstractResource
+    {
+        $resourceClass = static::getResourceClass();
+
+        return $resourceClass::byRequest($request);
     }
 }

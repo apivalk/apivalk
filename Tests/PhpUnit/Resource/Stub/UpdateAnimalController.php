@@ -28,9 +28,6 @@ class UpdateAnimalController extends AbstractUpdateResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = AnimalResource::byRequest($request);
-        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
-
-        return new ResourceUpdatedResponse($animal);
+        return new ResourceUpdatedResponse($this->getResource($request));
     }
 }

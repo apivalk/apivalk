@@ -139,8 +139,9 @@ final class CreateAnimalController extends AbstractCreateResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = AnimalResource::byRequest($request); // hydrated from validated body
-        $animal->animal_uuid = $this->repository->persist($animal);
+        $animal = $this->getResource($request); // typed AnimalResource, body only
+        $animal->animal_uuid = Uuid::v4(); // generate UUID
+        $this->repository->persist($animal)
 
         return new ResourceCreatedResponse($animal);
     }
@@ -194,9 +195,12 @@ final class ViewAnimalController extends AbstractViewResourceController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
+    /**
+     * @param AnimalViewRequest $request
+     */
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $uuid = $request->path()->get('animal_uuid')->getValue();
+        $uuid = $request->path()->animal_uuid;
         $row  = $this->repository->findByUuid($uuid);
 
         if ($row === null) {
@@ -254,10 +258,13 @@ final class UpdateAnimalController extends AbstractUpdateResourceController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
+    /**
+     * @param AnimalUpdateRequest $request
+     */
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $animal = AnimalResource::byRequest($request); // body fields only
-        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+        // body fields + animal_uuid auto-set from path (matched by property name)
+        $animal = $this->getResource($request);
 
         $this->repository->update($animal);
 
@@ -312,11 +319,12 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']));
     }
 
+    /**
+     * @param AnimalDeleteRequest $request
+     */
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        $this->repository->delete(
-            $request->path()->get('animal_uuid')->getValue()
-        );
+        $this->repository->delete($request->path()->animal_uuid);
 
         return new DeletedApivalkResponse();
     }
@@ -374,6 +382,9 @@ final class ListAnimalController extends AbstractListResourceController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
+    /**
+     * @param AnimalListRequest $request
+     */
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
         $paginator = $request->paginator();
@@ -428,8 +439,8 @@ public static function getRoute(): Route
 
 public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
 {
-    $animalUuid = $request->path()->get('animal_uuid')->getValue();
-    $kidUuid    = $request->path()->get('kid_uuid')->getValue();
+    $animalUuid = $request->path()->animal_uuid;
+    $kidUuid    = $request->path()->kid_uuid;
 
     // ...
 }
@@ -439,6 +450,24 @@ Both path parameters are validated, documented in OpenAPI, and typed in the path
 
 ## Optional: IDE autocomplete via the DocBlock generator
 
-Run the docblock generator once to emit `@property` annotations on `AnimalResource` and typed request stubs (`AnimalListRequest`) for filters and sorts. See [Generate OpenAPI and docblocks](/how-to/generate-openapi) for the script.
+Run the docblock generator once. See [Generate OpenAPI and docblocks](/how-to/generate-openapi) for the script. It produces:
 
-After the generator runs, `$animal->name`, `$request->filtering()->status`, and `$request->sorting()->created_at` all autocomplete.
+- `@property` annotations on `AnimalResource` — so `$animal->name`, `$animal->status` etc. autocomplete.
+- A typed request class per controller that has path params, sorting, filtering, or pagination:
+  - `AnimalViewRequest` / `AnimalDeleteRequest` — typed `path()`
+  - `AnimalUpdateRequest` — typed `path()`
+  - `AnimalListRequest` — typed `sorting()`, `filtering()`, `paginator()`
+
+To activate autocomplete in a controller, add a `@param` annotation on `__invoke` with the generated class:
+
+```php
+/**
+ * @param AnimalViewRequest $request
+ */
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $uuid = $request->path()->animal_uuid; // autocompletes
+    // ...
+}
+```
+

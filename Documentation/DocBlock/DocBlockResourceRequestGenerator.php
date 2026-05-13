@@ -12,32 +12,41 @@ use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
+use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Router\Route\Sort\Sort;
 
 final class DocBlockResourceRequestGenerator
 {
     /**
-     * @param class-string<AbstractListResourceController<AbstractResource>> $controllerClass
+     * @param class-string<\apivalk\apivalk\Http\Controller\Resource\AbstractResourceController<AbstractResource>> $controllerClass
      */
-    public function generate(string $controllerClass): DocBlockResourceRequest
+    public function generate(string $controllerClass, Route $route): DocBlockResourceRequest
     {
         $resource = $controllerClass::getEmptyResource();
-        $requestName = \ucfirst($resource->getName()) . \ucfirst(RequestDocumentationFactory::getModeFromController($controllerClass));
+        $mode = RequestDocumentationFactory::getModeFromController($controllerClass);
+        $requestName = \ucfirst($resource->getName()) . \ucfirst($mode);
 
+        $pathShape = new DocBlockShape($requestName, 'Path');
         $sortingShape = new DocBlockShape($requestName, 'Sorting');
         $filteringShape = new DocBlockShape($requestName, 'Filtering');
 
-        foreach ($resource->availableSortings() as $sorting) {
-            $sortingShape->addCustomField($sorting->getField(), '\\' . Sort::class);
+        foreach ($route->getPathProperties() as $property) {
+            $pathShape->addProperty($property);
         }
 
-        /** @var FilterInterface $filter */
-        foreach ($resource->availableFilters() as $filter) {
-            $filteringShape->addCustomField($filter->getField(), '\\' . \get_class($filter));
+        if (\is_subclass_of($controllerClass, AbstractListResourceController::class)) {
+            foreach ($resource->availableSortings() as $sorting) {
+                $sortingShape->addCustomField($sorting->getField(), '\\' . Sort::class);
+            }
+
+            /** @var FilterInterface $filter */
+            foreach ($resource->availableFilters() as $filter) {
+                $filteringShape->addCustomField($filter->getField(), '\\' . \get_class($filter));
+            }
         }
 
         $paginatorClass = null;
-        $pagination = $controllerClass::getRoute()->getPagination();
+        $pagination = $route->getPagination();
 
         if ($pagination !== null) {
             switch ($pagination->getType()) {
@@ -54,6 +63,7 @@ final class DocBlockResourceRequestGenerator
         }
 
         return new DocBlockResourceRequest(
+            $pathShape,
             $sortingShape,
             $filteringShape,
             $paginatorClass,

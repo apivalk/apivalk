@@ -33,6 +33,11 @@ class DocBlockShape
         $this->customFields[$fieldName] = $fieldType;
     }
 
+    public function hasProperties(): bool
+    {
+        return !empty($this->properties) || !empty($this->customFields);
+    }
+
     public function getClassName(): string
     {
         $className = \sprintf('%s%sShape', \ucfirst($this->requestName), $this->type);

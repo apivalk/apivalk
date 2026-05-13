@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\DocBlock;
 
+use apivalk\apivalk\Documentation\Request\RequestDocumentationFactory;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractResourceController;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
@@ -78,11 +78,6 @@ class DocBlockGenerator
             }
         }
 
-        if (!is_subclass_of($className, AbstractListResourceController::class)) {
-            return;
-        }
-
-        /** @var class-string<AbstractListResourceController<AbstractResource>> $className */
         $controllerReflection = new \ReflectionClass($className);
         $controllerFilePath = $controllerReflection->getFileName();
 
@@ -90,14 +85,16 @@ class DocBlockGenerator
             return;
         }
 
+        $route = $className::getRoute();
+        $docBlockResourceRequest = $resourceRequestGenerator->generate($className, $route);
+
         $controllerNamespace = $controllerReflection->getNamespaceName();
         $resourceBaseNamespace = substr($controllerNamespace, 0, strrpos($controllerNamespace, '\\'));
         $resourceBaseDir = dirname(dirname($controllerFilePath));
 
-        $docBlockResourceRequest = $resourceRequestGenerator->generate($className);
-
         $resource = $className::getEmptyResource();
-        $requestClassName = \ucfirst($resource->getName()) . 'ListRequest';
+        $mode = RequestDocumentationFactory::getModeFromController($className);
+        $requestClassName = \ucfirst($resource->getName()) . \ucfirst($mode) . 'Request';
         $requestNamespace = $resourceBaseNamespace . '\\Request';
         $requestFilePath = $resourceBaseDir . '/Request/' . $requestClassName . '.php';
 
@@ -243,6 +240,10 @@ PHP;
 
         if (file_put_contents($filenames['filtering'], $docBlockResourceRequest->getFilteringShape()->toString($shapeNamespace)) === false) {
             throw new \RuntimeException('Failed to write filtering shape file');
+        }
+
+        if (file_put_contents($filenames['path'], $docBlockResourceRequest->getPathShape()->toString($shapeNamespace)) === false) {
+            throw new \RuntimeException('Failed to write path shape file');
         }
     }
 
