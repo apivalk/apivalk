@@ -111,9 +111,14 @@ class PathItemGenerator
         $requestClass = $controllerClass::getRequestClass();
         $responseClasses = $controllerClass::getResponseClasses();
 
+        $requestDocumentation = $requestClass::getDocumentation();
+        foreach ($route->getPathProperties() as $property) {
+            $requestDocumentation->addPathProperty($property);
+        }
+
         return $operationGenerator->generate(
             $route,
-            $requestClass::getDocumentation(),
+            $requestDocumentation,
             $responseClasses
         );
     }

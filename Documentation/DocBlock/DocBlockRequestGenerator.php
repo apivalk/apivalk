@@ -35,6 +35,10 @@ final class DocBlockRequestGenerator
             $pathShape->addProperty($property);
         }
 
+        foreach ($route->getPathProperties() as $property) {
+            $pathShape->addProperty($property);
+        }
+
         foreach ($documentation->getQueryProperties() as $property) {
             $queryShape->addProperty($property);
         }

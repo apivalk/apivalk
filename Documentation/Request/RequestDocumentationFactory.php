@@ -83,6 +83,10 @@ final class RequestDocumentationFactory
             }
         }
 
+        foreach ($route->getPathProperties() as $property) {
+            $documentation->addPathProperty($property);
+        }
+
         foreach (OperationGenerator::getPaginationProperties($route) as $property) {
             $documentation->addQueryProperty($property);
         }

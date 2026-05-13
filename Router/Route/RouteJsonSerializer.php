@@ -53,6 +53,11 @@ class RouteJsonSerializer
      *              description: string,
      *              format: string|null
      *          }
+     *     }>|null,
+     *     pathProperties: array<int, array{
+     *          class: class-string<AbstractProperty>,
+     *          name: string,
+     *          description: string
      *     }>|null
      * }
      */
@@ -108,6 +113,13 @@ class RouteJsonSerializer
             }
         }
 
+        $pathProperties = $route->getPathProperties();
+        if (\count($pathProperties) > 0) {
+            foreach ($pathProperties as $property) {
+                $pathPropertiesData[] = PropertySerializer::serialize($property);
+            }
+        }
+
         return [
             'url' => $route->getUrl(),
             'method' => $route->getMethod()->getName(),
@@ -119,6 +131,7 @@ class RouteJsonSerializer
             'sortings' => $orderingsData ?? null,
             'pagination' => $paginationData ?? null,
             'filters' => $filtersData ?? null,
+            'pathProperties' => $pathPropertiesData ?? null,
         ];
     }
 
@@ -190,7 +203,7 @@ class RouteJsonSerializer
             }
         }
 
-        return new Route(
+        $route = new Route(
             $jsonArray['url'],
             MethodFactory::create($jsonArray['method']),
             $jsonArray['description'] ?? null,
@@ -202,5 +215,14 @@ class RouteJsonSerializer
             $pagination,
             $filters
         );
+
+        $pathPropertiesData = $jsonArray['pathProperties'] ?? null;
+        if ($pathPropertiesData !== null) {
+            foreach ($pathPropertiesData as $data) {
+                $route->pathProperty(PropertySerializer::deserialize($data));
+            }
+        }
+
+        return $route;
     }
 }
