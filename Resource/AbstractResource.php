@@ -99,7 +99,7 @@ abstract class AbstractResource
         $this->properties[$property->getPropertyName()] = $property;
     }
 
-    protected function hasProperty(string $propertyName): bool
+    public function hasProperty(string $propertyName): bool
     {
         return \array_key_exists($propertyName, $this->properties);
     }

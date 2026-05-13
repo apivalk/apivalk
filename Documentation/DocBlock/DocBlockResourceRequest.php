@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Documentation\DocBlock;
 
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Sort\SortBag;
 
 class DocBlockResourceRequest
 {
+    /** @var DocBlockShape */
+    private $pathShape;
     /** @var DocBlockShape */
     private $sortingShape;
     /** @var DocBlockShape */
@@ -19,15 +22,22 @@ class DocBlockResourceRequest
     private $baseRequestClass;
 
     public function __construct(
+        DocBlockShape $pathShape,
         DocBlockShape $sortingShape,
         DocBlockShape $filteringShape,
         ?string $paginatorClass,
         string $baseRequestClass
     ) {
+        $this->pathShape = $pathShape;
         $this->sortingShape = $sortingShape;
         $this->filteringShape = $filteringShape;
         $this->paginatorClass = $paginatorClass;
         $this->baseRequestClass = $baseRequestClass;
+    }
+
+    public function getPathShape(): DocBlockShape
+    {
+        return $this->pathShape;
     }
 
     public function getSortingShape(): DocBlockShape
@@ -54,6 +64,7 @@ class DocBlockResourceRequest
     public function getShapeFilenames(string $requestFolder): array
     {
         return [
+            'path'      => \sprintf('%s/Shape/%s.php', $requestFolder, $this->pathShape->getClassName()),
             'sorting'   => \sprintf('%s/Shape/%s.php', $requestFolder, $this->sortingShape->getClassName()),
             'filtering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->filteringShape->getClassName()),
         ];
@@ -61,10 +72,19 @@ class DocBlockResourceRequest
 
     public function getDocBlockOnly(string $shapeNamespace): string
     {
-        $lines = [
-            ' * @method \\' . SortBag::class . '|\\' . $shapeNamespace . '\\' . $this->sortingShape->getClassName() . ' sorting()',
-            ' * @method \\' . FilterBag::class . '|\\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()',
-        ];
+        $lines = [];
+
+        if ($this->pathShape->hasProperties()) {
+            $lines[] = ' * @method \\' . ParameterBag::class . '|\\' . $shapeNamespace . '\\' . $this->pathShape->getClassName() . ' path()';
+        }
+
+        if ($this->sortingShape->hasProperties()) {
+            $lines[] = ' * @method \\' . SortBag::class . '|\\' . $shapeNamespace . '\\' . $this->sortingShape->getClassName() . ' sorting()';
+        }
+
+        if ($this->filteringShape->hasProperties()) {
+            $lines[] = ' * @method \\' . FilterBag::class . '|\\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()';
+        }
 
         if ($this->paginatorClass !== null) {
             $lines[] = ' * @method \\' . $this->paginatorClass . ' paginator()';

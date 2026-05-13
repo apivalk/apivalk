@@ -128,7 +128,7 @@ For view / update / delete, the identifier is a path parameter declared in `getR
 
 ```php
 $resource = AnimalResource::byRequest($request);
-$resource->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+$resource->animal_uuid = $request->path()->animal_uuid;
 ```
 
 Serialize per mode:

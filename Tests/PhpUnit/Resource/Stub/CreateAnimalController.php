@@ -26,6 +26,6 @@ class CreateAnimalController extends AbstractCreateResourceController
 
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        return new ResourceCreatedResponse(AnimalResource::byRequest($request));
+        return new ResourceCreatedResponse($this->getResource($request));
     }
 }

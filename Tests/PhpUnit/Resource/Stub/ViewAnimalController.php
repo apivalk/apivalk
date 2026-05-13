@@ -29,7 +29,7 @@ class ViewAnimalController extends AbstractViewResourceController
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
         $animal = AnimalResource::byArray([
-            'animal_uuid' => $request->path()->get('animal_uuid')->getValue(),
+            'animal_uuid' => $request->path()->animal_uuid,
         ]);
 
         return new ResourceViewResponse($animal);
