@@ -74,12 +74,12 @@ final class ParameterBagFactory
     {
         $pathBag = new ParameterBag();
 
-        preg_match_all('/\{([a-zA-Z0-9]+)\}/', $route->getUrl(), $keyMatches);
+        preg_match_all('/\{([a-zA-Z0-9_]+)\}/', $route->getUrl(), $keyMatches);
         $parameterNames = $keyMatches[1];
 
         $url = $route->getUrl();
         $escapedUrl = preg_replace_callback(
-            '/(\{[a-zA-Z0-9]+\})|([^{]+)/',
+            '/(\{[a-zA-Z0-9_]+\})|([^{]+)/',
             static function ($matches) {
                 if (!empty($matches[1])) {
                     return '([a-zA-Z0-9-_]+)';

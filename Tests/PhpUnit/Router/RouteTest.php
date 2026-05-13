@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
@@ -55,6 +57,37 @@ class RouteTest extends TestCase
                 ->rateLimit(new IpRateLimit('test', 20, 5))
                 ->routeAuthorization(new RouteAuthorization('api', ['test'], ['test:read']))
         );
+    }
+
+    public function testPathProperty(): void
+    {
+        $route = Route::get('/users/{id}')->pathProperty(new IntegerProperty('id', 'ID'));
+
+        $this->assertCount(1, $route->getPathProperties());
+        $this->assertArrayHasKey('id', $route->getPathProperties());
+
+        $route2 = Route::get('/orgs/{org}/users/{user}')
+            ->pathProperty(new StringProperty('org', 'Org'))
+            ->pathProperty(new IntegerProperty('user', 'User'));
+
+        $this->assertCount(2, $route2->getPathProperties());
+        $this->assertArrayHasKey('org', $route2->getPathProperties());
+        $this->assertArrayHasKey('user', $route2->getPathProperties());
+    }
+
+    public function testPathPropertyJsonRoundTrip(): void
+    {
+        $route = Route::get('/sessions/{session_uuid}')
+            ->pathProperty(new StringProperty('session_uuid', 'Session UUID'));
+
+        $json = json_encode(RouteJsonSerializer::serialize($route));
+        $this->assertIsString($json);
+
+        $restored = RouteJsonSerializer::deserialize($json);
+
+        $this->assertCount(1, $restored->getPathProperties());
+        $this->assertArrayHasKey('session_uuid', $restored->getPathProperties());
+        $this->assertEquals('session_uuid', $restored->getPathProperties()['session_uuid']->getPropertyName());
     }
 
     public function testJsonSerialization(): void

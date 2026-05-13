@@ -187,6 +187,8 @@ final class CreatePetController extends AbstractApivalkController
 
 ### `ViewPetRequest`
 
+No request-specific properties needed — the path parameter is declared on the route.
+
 ```php
 <?php
 
@@ -194,19 +196,10 @@ declare(strict_types=1);
 
 namespace App\Http\Request\Pet;
 
-use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 
 class ViewPetRequest extends AbstractApivalkRequest
 {
-    public static function getDocumentation(): ApivalkRequestDocumentation
-    {
-        $doc = new ApivalkRequestDocumentation();
-        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
-
-        return $doc;
-    }
 }
 ```
 
@@ -266,6 +259,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Pet;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -291,6 +285,7 @@ final class ViewPetController extends AbstractApivalkController
     {
         return Route::get('/api/v1/pets/{pet_uuid}')
             ->summary('Get a pet by UUID')
+            ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:read']));
     }
 
@@ -324,6 +319,8 @@ final class ViewPetController extends AbstractApivalkController
 
 ### `UpdatePetRequest`
 
+Only body properties live in the request class. The path parameter is declared on the route.
+
 ```php
 <?php
 
@@ -341,7 +338,6 @@ class UpdatePetRequest extends AbstractApivalkRequest
     public static function getDocumentation(): ApivalkRequestDocumentation
     {
         $doc = new ApivalkRequestDocumentation();
-        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
 
         // Patch semantics — every body field is optional
         $doc->addBodyProperty((new StringProperty('name', 'Pet name'))->setIsRequired(false));
@@ -405,6 +401,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Pet;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -430,6 +427,7 @@ final class UpdatePetController extends AbstractApivalkController
     {
         return Route::patch('/api/v1/pets/{pet_uuid}')
             ->summary('Update a pet')
+            ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']));
     }
 
@@ -474,6 +472,8 @@ final class UpdatePetController extends AbstractApivalkController
 
 ### `DeletePetRequest`
 
+No request-specific properties needed — the path parameter is declared on the route.
+
 ```php
 <?php
 
@@ -481,19 +481,10 @@ declare(strict_types=1);
 
 namespace App\Http\Request\Pet;
 
-use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
-use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 
 class DeletePetRequest extends AbstractApivalkRequest
 {
-    public static function getDocumentation(): ApivalkRequestDocumentation
-    {
-        $doc = new ApivalkRequestDocumentation();
-        $doc->addPathProperty(new StringProperty('pet_uuid', 'Pet identifier'));
-
-        return $doc;
-    }
 }
 ```
 
@@ -551,6 +542,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controller\Pet;
 
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -576,6 +568,7 @@ final class DeletePetController extends AbstractApivalkController
     {
         return Route::delete('/api/v1/pets/{pet_uuid}')
             ->summary('Delete a pet')
+            ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:delete']));
     }
 

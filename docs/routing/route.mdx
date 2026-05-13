@@ -16,16 +16,77 @@ A `Route` instance contains the following information:
 * **Sorting**: A collection of `Sort` instances defining allowed sorting fields for the endpoint.
 * **Pagination**: A `Pagination` instance defining the pagination strategy (Page, Offset, or Cursor).
 * **Filtering**: A collection of `FilterInterface` instances defining allowed filtering fields for the endpoint.
+* **Path Properties**: Typed `AbstractProperty` instances defining each path parameter (e.g. `{id}`, `{user_uuid}`), declared via chained `pathProperty()` calls.
 
 ## Path Parameters
 
-Routes support dynamic path parameters using the `{parameterName}` syntax. For example:
+Routes support dynamic path parameters using the `{parameterName}` syntax. Parameter names may contain letters, digits, and underscores (`[a-zA-Z0-9_]`).
+
+Define the type and description of each path parameter directly on the route using `pathProperty()`:
 
 ```php
-Route::get('/users/{id}/profile');
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+
+// Single parameter
+Route::get('/users/{id}')
+    ->pathProperty(new IntegerProperty('id', 'User ID'));
+
+// Multiple parameters — chain the calls
+Route::get('/orgs/{org_id}/users/{user_id}')
+    ->pathProperty(new IntegerProperty('org_id', 'Organisation ID'))
+    ->pathProperty(new StringProperty('user_id', 'User UUID'));
 ```
 
-These parameters are automatically identified and converted into capture groups in the internal regex generation logic.
+This is the preferred way to declare path parameters. Defining them on the route means the type, validation, and OpenAPI documentation are all co-located with the URL pattern rather than split across a separate request class.
+
+Path parameters defined via `pathProperty()` are automatically:
+- **Validated and type-cast** when the request is populated
+- **Included in the OpenAPI spec** as `in: path` parameters
+- **Included in the generated path shape** for IDE type hints
+
+### Validators
+
+Any property constraint supported by Apivalk can be applied to a path parameter:
+
+```php
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+
+Route::get('/users/{id}')
+    ->pathProperty(
+        (new IntegerProperty('id', 'User ID'))
+            ->setMinimumValue(1)
+    );
+
+Route::get('/articles/{slug}')
+    ->pathProperty(
+        (new StringProperty('slug', 'Article slug'))
+            ->setMinLength(1)
+            ->setMaxLength(100)
+            ->setPattern('/^[a-z0-9-]+$/')
+    );
+```
+
+Constraints are serialized with the route when route caching is enabled and are fully restored on cache load.
+
+### Path parameters are always required
+
+`pathProperty()` always enforces `isRequired(true)` regardless of what is set on the property. Path parameters are structurally required — the route only matches when they are present in the URL. Marking one optional would produce an invalid OpenAPI spec (`required: false` on a `path` parameter violates the OpenAPI specification).
+
+### Accessing path parameters
+
+```php
+public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+{
+    $id = $request->path()->id;           // magic accessor
+    $id = $request->path()->get('id');    // explicit accessor
+}
+```
+
+### Backward compatibility
+
+Path properties can also be declared in the request class via `addPathProperty()` in `getDocumentation()`. Both sources are merged — you can use either or both. `pathProperty()` on the route is preferred for new code.
 
 ## Security and Authorization
 

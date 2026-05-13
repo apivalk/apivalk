@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Http\Method\DeleteMethod;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\MethodInterface;
@@ -40,6 +41,8 @@ class Route
     private $filters;
     /** @var Pagination|null */
     private $pagination;
+    /** @var AbstractProperty[] */
+    private $pathProperties = [];
 
     /**
      * @param string                  $url
@@ -187,6 +190,14 @@ class Route
         return $this;
     }
 
+    public function pathProperty(AbstractProperty $property): self
+    {
+        $property->setIsRequired(true);
+        $this->pathProperties[$property->getPropertyName()] = $property;
+
+        return $this;
+    }
+
     public function description(string $description): self
     {
         $this->description = $description;
@@ -256,5 +267,13 @@ class Route
     public function getFilters(): array
     {
         return $this->filters;
+    }
+
+    /**
+     * @return AbstractProperty[]
+     */
+    public function getPathProperties(): array
+    {
+        return $this->pathProperties;
     }
 }

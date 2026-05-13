@@ -6,6 +6,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\PathItemGenerator;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\Method\GetMethod;
@@ -162,6 +163,44 @@ class PathItemTestRequest implements ApivalkRequestInterface
     }
 }
 
+class PathItemWithRoutePathPropertyController extends AbstractApivalkController
+{
+    public static function getRoute(): Route
+    {
+        return Route::get('/items/{item_id}')->pathProperty(new IntegerProperty('item_id', 'Item ID'));
+    }
+
+    public static function getRequestClass(): string
+    {
+        return PathItemTestRequest::class;
+    }
+
+    public static function getResponseClasses(): array
+    {
+        return [];
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse
+    {
+        return new class extends \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
+            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation
+            {
+                return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation();
+            }
+
+            public static function getStatusCode(): int
+            {
+                return 200;
+            }
+
+            public function toArray(): array
+            {
+                return [];
+            }
+        };
+    }
+}
+
 class PathItemGeneratorTest extends TestCase
 {
     public function testPathItemGenerator(): void
@@ -282,6 +321,27 @@ class PathItemGeneratorTest extends TestCase
         }
 
         $this->assertContains(204, $statusCodes, 'Delete operation must declare a 204 (DeletedApivalkResponse) status.');
+    }
+
+    public function testRoutePathPropertyAppearsAsPathParameterInOpenApiOperation(): void
+    {
+        $generator = new PathItemGenerator();
+        $route = PathItemWithRoutePathPropertyController::getRoute();
+
+        $pathItem = $generator->generate([
+            ['route' => $route, 'controllerClass' => PathItemWithRoutePathPropertyController::class],
+        ]);
+
+        $this->assertNotNull($pathItem->getGet());
+
+        $hasPathParam = false;
+        foreach ($pathItem->getGet()->getParameters() as $parameter) {
+            if ($parameter->getName() === 'item_id' && $parameter->getIn() === 'path') {
+                $hasPathParam = true;
+            }
+        }
+
+        $this->assertTrue($hasPathParam, 'Route pathProperty() must appear as a path parameter in the OpenAPI operation.');
     }
 
     public function testListResourceControllerExposesPaginationQueryParameters(): void

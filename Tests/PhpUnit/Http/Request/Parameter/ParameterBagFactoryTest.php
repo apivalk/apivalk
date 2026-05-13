@@ -91,6 +91,20 @@ class ParameterBagFactoryTest extends TestCase
         $this->assertIsInt($bag->age);
     }
 
+    public function testCreatePathBagWithUnderscoreParam(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addPathProperty(new StringProperty('animal_uuid', 'UUID'));
+
+        $route = $this->createMock(Route::class);
+        $route->method('getUrl')->willReturn('/animals/{animal_uuid}');
+
+        $_SERVER['REQUEST_URI'] = '/animals/abc-123';
+
+        $bag = ParameterBagFactory::createPathBag($route, $doc->getPathProperties());
+        $this->assertEquals('abc-123', $bag->animal_uuid);
+    }
+
     public function testTypeCastValue(): void
     {
         $prop = new IntegerProperty('test', '', IntegerProperty::FORMAT_INT32);
