@@ -593,6 +593,65 @@ class RequestValidationMiddlewareTest extends TestCase
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
     }
 
+    public function testEnumFilterRejectsInvalidValueViaFactoryAlone(): void
+    {
+        $property = new EnumProperty('status', '', ['active', 'inactive']);
+        $property->setIsRequired(false);
+        // no $property->init() — the filter constructor must register the validator
+
+        $filter = EnumFilter::equals($property);
+        $filter->setValue('archived');
+        $filter->setRawValue('archived');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+        /** @var BadValidationApivalkResponse $response */
+        $this->assertCount(1, $response->getErrors());
+    }
+
+    public function testIntegerFilterRejectsValueBelowMinimumViaFactoryAlone(): void
+    {
+        $property = new IntegerProperty('age', '');
+        $property->setMinimumValue(0);
+        $property->setIsRequired(false);
+        // no $property->init()
+
+        $filter = IntegerFilter::greaterThan($property);
+        $filter->setValue(-1);
+        $filter->setRawValue('-1');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testStringFilterRejectsValueExceedingMaxLengthViaFactoryAlone(): void
+    {
+        $property = new StringProperty('name', '');
+        $property->setMaxLength(5);
+        $property->setIsRequired(false);
+        // no $property->init()
+
+        $filter = StringFilter::equals($property);
+        $filter->setValue('toolongvalue');
+        $filter->setRawValue('toolongvalue');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testDateTimeFilterRejectsInvalidInputViaFactoryAlone(): void
+    {
+        $property = new DateTimeProperty('created_at', '');
+        $property->setIsRequired(false);
+        // no $property->init()
+
+        $filter = DateTimeFilter::greaterThan($property);
+        $filter->setRawValue('not-a-datetime');
+
+        $response = $this->runFilterMiddleware($filter);
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
     private function runFilterMiddleware(FilterInterface $filter): AbstractApivalkResponse
     {
         $filterBag = new FilterBag();

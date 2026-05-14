@@ -21,7 +21,7 @@ class DateFilter implements FilterInterface
     public function __construct(string $type, DateProperty $property)
     {
         $this->type = $type;
-        $this->property = $property;
+        $this->property = $property->init();
     }
 
     public static function equals(DateProperty $property): self
