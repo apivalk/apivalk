@@ -84,25 +84,25 @@ class OperationGeneratorTest extends TestCase
         $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
 
         $parameters = $operation->getParameters();
-        // order_by + status + Accept-Language
+        // order_by + filter (deepObject) + Accept-Language
         $this->assertCount(3, $parameters);
 
         $orderByParameter = null;
-        $statusParameter = null;
+        $filterParameter  = null;
 
         foreach ($parameters as $parameter) {
             if ($parameter->getName() === 'order_by') {
                 $orderByParameter = $parameter;
-            } elseif ($parameter->getName() === 'status') {
-                $statusParameter = $parameter;
+            } elseif ($parameter->getName() === 'filter') {
+                $filterParameter = $parameter;
             }
         }
 
         $this->assertNotNull($orderByParameter, 'Expected order_by parameter to be generated.');
-        $this->assertNotNull($statusParameter, 'Expected status parameter to be generated.');
+        $this->assertNotNull($filterParameter, 'Expected filter parameter to be generated.');
 
         $this->assertEquals('query', $orderByParameter->getIn());
-        $this->assertEquals('query', $statusParameter->getIn());
+        $this->assertEquals('query', $filterParameter->getIn());
 
         $this->assertEquals(
             'Comma-separated list of fields prefixed with + (asc) or - (desc)',
@@ -113,6 +113,42 @@ class OperationGeneratorTest extends TestCase
             '/^([+-](id|price))(,([+-](id|price)))*$/',
             $orderByParameter->toArray()['schema']['pattern']
         );
+
+        // filter parameter is a deepObject grouping all declared filters as sub-properties
+        $filterArray = $filterParameter->toArray();
+        $this->assertEquals('deepObject', $filterArray['style']);
+        $this->assertTrue($filterArray['explode']);
+        $this->assertFalse($filterParameter->isRequired());
+        $this->assertArrayHasKey('status', $filterArray['schema']['properties']);
+        $this->assertEquals('string', $filterArray['schema']['properties']['status']['type']);
+    }
+
+    public function testOperationGeneratorWithFlatFilters(): void
+    {
+        $generator = new OperationGenerator(true, true); // flatFilters=true
+
+        $route = $this->createRouteMock([
+            'filters' => [StringFilter::equals(new StringProperty('status'))],
+        ]);
+
+        $operation = $generator->generate($route, $this->createRequestDocMock(), [TestResponse::class]);
+
+        $parameters = $operation->getParameters();
+        // status (flat) + Accept-Language — no order_by since no sortings
+        $this->assertCount(2, $parameters);
+
+        $names = array_map(static function ($p) { return $p->getName(); }, $parameters);
+        $this->assertContains('status', $names);
+        $this->assertNotContains('filter', $names);
+
+        foreach ($parameters as $parameter) {
+            if ($parameter->getName() === 'status') {
+                $this->assertEquals('query', $parameter->getIn());
+                $array = $parameter->toArray();
+                $this->assertArrayNotHasKey('style', $array);
+                $this->assertArrayNotHasKey('explode', $array);
+            }
+        }
     }
 
     public function testOperationGeneratorWithoutOrder(): void

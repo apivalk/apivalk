@@ -1,0 +1,84 @@
+---
+title: "Security Responsibilities"
+description: "What RequestValidationMiddleware protects you from, what it does not, and who is responsible for the rest."
+---
+
+## What Apivalk Validates For You
+
+`RequestValidationMiddleware` enforces every constraint you declare on a route: required fields, type correctness, string length, numeric ranges, enum values, regex patterns, and pagination limits. If a request violates any of these, it is rejected with a `422` before your controller runs.
+
+This covers **structural correctness** — the shape of the data is what you said it would be.
+
+---
+
+## What It Cannot Catch
+
+Structural validation says nothing about what the value *means* or how it will be *used*. The following categories of attack pass validation cleanly because the values are structurally valid.
+
+### SQL injection
+
+```
+POST /api/v1/users
+{ "username": "admin'--" }
+```
+
+`admin'--` is a perfectly valid string that passes all string validation. It becomes dangerous only if you concatenate it into a raw SQL query. The fix is at the query layer, not the input layer.
+
+**Use prepared statements or a query builder that parameterizes values.** PDO, Doctrine, Eloquent, and every mainstream query builder do this by default. There is nothing to sanitize at the input boundary.
+
+### XSS (Cross-Site Scripting)
+
+```
+POST /api/v1/comments
+{ "body": "<script>document.cookie='stolen='+document.cookie</script>" }
+```
+
+This is a valid string. Whether it is dangerous depends entirely on where your application renders it. A mobile app rendering it as plain text is unaffected. A web app that injects it into the DOM unescaped is vulnerable.
+
+**Escape at the output boundary, for the context you are rendering into.** Twig and Blade auto-escape `{{ var }}`. JSON responses to a React front-end are safe as-is — React escapes by default. If you render HTML server-side without a template engine, call `htmlspecialchars()` at the point you echo the value, not before you store it.
+
+### Negative or nonsensical values
+
+```
+POST /api/v1/orders
+{ "quantity": -500, "price": 0.001 }
+```
+
+Both are valid integers/floats. Whether `-500` makes sense as a quantity is business logic, not structural validation.
+
+**Add explicit range constraints** (`setMinimumValue(0)`) where the business domain requires them, or validate in the controller.
+
+### Path traversal
+
+```
+GET /api/v1/files?name=../../etc/passwd
+```
+
+`../../etc/passwd` is a valid string. If you pass path parameters directly to filesystem calls, the result is a traversal attack.
+
+**Never construct file paths from user input without resolving and checking against an allowed base directory.** Use `realpath()` and assert the result starts with your expected root.
+
+### Second-order injection
+
+A value passes validation and is stored safely. Later, a different part of the application uses it in a context it was not designed for — for example, a stored username is later interpolated into a shell command, an email template, or an LDAP query.
+
+**Escape at every use site.** Safe storage does not mean safe reuse. Review every place a stored value is subsequently used, and apply the escaping appropriate to that context.
+
+### SSRF (Server-Side Request Forgery)
+
+```
+POST /api/v1/webhooks
+{ "url": "http://169.254.169.254/latest/meta-data/" }
+```
+
+`http://169.254.169.254/...` is a valid URL string. Whether your application should allow requests to internal cloud metadata endpoints is not something a type validator can decide.
+
+**Validate URLs against an allowlist of schemes and hosts** at the point you make the outbound request. Never fetch arbitrary URLs without checking them.
+
+---
+
+## The Rule
+
+> **Validate at the input boundary. Escape at the output boundary, for the specific context you are writing into.**
+
+Apivalk handles input validation. Everything in the list above is your application's responsibility, applied at the point of use.

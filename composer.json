@@ -47,6 +47,8 @@
   },
   "scripts": {
     "test": "phpunit",
+    "test-unit": "phpunit --testsuite \"Apivalk Unit Tests\"",
+    "test-integration": "phpunit --testsuite Integration",
     "phpstan": "phpstan analyse --memory-limit=3G"
   },
   "autoload": {
@@ -56,5 +58,10 @@
     "exclude-from-classmap": [
       "/Tests/"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Integration\\RealWorld\\": "Tests/Integration/RealWorld/"
+    }
   }
 }

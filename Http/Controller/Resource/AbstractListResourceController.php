@@ -9,6 +9,7 @@ use apivalk\apivalk\Http\Response\BadRequestApivalkResponse;
 use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use apivalk\apivalk\Resource\AbstractResource;
+use apivalk\apivalk\Router\Route\Route;
 
 /**
  * @template TResource of AbstractResource
@@ -16,6 +17,16 @@ use apivalk\apivalk\Resource\AbstractResource;
  */
 abstract class AbstractListResourceController extends AbstractResourceController
 {
+    public static function getRoute(): Route
+    {
+        $resource = static::getEmptyResource();
+
+        return static::buildRoute()
+            ->tags($resource->tags())
+            ->filtering($resource->availableFilters())
+            ->sorting($resource->availableSortings());
+    }
+
     public static function getRequestClass(): string
     {
         return ResourceRequest::class;

@@ -37,7 +37,6 @@ Middlewares are typically configured via the `ApivalkConfiguration` object durin
 
 ```php
 $configuration = new ApivalkConfiguration($router);
-$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
 $configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
 ```
 
@@ -47,8 +46,9 @@ See [Write a custom middleware](/how-to/custom-middleware) for a step-by-step gu
 
 Apivalk comes with several essential middlewares out of the box:
 
-- [Sanitize Middleware](/middleware/sanitize)
 - [Request Validation Middleware](/middleware/request-validation)
 - [Rate Limit Middleware](/middleware/rate-limit)
 - [Authentication Middleware](/middleware/authentication)
 - [Security Middleware](/middleware/security)
+
+See [Security Responsibilities](/middleware/security-responsibilities) for what validation cannot catch and what your application is responsible for.

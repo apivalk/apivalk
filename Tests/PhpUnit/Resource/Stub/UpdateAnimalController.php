@@ -13,12 +13,11 @@ use apivalk\apivalk\Router\Route\Route;
 
 class UpdateAnimalController extends AbstractUpdateResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::patch('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Unique identifier of the animal'))
-            ->description('Update animal')
-            ->tags(self::getEmptyResource()->tags());
+            ->description('Update animal');
     }
 
     public static function getResourceClass(): string

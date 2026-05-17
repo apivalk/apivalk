@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Request\Shape;
+
+/**
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $title
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $start_date
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $value
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $status
+ */
+interface ContractListSortingShape
+{
+}

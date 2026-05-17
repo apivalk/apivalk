@@ -1,0 +1,87 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Contract\Invoice;
+
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\DateTimeProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Resource\AbstractResource;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\FloatFilter;
+use apivalk\apivalk\Router\Route\Sort\Sort;
+
+/**
+ * @property string $invoice_uuid Invoice UUID v4
+ * @property string $contract_uuid Contract UUID v4
+ * @property string $invoice_number Invoice number
+ * @property float $amount Invoice amount
+ * @property float $tax_rate Tax rate percentage
+ * @property float $total_amount Total amount including tax
+ * @property string $status Invoice status
+ * @property \DateTime $due_date Due date
+ * @property \DateTime|null $paid_at Paid at
+ * @property string $created_at Created at
+ */
+class InvoiceResource extends AbstractResource
+{
+    public function getName(): string
+    {
+        return 'invoice';
+    }
+
+    protected function init(): void
+    {
+        $this->addProperty(new StringProperty('invoice_uuid', 'Invoice UUID v4'));
+        $this->addProperty(new StringProperty('contract_uuid', 'Contract UUID v4'));
+        $this->addProperty(new StringProperty('invoice_number', 'Invoice number'));
+        $this->addProperty((new FloatProperty('amount', 'Invoice amount'))->setMinimumValue(0.01));
+        $this->addProperty(
+            (new FloatProperty('tax_rate', 'Tax rate percentage'))->setMinimumValue(0.0)->setMaximumValue(100.0)
+        );
+        $this->addProperty(new FloatProperty('total_amount', 'Total amount including tax'));
+        $this->addProperty(
+            new EnumProperty('status', 'Invoice status', ['draft', 'sent', 'paid', 'overdue', 'cancelled'])
+        );
+        $this->addProperty(new DateProperty('due_date', 'Due date'));
+        $this->addProperty((new DateTimeProperty('paid_at', 'Paid at'))->setIsRequired(false));
+        $this->addProperty(new StringProperty('created_at', 'Created at'));
+    }
+
+    public function excludeFromMode(string $mode): array
+    {
+        if ($mode === self::MODE_CREATE || $mode === self::MODE_UPDATE) {
+            return ['invoice_uuid', 'contract_uuid', 'invoice_number', 'total_amount', 'created_at'];
+        }
+
+        return [];
+    }
+
+    public function availableFilters(): array
+    {
+        return [
+            EnumFilter::equals(new EnumProperty('status', 'Status', ['draft', 'sent', 'paid', 'overdue', 'cancelled'])),
+            FloatFilter::greaterThan((new FloatProperty('amount', 'Amount'))->setMinimumValue(0.01)),
+            FloatFilter::lessThan((new FloatProperty('amount', 'Amount'))->setMinimumValue(0.01)),
+            DateFilter::greaterThan(new DateProperty('due_date', 'Due date')),
+            DateFilter::lessThan(new DateProperty('due_date', 'Due date')),
+            DateTimeFilter::greaterThan(new DateTimeProperty('paid_at', 'Paid at')),
+            DateTimeFilter::lessThan(new DateTimeProperty('paid_at', 'Paid at')),
+        ];
+    }
+
+    public function availableSortings(): array
+    {
+        return [
+            Sort::asc('due_date'),
+            Sort::desc('created_at'),
+            Sort::asc('amount'),
+            Sort::asc('status'),
+        ];
+    }
+}

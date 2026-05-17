@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Customer\Address\Request\Shape;
+
+/**
+ * @property-read string $street Street address
+ * @property-read string $city City
+ * @property-read string $zip Zip/postal code
+ * @property-read string $country ISO 3166-1 alpha-2 country code
+ * @property-read string $type Address type
+ * @property-read bool|null $is_primary Primary address flag
+ */
+interface AddressUpdateRequestBodyShape
+{
+}

@@ -141,7 +141,7 @@ Middlewares are the right place to stamp correlation IDs onto outbound responses
 
 - **Authentication → Security.** Add `AuthenticationMiddleware` before `SecurityMiddleware`, so the identity is populated before `SecurityMiddleware` reads it.
 - **Rate limit early.** Add `RateLimitMiddleware` early so 429s don't do expensive work. You still want it *after* any middleware that sets the identity if your `RateLimitInterface::getKey()` reads identity.
-- **Sanitize + Validate last.** They touch the actual request body and should be closest to the controller so everything they produce is fresh.
+- **Validate last.** `RequestValidationMiddleware` touches the actual request body and should be closest to the controller.
 - **Cross-cutting observability (log, request id, metrics).** Add first — they wrap everything, see both entry and exit of the whole stack.
 
 Recommended default order:
@@ -153,7 +153,6 @@ $stack->add(new RequestIdMiddleware());
 $stack->add(new AuthenticationMiddleware($authenticator));
 $stack->add(new SecurityMiddleware());
 $stack->add(new RateLimitMiddleware($cache));
-$stack->add(new SanitizeMiddleware());
 $stack->add(new RequestValidationMiddleware());             // innermost, last before controller
 ```
 
