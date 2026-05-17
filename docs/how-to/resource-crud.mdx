@@ -91,7 +91,7 @@ The identifier (`animal_uuid`) is a regular property declared first by conventio
 
 ## 2. Wire the five controllers
 
-Each controller is a thin subclass. You implement `getResourceClass()`, `getRoute()`, and `__invoke()`.
+Each controller is a thin subclass. You implement `getResourceClass()`, `buildRoute()`, and `__invoke()`.
 
 ### Create
 
@@ -129,11 +129,10 @@ final class CreateAnimalController extends AbstractCreateResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::post('/api/v1/animals')
             ->description('Create animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']));
     }
 
@@ -186,12 +185,11 @@ final class ViewAnimalController extends AbstractViewResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::get('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Get animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
@@ -249,12 +247,11 @@ final class UpdateAnimalController extends AbstractUpdateResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::patch('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Update animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
@@ -310,12 +307,11 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::delete('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Delete animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']));
     }
 
@@ -369,15 +365,11 @@ final class ListAnimalController extends AbstractListResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    // tags(), availableFilters(), availableSortings() injected from AnimalResource automatically
+    protected static function buildRoute(): Route
     {
-        $resource = self::getEmptyResource();
-
         return Route::get('/api/v1/animals')
             ->description('List animals')
-            ->tags($resource->tags())
-            ->filtering($resource->availableFilters())
-            ->sorting($resource->availableSortings())
             ->pagination(Pagination::page()->setMaxLimit(50))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
@@ -423,17 +415,16 @@ final class ListAnimalController extends AbstractListResourceController
 
 ## Nested resources
 
-Because `getRoute()` is fully explicit, nested URLs require no special setup — add more path segments and declare each one via `->pathProperty()`:
+Because `buildRoute()` is fully explicit, nested URLs require no special setup — add more path segments and declare each one via `->pathProperty()`:
 
 ```php
 // GET /api/v1/animals/{animal_uuid}/kids/{kid_uuid}
-public static function getRoute(): Route
+protected static function buildRoute(): Route
 {
     return Route::get('/api/v1/animals/{animal_uuid}/kids/{kid_uuid}')
         ->pathProperty(new StringProperty('animal_uuid', 'Parent animal UUID'))
         ->pathProperty(new StringProperty('kid_uuid', 'Kid UUID'))
         ->description('Get animal kid')
-        ->tags(self::getEmptyResource()->tags())
         ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
 }
 

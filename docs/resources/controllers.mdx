@@ -322,7 +322,7 @@ final class ListAnimalController extends AbstractListResourceController
 
 ## Nested Resources
 
-Because `getRoute()` is fully explicit, nested URLs are straightforward — add more path segments and declare each path parameter:
+Because `buildRoute()` is fully explicit, nested URLs are straightforward — add more path segments and declare each path parameter:
 
 ```php
 /**
@@ -378,7 +378,7 @@ If you need the raw path value directly without the helper, `$request->path()->k
 
 - `getRequestClass()` — returns `ResourceRequest::class` by default (a shared, empty request class).
 - `getResponseClasses()` — the mode-appropriate success response + `BadRequestApivalkResponse` + `ForbiddenApivalkResponse`.
-- `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `getRoute()`.
+- `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `buildRoute()`.
 
 ## IDE Autocomplete via the DocBlock Generator
 
