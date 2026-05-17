@@ -20,7 +20,9 @@ class AddressViewResponse extends AbstractApivalkResponse
 
     public static function getDocumentation(): ApivalkResponseDocumentation
     {
-        return new ApivalkResponseDocumentation();
+        $doc = new ApivalkResponseDocumentation();
+        $doc->setDescription('View address response');
+        return $doc;
     }
 
     public static function getStatusCode(): int

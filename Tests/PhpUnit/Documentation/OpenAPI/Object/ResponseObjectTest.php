@@ -53,6 +53,7 @@ class ResponseObjectTest extends TestCase
         $result = $response->toArray();
 
         $this->assertArrayHasKey(204, $result);
-        $this->assertArrayNotHasKey('description', $result[204]);
+        $this->assertArrayHasKey('description', $result[204]);
+        $this->assertSame('', $result[204]['description']);
     }
 }

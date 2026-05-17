@@ -25,7 +25,7 @@ class StringPropertyTest extends TestCase
         $this->assertEquals('default-val', $doc['default']);
         $this->assertEquals(2, $doc['minLength']);
         $this->assertEquals(10, $doc['maxLength']);
-        $this->assertEquals('/^[a-z]+$/', $doc['pattern']);
+        $this->assertEquals('^[a-z]+$', $doc['pattern']);
         $this->assertEquals('User Name', $doc['description']);
         $this->assertArrayNotHasKey('format', $doc);
         $this->assertArrayNotHasKey('enum', $doc);
