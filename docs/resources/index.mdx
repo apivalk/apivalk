@@ -26,7 +26,7 @@ Benefits:
 - **Built-in validation**: `RequestValidationMiddleware` validates body, path, filters, and sort fields — all derived from the resource.
 - **Built-in OpenAPI**: request and response schemas are emitted for all five modes automatically.
 - **Shared response envelopes**: `ResourceCreated/View/Updated/Deleted/ListResponse` wrap the `data` key and pagination envelope for you.
-- **Nested URLs**: because each controller declares its own `getRoute()`, any URL structure is possible — including `/users/{user_uuid}/authenticators/{authenticator_uuid}`.
+- **Nested URLs**: because each controller declares its own `buildRoute()`, any URL structure is possible — including `/users/{user_uuid}/authenticators/{authenticator_uuid}`.
 
 ## Big Picture
 
@@ -42,7 +42,7 @@ AbstractResource (your declaration)
     │ paired with one of
     │
 Abstract{Create,View,Update,Delete,List}ResourceController
-   ├─ getRoute()         ── explicit: your URL, method, auth, filters, sortings, pagination
+   ├─ buildRoute()       ── explicit: your URL, method, auth, filters, sortings, pagination
    ├─ getRequestClass()  ── always ResourceRequest
    ├─ getResponseClasses ── mode-specific Resource*Response
    └─ __invoke()         ── your business logic (only thing you implement)
@@ -55,7 +55,7 @@ Abstract{Create,View,Update,Delete,List}ResourceController
     How to subclass `AbstractResource`: identifier, properties, filters, sortings, per-mode exclusions.
   </Card>
   <Card title="Resource Controllers" href="/resources/controllers">
-    The five CRUD controller bases, explicit `getRoute()`, and nested resource patterns.
+    The five CRUD controller bases, explicit `buildRoute()`, and nested resource patterns.
   </Card>
   <Card title="Resource Responses" href="/resources/responses">
     The five pre-built response envelopes and how to attach pagination.
