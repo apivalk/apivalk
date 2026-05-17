@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.0](https://github.com/apivalk/apivalk/compare/v2.1.1...v2.2.0) (2026-05-17)
+
+
+### Features
+
+* add real-world integration suite and framework improvements ([#136](https://github.com/apivalk/apivalk/issues/136)) ([3632bd3](https://github.com/apivalk/apivalk/commit/3632bd38d6aa0e518233a972b647408f0a1d0fff)), closes [#123](https://github.com/apivalk/apivalk/issues/123) [#123](https://github.com/apivalk/apivalk/issues/123)
+* enhance request handling with path parameter integration and improved resource creation/update helpers ([#133](https://github.com/apivalk/apivalk/issues/133)) ([5d280da](https://github.com/apivalk/apivalk/commit/5d280da2ea9a697568a4d61f14a8438c34ba4887)), closes [#132](https://github.com/apivalk/apivalk/issues/132)
+* introduce `pathProperty()` for typed path parameter definitions ([#129](https://github.com/apivalk/apivalk/issues/129)) ([2b8d516](https://github.com/apivalk/apivalk/commit/2b8d5163e1b558f1b51c4f9ed6bdfa0921bb3a5a)), closes [#128](https://github.com/apivalk/apivalk/issues/128)
+
+
+### Bug Fixes
+
+* remove unused methods and refactor resource-related controllers and docs ([#131](https://github.com/apivalk/apivalk/issues/131)) ([a821927](https://github.com/apivalk/apivalk/commit/a8219279b72d82d97f04b08ad8e2f89e45443a59)), closes [#127](https://github.com/apivalk/apivalk/issues/127)
+
 ## [2.1.1](https://github.com/apivalk/apivalk/compare/v2.1.0...v2.1.1) (2026-05-06)
 
 
