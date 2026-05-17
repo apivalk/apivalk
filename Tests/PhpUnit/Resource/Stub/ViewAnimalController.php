@@ -13,12 +13,11 @@ use apivalk\apivalk\Router\Route\Route;
 
 class ViewAnimalController extends AbstractViewResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::get('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Unique identifier of the animal'))
-            ->description('Get animal')
-            ->tags(self::getEmptyResource()->tags());
+            ->description('Get animal');
     }
 
     public static function getResourceClass(): string

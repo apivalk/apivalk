@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Customer\Request\Shape;
+
+/**
+ * @property-read string $first_name First name
+ * @property-read string $last_name Last name
+ * @property-read string $email Email address
+ * @property-read string|null $phone Phone number
+ * @property-read string $status Customer status
+ */
+interface CustomerCreateRequestBodyShape
+{
+}

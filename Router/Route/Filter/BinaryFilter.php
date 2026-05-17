@@ -21,7 +21,7 @@ class BinaryFilter implements FilterInterface
     public function __construct(string $type, BinaryProperty $property)
     {
         $this->type = $type;
-        $this->property = $property;
+        $this->property = $property->init();
     }
 
     public static function equals(BinaryProperty $property): self

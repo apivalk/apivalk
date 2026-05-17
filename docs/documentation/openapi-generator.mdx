@@ -409,6 +409,47 @@ $generator = new OpenAPIGenerator(
 );
 ```
 
+### Filter Documentation Style
+
+By default, all filters for a route are grouped under a single `filter` parameter using OpenAPI's `style: deepObject` convention. Swagger UI renders each filter as a separate input labelled `filter[field]`, and clients send filters as `?filter[status]=active`.
+
+```yaml
+- name: filter
+  in: query
+  required: false
+  style: deepObject
+  explode: true
+  schema:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Filter by status"
+```
+
+If you prefer each filter to appear as its own flat query parameter (`?status=active`), pass `true` for the `$flatFilters` parameter:
+
+```php
+$generator = new OpenAPIGenerator(
+    $apivalk,
+    $info,
+    [],
+    null,
+    true,  // documentLocaleHeaders
+    true   // flatFilters — each filter becomes its own flat query param
+);
+```
+
+With `flatFilters: false` (default):
+- Swagger UI shows inputs labelled `filter[status]`, `filter[name]`, etc.
+- Clients send `?filter[status]=active&filter[name]=Acme`
+
+With `flatFilters: true`:
+- Swagger UI shows inputs labelled `status`, `name`, etc.
+- Clients send `?status=active&name=Acme`
+
+**Both formats are accepted by the server at runtime regardless of this setting.** This option only controls how the filters are presented in the OpenAPI spec.
+
 ### Rate Limit Headers
 
 When a route has a rate limit defined (via `Route::rateLimit()`), the generator automatically documents the following response headers on every response for that operation:

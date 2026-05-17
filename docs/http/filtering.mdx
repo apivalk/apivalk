@@ -145,16 +145,51 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 
 ## Client-Side Usage
 
-Apivalk supports filtering using flat key-value parameters in the query string. This is ideal for simple, direct matching.
+Apivalk supports two query string formats — both reach the same filter values in your controller.
 
-**Example: retrieve all active contracts**
-`GET /contracts?status=active`
+### Flat notation
+
+Each filter is a top-level query parameter. Simple and compact.
+
+```
+GET /contracts?status=active
+GET /contracts?status=active&name=Acme
+```
+
+### Bracket notation
+
+Filters are nested under a `filter` key. Useful when you want a clear namespace separation from other parameters (pagination, sorting, etc.), or when tooling like OpenAPI client generators constructs nested objects.
+
+```
+GET /contracts?filter[status]=active
+GET /contracts?filter[status]=active&filter[name]=Acme
+```
+
+Both formats are equivalent — they produce the same `FilterBag` in your controller and can be mixed freely within a single request (flat takes precedence if both supply the same field).
 
 ---
 
 ## OpenAPI Documentation
 
-When you configure filters on a route, Apivalk automatically generates the corresponding OpenAPI documentation:
-- Individual query parameters for each filter.
-- Descriptions including the supported match type (e.g., `equals`, `in`).
-- Type information based on the configured properties (e.g., `integer`, `string`, `number`).
+When you configure filters on a route, Apivalk generates a single `filter` parameter in the OpenAPI spec using `style: deepObject`. Each declared filter appears as a named property inside its schema:
+
+```yaml
+- name: filter
+  in: query
+  required: false
+  style: deepObject
+  explode: true
+  schema:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Filter by status"
+      amount:
+        type: number
+        description: "Minimum amount (greater than)"
+```
+
+In Swagger UI, this renders as separate inputs labelled `filter[status]`, `filter[amount]`, etc. — matching the bracket notation clients should use at runtime. Both flat notation (`?status=active`) and bracket notation (`?filter[status]=active`) are accepted by the server regardless of which style is chosen.
+
+Pass `flatFilters: true` to `OpenAPIGenerator` to switch to one flat query parameter per filter instead. See [OpenAPI Generator → Filter Documentation Style](/documentation/openapi-generator) for the full reference.

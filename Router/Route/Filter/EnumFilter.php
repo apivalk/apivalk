@@ -21,7 +21,7 @@ class EnumFilter implements FilterInterface
     public function __construct(string $type, EnumProperty $property)
     {
         $this->type = $type;
-        $this->property = $property;
+        $this->property = $property->init();
     }
 
     public static function equals(EnumProperty $property): self

@@ -6,6 +6,8 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
 use PHPUnit\Framework\TestCase;
 
 class TestProperty extends AbstractProperty
@@ -97,5 +99,50 @@ class ParameterObjectTest extends TestCase
         ];
 
         $this->assertEquals($expected, $parameter->toArray());
+    }
+
+    public function testForFilterGroupProducesDeepObjectParameter(): void
+    {
+        $statusProp = new StringProperty('status', 'Filter by status');
+        $statusProp->setIsRequired(false);
+
+        $idProp = new IntegerProperty('customer_id', 'Filter by customer ID');
+        $idProp->setIsRequired(false);
+
+        $parameter = ParameterObject::forFilterGroup([$statusProp, $idProp]);
+
+        $this->assertEquals('filter', $parameter->getName());
+        $this->assertEquals('query', $parameter->getIn());
+        $this->assertFalse($parameter->isRequired());
+        $this->assertEquals('deepObject', $parameter->getStyle());
+
+        $array = $parameter->toArray();
+        $this->assertEquals('deepObject', $array['style']);
+        $this->assertTrue($array['explode']);
+        $this->assertEquals('object', $array['schema']['type']);
+        $this->assertArrayHasKey('status', $array['schema']['properties']);
+        $this->assertArrayHasKey('customer_id', $array['schema']['properties']);
+        $this->assertEquals('string', $array['schema']['properties']['status']['type']);
+        $this->assertEquals('integer', $array['schema']['properties']['customer_id']['type']);
+    }
+
+    public function testForFilterGroupDescriptionMentionsBracketNotation(): void
+    {
+        $prop = new StringProperty('status', 'Filter by status');
+        $prop->setIsRequired(false);
+
+        $parameter = ParameterObject::forFilterGroup([$prop]);
+
+        $this->assertStringContainsString('filter[', $parameter->getDescription() ?? '');
+    }
+
+    public function testRegularParameterHasNoStyleOrExplode(): void
+    {
+        $property = new TestProperty('id', 'ID', true, ['type' => 'string']);
+        $parameter = new ParameterObject('path', $property);
+
+        $array = $parameter->toArray();
+        $this->assertArrayNotHasKey('style', $array);
+        $this->assertArrayNotHasKey('explode', $array);
     }
 }

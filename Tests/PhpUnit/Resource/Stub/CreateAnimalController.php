@@ -12,11 +12,10 @@ use apivalk\apivalk\Router\Route\Route;
 
 class CreateAnimalController extends AbstractCreateResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::post('/api/v1/animals')
-            ->description('Create animal')
-            ->tags(self::getEmptyResource()->tags());
+            ->description('Create animal');
     }
 
     public static function getResourceClass(): string

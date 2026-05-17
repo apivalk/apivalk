@@ -18,6 +18,12 @@ use PHPUnit\Framework\TestCase;
 
 class FilteringPopulationStrategyTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        unset($_GET['filter']);
+        parent::tearDown();
+    }
+
     public function testFiltersWithNoQueryParamsHaveNullValues(): void
     {
         $property = new StringProperty('status');
@@ -84,6 +90,78 @@ class FilteringPopulationStrategyTest extends TestCase
         $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
 
         self::assertCount(0, $request->filtering());
+    }
+
+    public function testBracketFilterPicksUpValue(): void
+    {
+        $property = new StringProperty('status');
+        $filter = StringFilter::equals($property);
+
+        $route = Route::get('/api/v1/animals');
+        $route->filtering([$filter]);
+
+        $_GET['filter'] = ['status' => 'active'];
+        $request = $this->makeRequest(new ParameterBag());
+
+        $strategy = new FilteringPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        self::assertSame('active', $request->filtering()->get('status')->getValue());
+        self::assertSame('active', $request->filtering()->get('status')->getRawValue());
+    }
+
+    public function testFlatNotationTakesPrecedenceOverBracket(): void
+    {
+        $property = new StringProperty('status');
+        $filter = StringFilter::equals($property);
+
+        $route = Route::get('/api/v1/animals');
+        $route->filtering([$filter]);
+
+        $_GET['filter'] = ['status' => 'bracket'];
+        $queryBag = new ParameterBag();
+        $queryBag->set(new Parameter('status', 'flat', 'flat'));
+        $request = $this->makeRequest($queryBag);
+
+        $strategy = new FilteringPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        self::assertSame('flat', $request->filtering()->get('status')->getValue());
+    }
+
+    public function testBracketFilterNonScalarValueIsIgnored(): void
+    {
+        $property = new StringProperty('status');
+        $filter = StringFilter::equals($property);
+
+        $route = Route::get('/api/v1/animals');
+        $route->filtering([$filter]);
+
+        $_GET['filter'] = ['status' => ['active', 'pending']];
+        $request = $this->makeRequest(new ParameterBag());
+
+        $strategy = new FilteringPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        self::assertNull($request->filtering()->get('status')->getValue());
+        self::assertNull($request->filtering()->get('status')->getRawValue());
+    }
+
+    public function testBracketFilterUnknownFieldIsIgnored(): void
+    {
+        $property = new StringProperty('status');
+        $filter = StringFilter::equals($property);
+
+        $route = Route::get('/api/v1/animals');
+        $route->filtering([$filter]);
+
+        $_GET['filter'] = ['unknown_field' => 'value'];
+        $request = $this->makeRequest(new ParameterBag());
+
+        $strategy = new FilteringPopulationStrategy();
+        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+
+        self::assertNull($request->filtering()->get('status')->getValue());
     }
 
     private function makeRequest(ParameterBag $queryBag): AbstractApivalkRequest

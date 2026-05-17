@@ -1,0 +1,94 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Contract;
+
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Resource\AbstractResource;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\FloatFilter;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Sort\Sort;
+
+/**
+ * @property string $contract_uuid Contract UUID v4
+ * @property int $customer_id Customer integer ID
+ * @property string $title Contract title
+ * @property float $value Contract value
+ * @property string|null $currency ISO 4217 currency code
+ * @property string $status Contract status
+ * @property \DateTime $start_date Contract start date
+ * @property \DateTime|null $end_date Contract end date
+ * @property string|null $notes Notes
+ * @property string $created_at Created at
+ * @property string $updated_at Updated at
+ */
+class ContractResource extends AbstractResource
+{
+    public function getName(): string
+    {
+        return 'contract';
+    }
+
+    protected function init(): void
+    {
+        $this->addProperty(new StringProperty('contract_uuid', 'Contract UUID v4'));
+        $this->addProperty((new IntegerProperty('customer_id', 'Customer integer ID'))->setMinimumValue(1));
+        $this->addProperty((new StringProperty('title', 'Contract title'))->setMinLength(1)->setMaxLength(255));
+        $this->addProperty((new FloatProperty('value', 'Contract value'))->setMinimumValue(0.01));
+        $this->addProperty(
+            (new StringProperty('currency', 'ISO 4217 currency code'))->setMinLength(3)->setMaxLength(3)->setIsRequired(false)
+        );
+        $this->addProperty(
+            new EnumProperty('status', 'Contract status', ['draft', 'active', 'expired', 'terminated'])
+        );
+        $this->addProperty(new DateProperty('start_date', 'Contract start date'));
+        $this->addProperty((new DateProperty('end_date', 'Contract end date'))->setIsRequired(false));
+        $this->addProperty((new StringProperty('notes', 'Notes'))->setMaxLength(5000)->setIsRequired(false));
+        $this->addProperty(new StringProperty('created_at', 'Created at'));
+        $this->addProperty(new StringProperty('updated_at', 'Updated at'));
+    }
+
+    public function excludeFromMode(string $mode): array
+    {
+        if ($mode === self::MODE_CREATE) {
+            return ['contract_uuid', 'created_at', 'updated_at'];
+        }
+
+        if ($mode === self::MODE_UPDATE) {
+            return ['customer_id', 'contract_uuid', 'created_at', 'updated_at'];
+        }
+
+        return [];
+    }
+
+    public function availableFilters(): array
+    {
+        return [
+            IntegerFilter::equals(new IntegerProperty('customer_id', 'Customer ID')),
+            EnumFilter::in(new EnumProperty('status', 'Status', ['draft', 'active', 'expired', 'terminated'])),
+            StringFilter::like(new StringProperty('title', 'Title')),
+            FloatFilter::greaterThan((new FloatProperty('value', 'Value'))->setMinimumValue(0.01)),
+            FloatFilter::lessThan((new FloatProperty('value', 'Value'))->setMinimumValue(0.01)),
+            DateFilter::greaterThan(new DateProperty('start_date', 'Start date')),
+            DateFilter::lessThan(new DateProperty('start_date', 'Start date')),
+        ];
+    }
+
+    public function availableSortings(): array
+    {
+        return [
+            Sort::asc('title'),
+            Sort::desc('start_date'),
+            Sort::asc('value'),
+            Sort::asc('status'),
+        ];
+    }
+}

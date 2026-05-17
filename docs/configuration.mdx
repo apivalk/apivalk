@@ -25,7 +25,6 @@ $router = new Router($classLocator, $routerCache);
 $configuration = new ApivalkConfiguration($router, null, [ApivalkExceptionHandler::class, 'handle']);
 
 // 3. Add Middlewares
-$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
 $configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
 
 // 4. Run the App

@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Contract\Request\Shape;
+
+/**
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $due_date
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $created_at
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $amount
+ * @property-read \apivalk\apivalk\Router\Route\Sort\Sort $status
+ */
+interface InvoiceListSortingShape
+{
+}

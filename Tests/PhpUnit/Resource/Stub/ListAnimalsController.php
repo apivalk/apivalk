@@ -14,15 +14,10 @@ use apivalk\apivalk\Router\Route\Route;
 
 class ListAnimalsController extends AbstractListResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
-        $resource = self::getEmptyResource();
-
         return Route::get('/api/v1/animals')
             ->description('List animals')
-            ->tags($resource->tags())
-            ->filtering($resource->availableFilters())
-            ->sorting($resource->availableSortings())
             ->pagination(Pagination::page()->setMaxLimit(25));
     }
 

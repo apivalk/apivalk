@@ -36,7 +36,7 @@ use apivalk\apivalk\ApivalkConfiguration;
 use apivalk\apivalk\ApivalkExceptionHandler;
 use apivalk\apivalk\Cache\FilesystemCache;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
-use apivalk\apivalk\Middleware\SanitizeMiddleware;
+
 use apivalk\apivalk\Router\Router;
 use apivalk\apivalk\Util\ClassLocator;
 
@@ -55,7 +55,6 @@ $configuration = new ApivalkConfiguration(
 );
 
 // 3. Register middlewares — order matters (see below)
-$configuration->getMiddlewareStack()->add(new SanitizeMiddleware());
 $configuration->getMiddlewareStack()->add(new RequestValidationMiddleware());
 
 // 4. Run
@@ -65,7 +64,7 @@ $response = $apivalk->run();
 $apivalk->getRenderer()->render($response);
 ```
 
-That's a complete, public-only API. Hitting a configured `GET /health` route goes through `Sanitize → Validate → Controller` and returns JSON.
+That's a complete, public-only API. Hitting a configured `GET /health` route goes through `Validate → Controller` and returns JSON.
 
 ## Adding authentication
 
@@ -153,7 +152,7 @@ If you pass nothing, Apivalk defaults to `Locale::en()`.
 
 `MiddlewareStack::handle()` reverses the list, so the **last** middleware you `add()` is the **innermost** layer (closest to the controller). That means:
 
-- `SanitizeMiddleware` and `RequestValidationMiddleware` run as close to the controller as possible → add them last.
+- `RequestValidationMiddleware` runs as close to the controller as possible → add it last.
 - `AuthenticationMiddleware` must run before `SecurityMiddleware` (authentication before authorization) → add Authentication first, Security second.
 - `RateLimitMiddleware` usually runs before anything expensive → add early.
 
@@ -164,7 +163,6 @@ $stack = $configuration->getMiddlewareStack();
 $stack->add(new AuthenticationMiddleware($authenticator));
 $stack->add(new SecurityMiddleware());
 $stack->add(new RateLimitMiddleware($rateLimiter));
-$stack->add(new SanitizeMiddleware());
 $stack->add(new RequestValidationMiddleware());
 ```
 
@@ -231,7 +229,6 @@ And in the bootstrap:
 foreach ([
     AuthenticationMiddleware::class,
     SecurityMiddleware::class,
-    SanitizeMiddleware::class,
     RequestValidationMiddleware::class,
 ] as $id) {
     $configuration->getMiddlewareStack()->add($container->get($id));

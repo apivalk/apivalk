@@ -40,11 +40,21 @@ Each factory (`::equals`, `::in`, `::like`, `::contains`, `::greaterThan`, `::le
 | `ByteFilter`, `BinaryFilter` | `equals`, `in` |
 | `BooleanFilter` | `equals` |
 
-## 2. Clients send filters as flat query parameters
+## 2. Clients send filters in the query string
 
+Two formats are supported — both work identically on the server.
+
+**Flat** — each filter is a top-level parameter:
 ```
 GET /api/v1/animals?status=active&name=leo&age=3&born_after=2020-01-01
 ```
+
+**Bracket** — filters are nested under a `filter` key:
+```
+GET /api/v1/animals?filter[status]=active&filter[name]=leo
+```
+
+Both formats produce the same `FilterBag`. If the same field is present in both (e.g. `?status=flat&filter[status]=bracket`), the flat value wins.
 
 `RequestValidationMiddleware` rejects anything you didn't declare. Wrong type (`age=not-an-integer`) → `422`. Unknown filter (`?foo=bar` where `foo` isn't declared) is silently ignored.
 
@@ -110,7 +120,7 @@ public function availableFilters(): array
 
 ## OpenAPI side effects
 
-Each declared filter becomes a dedicated query parameter in the generated spec, typed from the underlying `AbstractProperty`. Descriptions include the operator (`"Name contains"`, `"Minimum age (years)"`). Swagger UI will render a separate input per filter — you can't generate `?filter[name]=...` style syntax with this system.
+Apivalk generates a single `filter` parameter of type `object` with `style: deepObject`. Each declared filter becomes a named property inside that object. Swagger UI renders each property as a separate input labelled `filter[field]` — matching the bracket notation clients should use. Both flat (`?status=active`) and bracket (`?filter[status]=active`) notation work at runtime; bracket is the documented canonical form.
 
 ## Reference
 

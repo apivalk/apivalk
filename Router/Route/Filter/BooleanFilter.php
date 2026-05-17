@@ -21,7 +21,7 @@ class BooleanFilter implements FilterInterface
     public function __construct(string $type, BooleanProperty $property)
     {
         $this->type = $type;
-        $this->property = $property;
+        $this->property = $property->init();
     }
 
     public static function equals(BooleanProperty $property): self

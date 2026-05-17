@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Customer\Request;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+/**
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Request\Shape\CustomerListRequestQueryShape query()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Request\Shape\CustomerListRequestPathShape path()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Request\Shape\CustomerListRequestBodyShape body()
+ * @method \apivalk\apivalk\Router\Route\Sort\SortBag|\Tests\Integration\RealWorld\Customer\Request\Shape\CustomerListRequestSortingShape sorting()
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|\Tests\Integration\RealWorld\Customer\Request\Shape\CustomerListRequestFilteringShape filtering()
+ * @method \apivalk\apivalk\Http\Request\Pagination\PagePaginator paginator()
+ */
+class CustomerListRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        return new ApivalkRequestDocumentation();
+    }
+}

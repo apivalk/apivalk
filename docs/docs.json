@@ -87,7 +87,7 @@
             "pages": [
               "middleware/index",
               "middleware/request-validation",
-              "middleware/sanitize",
+              "middleware/security-responsibilities",
               "middleware/authentication",
               "middleware/security",
               "middleware/rate-limit"

@@ -13,12 +13,11 @@ use apivalk\apivalk\Router\Route\Route;
 
 class DeleteAnimalController extends AbstractDeleteResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::delete('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Unique identifier of the animal'))
-            ->description('Delete animal')
-            ->tags(self::getEmptyResource()->tags());
+            ->description('Delete animal');
     }
 
     public static function getResourceClass(): string

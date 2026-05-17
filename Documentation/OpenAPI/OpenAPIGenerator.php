@@ -18,6 +18,8 @@ class OpenAPIGenerator
     private $openApi;
     /** @var bool */
     private $documentLocaleHeaders;
+    /** @var bool */
+    private $flatFilters;
 
     public const FORMAT_JSON = 'json';
 
@@ -27,17 +29,24 @@ class OpenAPIGenerator
      * @param ServerObject[]        $servers
      * @param ComponentsObject|null $componentsObject
      * @param bool                  $documentLocaleHeaders
+     * @param bool                  $flatFilters           When true, each filter is documented as its own flat query
+     *                                                     parameter (?status=active). When false (default), all filters
+     *                                                     are grouped under a single `filter` deepObject parameter
+     *                                                     (?filter[status]=active). Both formats work at runtime
+     *                                                     regardless of this setting.
      */
     public function __construct(
         Apivalk $apivalk,
         ?InfoObject $infoObject = null,
         array $servers = [],
         ?ComponentsObject $componentsObject = null,
-        bool $documentLocaleHeaders = true
+        bool $documentLocaleHeaders = true,
+        bool $flatFilters = false
     ) {
         $this->apivalk = $apivalk;
         $this->openApi = new OpenAPI();
         $this->documentLocaleHeaders = $documentLocaleHeaders;
+        $this->flatFilters = $flatFilters;
 
         if ($infoObject !== null) {
             $this->openApi->setInfo($infoObject);
@@ -65,7 +74,7 @@ class OpenAPIGenerator
 
     private function generatePaths(): void
     {
-        $pathsGenerator = new PathsGenerator($this->documentLocaleHeaders);
+        $pathsGenerator = new PathsGenerator($this->documentLocaleHeaders, $this->flatFilters);
         $routeMapping = [];
 
         foreach ($this->apivalk->getRouter()->getRoutes() as $route) {

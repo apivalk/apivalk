@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Contract\Request;
+
+/**
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Contract\Request\Shape\InvoiceListPathShape path()
+ * @method \apivalk\apivalk\Router\Route\Sort\SortBag|\Tests\Integration\RealWorld\Contract\Request\Shape\InvoiceListSortingShape sorting()
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|\Tests\Integration\RealWorld\Contract\Request\Shape\InvoiceListFilteringShape filtering()
+ * @method \apivalk\apivalk\Http\Request\Pagination\OffsetPaginator paginator()
+ */
+class InvoiceListRequest extends \apivalk\apivalk\Http\Request\Resource\ResourceRequest
+{
+}

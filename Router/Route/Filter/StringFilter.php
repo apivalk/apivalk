@@ -21,7 +21,7 @@ class StringFilter implements FilterInterface
     public function __construct(string $type, StringProperty $property)
     {
         $this->type = $type;
-        $this->property = $property;
+        $this->property = $property->init();
     }
 
     public static function equals(StringProperty $property): self

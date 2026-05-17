@@ -8,6 +8,7 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\HeaderObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
@@ -25,9 +26,13 @@ class OperationGenerator
     /** @var bool */
     private $documentLocaleHeaders;
 
-    public function __construct(bool $documentLocaleHeaders = true)
+    /** @var bool */
+    private $flatFilters;
+
+    public function __construct(bool $documentLocaleHeaders = true, bool $flatFilters = false)
     {
         $this->documentLocaleHeaders = $documentLocaleHeaders;
+        $this->flatFilters = $flatFilters;
     }
 
     public function generate(
@@ -115,8 +120,15 @@ class OperationGenerator
             $parameters[] = $parameterGenerator->generate($paginationProperty, 'query');
         }
 
-        foreach (self::getFilterProperties($route) as $filterProperty) {
-            $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
+        if ($this->flatFilters) {
+            foreach (self::getFilterProperties($route) as $filterProperty) {
+                $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
+            }
+        } else {
+            $filterParameter = self::getFilterParameter($route);
+            if ($filterParameter !== null) {
+                $parameters[] = $filterParameter;
+            }
         }
 
         if ($this->documentLocaleHeaders) {
@@ -326,6 +338,17 @@ class OperationGenerator
         }
 
         return $properties;
+    }
+
+    private static function getFilterParameter(Route $route): ?ParameterObject
+    {
+        $properties = self::getFilterProperties($route);
+
+        if (\count($properties) === 0) {
+            return null;
+        }
+
+        return ParameterObject::forFilterGroup($properties);
     }
 
     /**

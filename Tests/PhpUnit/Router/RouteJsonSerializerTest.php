@@ -383,6 +383,46 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertEquals(100000.0, $restoredFilters[7]->getProperty()->getMaximumValue());
     }
 
+    public function testFilterPropertyHasExactlyOneValidatorAfterRoundTrip(): void
+    {
+        // Verifies that double-init (once in constructor, once in PropertySerializer::deserialize)
+        // remains idempotent and does not produce duplicate validators.
+        $filters = [
+            StringFilter::equals(new StringProperty('name', '')),
+            EnumFilter::equals(new EnumProperty('status', '', ['a', 'b'])),
+            IntegerFilter::greaterThan(new IntegerProperty('age', '')),
+            FloatFilter::lessThan(new FloatProperty('score', '')),
+            DateFilter::equals(new DateProperty('dob', '')),
+            DateTimeFilter::greaterThan(new DateTimeProperty('created_at', '')),
+            ByteFilter::equals(new ByteProperty('payload', '')),
+            BinaryFilter::equals(new BinaryProperty('file', '')),
+        ];
+
+        $deserialized = $this->serializeAndDeserialize($this->createRouteWithFilters($filters));
+
+        foreach ($deserialized->getFilters() as $filter) {
+            $this->assertCount(1, $filter->getProperty()->getValidators());
+        }
+    }
+
+    public function testEnumFilterStillValidatesAfterRoundTrip(): void
+    {
+        $property = new EnumProperty('status', '', ['active', 'inactive']);
+        $route = $this->createRouteWithFilters([EnumFilter::equals($property)]);
+        $deserialized = $this->serializeAndDeserialize($route);
+
+        /** @var EnumFilter $filter */
+        $filter = $deserialized->getFilters()[0];
+        $this->assertCount(1, $filter->getProperty()->getValidators());
+
+        // Validator from the deserialized property must reject values outside the enum
+        $parameter = new \apivalk\apivalk\Http\Request\Parameter\Parameter('status', 'archived', 'archived');
+        foreach ($filter->getProperty()->getValidators() as $validator) {
+            $result = $validator->validate($parameter);
+            $this->assertFalse($result->isSuccess());
+        }
+    }
+
     /**
      * @param FilterInterface[] $filters
      */

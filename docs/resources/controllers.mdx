@@ -20,10 +20,21 @@ All five are generic over the resource type: `@template TResource of AbstractRes
 Every resource controller implements three things:
 
 1. `getResourceClass(): string` — return your resource class name.
-2. `getRoute(): Route` — declare the URL, method, description, tags, auth, and (for list) filters/sortings/pagination.
+2. A route declaration method — see the table below.
 3. `__invoke(ApivalkRequestInterface $request): AbstractApivalkResponse` — your business logic.
 
 The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmptyResource()`. Create and Update also expose a `getResource()` helper — see below.
+
+### Route declaration: `buildRoute()`
+
+All five resource controllers use `buildRoute()` — never implement `getRoute()` directly. The base class provides a final `getRoute()` that calls your `buildRoute()` and auto-injects extras:
+
+| Controller | Auto-injected into your `buildRoute()` result |
+|---|---|
+| Create / View / Update / Delete | `->tags()` from the resource |
+| **List** | `->tags()`, `->filtering()`, `->sorting()` from the resource |
+
+You only declare the URL, path parameters, authorization, pagination, and rate limit in `buildRoute()`.
 
 ## Examples
 
@@ -59,11 +70,10 @@ final class CreateAnimalController extends AbstractCreateResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::post('/api/v1/animals')
             ->description('Create animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:create']));
     }
 
@@ -111,12 +121,11 @@ final class ViewAnimalController extends AbstractViewResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::get('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Get animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
 
@@ -167,12 +176,11 @@ final class UpdateAnimalController extends AbstractUpdateResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::patch('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Update animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
@@ -221,12 +229,11 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::delete('/api/v1/animals/{animal_uuid}')
             ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
             ->description('Delete animal')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:delete']));
     }
 
@@ -240,6 +247,8 @@ final class DeleteAnimalController extends AbstractDeleteResourceController
 ```
 
 ### List
+
+Implement `buildRoute()` instead of `getRoute()`. Tags, filters, and sortings from the resource are injected automatically — declare only the URL, authorization, pagination, and rate limit.
 
 ```php
 namespace App\Http\Controller\Animal;
@@ -273,15 +282,11 @@ final class ListAnimalController extends AbstractListResourceController
         return AnimalResource::class;
     }
 
-    public static function getRoute(): Route
+    // tags(), availableFilters(), availableSortings() are injected from AnimalResource automatically
+    protected static function buildRoute(): Route
     {
-        $resource = self::getEmptyResource();
-
         return Route::get('/api/v1/animals')
             ->description('List animals')
-            ->tags($resource->tags())
-            ->filtering($resource->availableFilters())
-            ->sorting($resource->availableSortings())
             ->pagination(Pagination::page()->setMaxLimit(50))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:read']));
     }
@@ -332,13 +337,12 @@ final class ViewUserAuthenticatorController extends AbstractViewResourceControll
         return AuthenticatorResource::class;
     }
 
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::get('/api/v1/users/{user_uuid}/authenticators/{authenticator_uuid}')
             ->pathProperty(new StringProperty('user_uuid', 'User UUID'))
             ->pathProperty(new StringProperty('authenticator_uuid', 'Authenticator UUID'))
             ->description('Get user authenticator')
-            ->tags(self::getEmptyResource()->tags())
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['user'], ['user:read']));
     }
 

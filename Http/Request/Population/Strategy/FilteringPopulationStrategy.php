@@ -14,21 +14,29 @@ class FilteringPopulationStrategy implements PopulationStrategyInterface
     public function populate(AbstractApivalkRequest $request, RequestPopulationContext $context): void
     {
         $filterBag = new FilterBag();
+        $bracketValues = isset($_GET['filter']) && \is_array($_GET['filter']) ? $_GET['filter'] : [];
 
         foreach ($context->getRoute()->getFilters() as $filter) {
-            $queryParameter = $request->query()->get($filter->getField());
-
+            $field = $filter->getField();
             $clonedFilter = clone $filter;
+            $queryParameter = $request->query()->get($field);
+
             if ($queryParameter !== null) {
+                // Flat notation: ?status=active
                 $rawValue = $queryParameter->getRawValue();
                 $clonedFilter->setRawValue(\is_scalar($rawValue) ? (string) $rawValue : null);
                 $clonedFilter->setValue(
-                    ParameterBagFactory::typeCastValueByProperty(
-                        $rawValue,
-                        $filter->getProperty()
-                    )
+                    ParameterBagFactory::typeCastValueByProperty($rawValue, $filter->getProperty())
+                );
+            } elseif (array_key_exists($field, $bracketValues) && \is_scalar($bracketValues[$field])) {
+                // Bracket notation: ?filter[status]=active
+                $rawValue = (string) $bracketValues[$field];
+                $clonedFilter->setRawValue($rawValue);
+                $clonedFilter->setValue(
+                    ParameterBagFactory::typeCastValueByProperty($rawValue, $filter->getProperty())
                 );
             }
+
             $filterBag->set($clonedFilter);
         }
 

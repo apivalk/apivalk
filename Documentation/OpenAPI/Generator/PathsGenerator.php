@@ -12,9 +12,13 @@ class PathsGenerator
     /** @var bool */
     private $documentLocaleHeaders;
 
-    public function __construct(bool $documentLocaleHeaders = true)
+    /** @var bool */
+    private $flatFilters;
+
+    public function __construct(bool $documentLocaleHeaders = true, bool $flatFilters = false)
     {
         $this->documentLocaleHeaders = $documentLocaleHeaders;
+        $this->flatFilters = $flatFilters;
     }
 
     /**
@@ -25,7 +29,7 @@ class PathsGenerator
      */
     public function generate(string $url, array $routes): PathsObject
     {
-        $pathItemGenerator = new PathItemGenerator($this->documentLocaleHeaders);
+        $pathItemGenerator = new PathItemGenerator($this->documentLocaleHeaders, $this->flatFilters);
 
         return new PathsObject($url, $pathItemGenerator->generate($routes));
     }

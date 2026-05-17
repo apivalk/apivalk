@@ -9,12 +9,12 @@ on:
 
 env:
   PHP72_SERVICE: php72
+  PHP72_IMAGE: apivalk-php72
 
 jobs:
-  test_php72:
-    name: Test (php72)
+  setup:
+    name: Build & install (php72)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,8 +33,71 @@ jobs:
       - name: Install dependencies (into cached vendor/)
         run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer install --no-interaction --prefer-dist
 
+      - name: Save image
+        run: docker save ${{ env.PHP72_IMAGE }} | gzip > /tmp/php72.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-php72
+          path: /tmp/php72.tar.gz
+          retention-days: 1
+
+  unit:
+    name: PHPStan + Unit Tests (php72)
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore vendor cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ runner.os }}-${{ hashFiles('composer.json', 'composer.lock') }}
+          restore-keys: |
+            vendor-${{ runner.os }}-
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-php72
+          path: /tmp
+
+      - name: Load image
+        run: docker load -i /tmp/php72.tar.gz
+
       - name: Run PHPStan
         run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer phpstan --error-format=github --memory-limit=3G
 
-      - name: Run PHPUnit
-        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer test
+      - name: Run unit tests
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer test-unit
+
+  integration:
+    name: Integration Tests (php72)
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore vendor cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ runner.os }}-${{ hashFiles('composer.json', 'composer.lock') }}
+          restore-keys: |
+            vendor-${{ runner.os }}-
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-php72
+          path: /tmp
+
+      - name: Load image
+        run: docker load -i /tmp/php72.tar.gz
+
+      - name: Run integration tests
+        run: docker compose run --rm ${{ env.PHP72_SERVICE }} composer test-integration

@@ -162,7 +162,7 @@ use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$controllerClassName} extends AbstractListResourceController
 {
-    public static function getRoute(): Route
+    protected static function buildRoute(): Route
     {
         return Route::get('/api/v1/things');
     }
@@ -247,7 +247,7 @@ use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$listClassName} extends AbstractListResourceController
 {
-    public static function getRoute(): Route { return Route::get('/api/v1/shareds'); }
+    protected static function buildRoute(): Route { return Route::get('/api/v1/shareds'); }
     public static function getResourceClass(): string { return {$resourceClassName}::class; }
     public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
     {
@@ -271,7 +271,7 @@ use TestNamespace\\Resource\\{$resourceClassName};
 
 class {$viewClassName} extends AbstractViewResourceController
 {
-    public static function getRoute(): Route {
+    protected static function buildRoute(): Route {
         return Route::get('/api/v1/shareds/{shared_uuid}')
             ->pathProperty(new StringProperty('shared_uuid', 'Shared UUID'));
     }

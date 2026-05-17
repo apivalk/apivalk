@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\RealWorld\Customer\Address\Request;
+
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+
+/**
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Address\Request\Shape\AddressListRequestQueryShape query()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Address\Request\Shape\AddressListRequestPathShape path()
+ * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|\Tests\Integration\RealWorld\Customer\Address\Request\Shape\AddressListRequestBodyShape body()
+ * @method \apivalk\apivalk\Router\Route\Sort\SortBag|\Tests\Integration\RealWorld\Customer\Address\Request\Shape\AddressListRequestSortingShape sorting()
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|\Tests\Integration\RealWorld\Customer\Address\Request\Shape\AddressListRequestFilteringShape filtering()
+ * @method \apivalk\apivalk\Http\Request\Pagination\PagePaginator paginator()
+ */
+class AddressListRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        return new ApivalkRequestDocumentation();
+    }
+}
