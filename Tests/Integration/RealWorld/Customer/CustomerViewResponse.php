@@ -20,7 +20,9 @@ class CustomerViewResponse extends AbstractApivalkResponse
 
     public static function getDocumentation(): ApivalkResponseDocumentation
     {
-        return new ApivalkResponseDocumentation();
+        $doc = new ApivalkResponseDocumentation();
+        $doc->setDescription('View customer response');
+        return $doc;
     }
 
     public static function getStatusCode(): int

@@ -60,14 +60,15 @@ class ResponseObject implements ObjectInterface
             return $headerObject->toArray();
         }, $this->headers);
 
-        return [
-            $this->statusCode => array_filter(
-                [
-                    'description' => $this->description ?? '',
-                    'headers' => $headers,
-                    'content' => $this->content !== null ? array_filter($this->content->toArray()) : null,
-                ]
-            )
-        ];
+        $body = array_filter(
+            [
+                'headers' => $headers,
+                'content' => $this->content !== null ? array_filter($this->content->toArray()) : null,
+            ]
+        );
+
+        $body['description'] = $this->description ?? '';
+
+        return [$this->statusCode => $body];
     }
 }

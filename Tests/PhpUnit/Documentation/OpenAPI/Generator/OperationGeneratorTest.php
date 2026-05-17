@@ -110,7 +110,7 @@ class OperationGeneratorTest extends TestCase
         );
         $this->assertFalse($orderByParameter->isRequired());
         $this->assertEquals(
-            '/^([+-](id|price))(,([+-](id|price)))*$/',
+            '^([+-](id|price))(,([+-](id|price)))*$',
             $orderByParameter->toArray()['schema']['pattern']
         );
 

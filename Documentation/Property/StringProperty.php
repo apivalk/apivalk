@@ -73,6 +73,29 @@ class StringProperty extends AbstractProperty
         return $this->pattern;
     }
 
+    private function stripPhpRegexDelimiters(string $pattern): string
+    {
+        if (\strlen($pattern) < 2) {
+            return $pattern;
+        }
+
+        $delimiter = $pattern[0];
+
+        if (ctype_alnum($delimiter) || $delimiter === '\\') {
+            return $pattern;
+        }
+
+        $closingMap = ['{' => '}', '[' => ']', '(' => ')', '<' => '>'];
+        $closing = $closingMap[$delimiter] ?? $delimiter;
+
+        $closingPos = strrpos($pattern, $closing, 1);
+        if ($closingPos === false || $closingPos === 0) {
+            return $pattern;
+        }
+
+        return substr($pattern, 1, $closingPos - 1);
+    }
+
     public function getDocumentationArray(): array
     {
         $array = [
@@ -92,7 +115,7 @@ class StringProperty extends AbstractProperty
         }
 
         if ($this->getPattern() !== null) {
-            $array['pattern'] = $this->getPattern();
+            $array['pattern'] = $this->stripPhpRegexDelimiters($this->getPattern());
         }
 
         if ($this->getPropertyDescription() !== '') {
