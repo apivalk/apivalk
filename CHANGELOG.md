@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.1](https://github.com/apivalk/apivalk/compare/v2.2.0...v2.2.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* improve regex handling and enhance response documentation ([#139](https://github.com/apivalk/apivalk/issues/139)) ([f1fe035](https://github.com/apivalk/apivalk/commit/f1fe035f040489e5f987474c1cbd8ea4b8c60a27))
+
 ## [2.2.0](https://github.com/apivalk/apivalk/compare/v2.1.1...v2.2.0) (2026-05-17)
 
 
