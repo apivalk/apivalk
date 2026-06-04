@@ -56,6 +56,29 @@ class DocBlockRequestTest extends TestCase
             '@method \apivalk\apivalk\Router\Route\Filter\FilterBag|\\App\\Api\\Shape\\UserFilteringShape filtering()',
             $docBlock
         );
+        $this->assertStringNotContainsString('paginator()', $docBlock);
+    }
+
+    public function testGetRequestDocBlockOnlyWithPaginator(): void
+    {
+        $bodyShape = new DocBlockShape('User', 'Body');
+        $pathShape = new DocBlockShape('User', 'Path');
+        $queryShape = new DocBlockShape('User', 'Query');
+        $sortingShape = new DocBlockShape('User', 'Sorting');
+        $filteringShape = new DocBlockShape('User', 'Filtering');
+
+        $request = new DocBlockRequest(
+            $bodyShape,
+            $pathShape,
+            $queryShape,
+            $sortingShape,
+            $filteringShape,
+            'App\\Api\\UserPaginator'
+        );
+
+        $docBlock = $request->getRequestDocBlockOnly('App\\Api\\Shape');
+
+        $this->assertStringContainsString('@method \App\Api\UserPaginator paginator()', $docBlock);
     }
 
     public function testGetShapeNamespace(): void
