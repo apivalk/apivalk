@@ -18,7 +18,8 @@ Apivalk provides several built-in property classes:
 | `ByteProperty`           | Base64-encoded data            | `string`    | `string`     |
 | `BinaryProperty`         | Raw binary data                | `string`    | `string`     |
 | `BooleanProperty`        | True/False values              | `bool`      | `boolean`    |
-| `ArrayProperty`          | List of items                  | `array`     | `array`      |
+| `SimpleArrayProperty`    | List of scalars (one-dimensional) | `int[]` / `string[]` / `float[]` / `bool[]` | `array` |
+| `ArrayProperty`          | List of objects                | `array`     | `array`      |
 | `AbstractObjectProperty` | Nested object structure         | `array`     | `object`     |
 
 ## Base Configuration
@@ -126,6 +127,31 @@ For raw binary data (e.g., file uploads). Automatically sets the OpenAPI format 
 $prop = new BinaryProperty('file', 'Uploaded file content');
 ```
 
+### `SimpleArrayProperty`
+
+For one-dimensional arrays of scalar values (e.g. `["ids" => [23, 41, 22]]`). Unlike `ArrayProperty`, it does **not** require an `AbstractObjectProperty` — you only declare the scalar item type, which is what gets written into the OpenAPI `items` schema.
+
+The item type is passed as the third constructor argument:
+
+* `SimpleArrayProperty::TYPE_INT` → OpenAPI `integer`, casts elements to `int`
+* `SimpleArrayProperty::TYPE_STRING` → OpenAPI `string`, casts elements to `string` (default)
+* `SimpleArrayProperty::TYPE_NUMBER` → OpenAPI `number`, casts elements to `float`
+* `SimpleArrayProperty::TYPE_BOOL` → OpenAPI `boolean`, casts elements to `bool`
+
+`setItemType(string)` can also change the type after construction.
+
+```php
+$prop = new SimpleArrayProperty('ids', 'Selected record IDs', SimpleArrayProperty::TYPE_INT);
+```
+
+In your response that backs:
+
+```php
+return ['ids' => [23, 41, 22]];
+```
+
+Each element is validated against the declared item type (a non-numeric element in an `int` array yields a `422`), and the value read back in the controller is cast to the item type — `["1", "2"]` on the wire becomes `[1, 2]`. Use `ArrayProperty` when the list holds objects rather than scalars.
+
 ### `ArrayProperty`
 
 * `setItemProperty(AbstractProperty)`: Defines the type of items within the array.
@@ -138,4 +164,4 @@ $prop = new BinaryProperty('file', 'Uploaded file content');
 
 When a property is instantiated, it automatically creates a corresponding validator via the `ValidatorFactory`. This validator is used by the `RequestValidationMiddleware` to ensure incoming data matches your definitions.
 
-Each property type has its own dedicated validator (e.g., `StringValidator`, `IntegerValidator`, `FloatValidator`, `EnumValidator`, `DateValidator`, `DateTimeValidator`, `ByteValidator`, `BinaryValidator`), ensuring type-specific validation rules are applied automatically.
+Each property type has its own dedicated validator (e.g., `StringValidator`, `IntegerValidator`, `FloatValidator`, `EnumValidator`, `DateValidator`, `DateTimeValidator`, `ByteValidator`, `BinaryValidator`, `SimpleArrayValidator`), ensuring type-specific validation rules are applied automatically. `SimpleArrayValidator` additionally checks that every element matches the array's declared item type.

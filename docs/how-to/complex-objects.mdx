@@ -3,6 +3,10 @@ title: "Model complex objects with PropertyCollection"
 description: "When a request body or response carries nested objects or arrays of objects, compose them with AbstractPropertyCollection + AbstractObjectProperty + ArrayProperty. This keeps the OpenAPI schema and runtime validation in sync."
 ---
 
+<Note>
+For a one-dimensional list of **scalars** (e.g. `"ids": [23, 41, 22]`) you don't need any of this — reach for [`SimpleArrayProperty`](/documentation/property#simplearrayproperty) instead. The classes below are for lists of **objects**.
+</Note>
+
 Flat properties (`StringProperty`, `IntegerProperty`, `EnumProperty`, ...) cover most fields. When a payload carries structured data — a nested object or a list of objects — you compose it with three classes:
 
 - **`AbstractPropertyCollection`** — an iterable container of properties, mode-aware so you can vary fields between `CREATE`, `UPDATE`, `VIEW`, `LIST`, `DELETE`.

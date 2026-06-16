@@ -6,6 +6,7 @@ namespace apivalk\apivalk\Http\Request\Parameter;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Router\Route\Route;
 
 final class ParameterBagFactory
@@ -175,6 +176,39 @@ final class ParameterBagFactory
         if (($property instanceof ArrayProperty)
             && \is_string($value)) {
             $value = json_decode($value, true);
+        }
+
+        if ($property instanceof SimpleArrayProperty) {
+            if (\is_string($value)) {
+                $value = json_decode($value, true);
+            }
+
+            if (!\is_array($value)) {
+                return null;
+            }
+
+            $itemType = $property->getItemType();
+
+            return array_map(
+                static function ($item) use ($itemType) {
+                    if (!\is_scalar($item)) {
+                        return $item;
+                    }
+
+                    switch ($itemType) {
+                        case SimpleArrayProperty::TYPE_INT:
+                            return (int)$item;
+                        case SimpleArrayProperty::TYPE_NUMBER:
+                            return (float)$item;
+                        case SimpleArrayProperty::TYPE_BOOL:
+                            return (bool)$item;
+                        case SimpleArrayProperty::TYPE_STRING:
+                        default:
+                            return (string)$item;
+                    }
+                },
+                $value
+            );
         }
 
         switch ($property->getPhpType()) {

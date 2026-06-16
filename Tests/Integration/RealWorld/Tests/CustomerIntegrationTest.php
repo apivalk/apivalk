@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Integration\RealWorld\Tests;
 
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use PHPUnit\Framework\TestCase;
 use Tests\Integration\RealWorld\Bootstrap\ApiFactory;
 use Tests\Integration\RealWorld\Bootstrap\InMemoryCache;
 use Tests\Integration\RealWorld\Bootstrap\RequestTrait;
+use Tests\Integration\RealWorld\Customer\CustomerCreatedResponse;
 
 class CustomerIntegrationTest extends TestCase
 {
@@ -15,18 +17,48 @@ class CustomerIntegrationTest extends TestCase
 
     private const VALID_CUSTOMER_BODY = [
         'first_name' => 'John',
-        'last_name'  => 'Doe',
-        'email'      => 'john@example.com',
-        'status'     => 'active',
+        'last_name' => 'Doe',
+        'email' => 'john@example.com',
+        'status' => 'active',
     ];
 
     // Fixture data returned by ListCustomersController (5 customers)
     private const FIXTURES = [
-        ['customer_id' => 1, 'first_name' => 'Alice', 'last_name' => 'Anderson', 'email' => 'alice@example.com', 'status' => 'active'],
-        ['customer_id' => 2, 'first_name' => 'Bob',   'last_name' => 'Brown',    'email' => 'bob@example.com',   'status' => 'inactive'],
-        ['customer_id' => 3, 'first_name' => 'Carol', 'last_name' => 'Clark',    'email' => 'carol@example.com', 'status' => 'active'],
-        ['customer_id' => 4, 'first_name' => 'Dave',  'last_name' => 'Davis',    'email' => 'dave@example.com',  'status' => 'pending'],
-        ['customer_id' => 5, 'first_name' => 'Eve',   'last_name' => 'Evans',    'email' => 'eve@example.com',   'status' => 'active'],
+        [
+            'customer_id' => 1,
+            'first_name' => 'Alice',
+            'last_name' => 'Anderson',
+            'email' => 'alice@example.com',
+            'status' => 'active'
+        ],
+        [
+            'customer_id' => 2,
+            'first_name' => 'Bob',
+            'last_name' => 'Brown',
+            'email' => 'bob@example.com',
+            'status' => 'inactive'
+        ],
+        [
+            'customer_id' => 3,
+            'first_name' => 'Carol',
+            'last_name' => 'Clark',
+            'email' => 'carol@example.com',
+            'status' => 'active'
+        ],
+        [
+            'customer_id' => 4,
+            'first_name' => 'Dave',
+            'last_name' => 'Davis',
+            'email' => 'dave@example.com',
+            'status' => 'pending'
+        ],
+        [
+            'customer_id' => 5,
+            'first_name' => 'Eve',
+            'last_name' => 'Evans',
+            'email' => 'eve@example.com',
+            'status' => 'active'
+        ],
     ];
 
     // --- List ---
@@ -94,13 +126,15 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_unknownFilterField_returns422(): void
     {
         // Unknown query params that don't match declared filter fields or query properties are silently ignored
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['nonexistent_filter_field' => 'value'], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['nonexistent_filter_field' => 'value'], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testListCustomers_unknownSortField_returns422(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['order_by' => 'nonexistent_field'], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['order_by' => 'nonexistent_field'], [], 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
@@ -118,7 +152,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_sortByMultipleFields_returns200(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['order_by' => '+last_name,-created_at'], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['order_by' => '+last_name,-created_at'], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
     }
 
@@ -210,7 +245,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_filterByEmailNoMatch_returnsEmpty(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['email' => 'nobody@example.com'], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['email' => 'nobody@example.com'], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $this->assertCount(0, $response->toArray()['data']);
     }
@@ -227,7 +263,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_bracketFilterByStatus_returns200WithMatchingData(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['status' => 'active']], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['status' => 'active']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(3, $items);
@@ -238,7 +275,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_bracketFilterByFirstNameLike_returnsMatch(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['first_name' => 'ali']], [], 'admin-token');
+        $response =
+            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['first_name' => 'ali']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(1, $items);
@@ -264,7 +302,13 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_bracketFilterNonScalarValueIsIgnored_returnsAllItems(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['status' => ['active', 'pending']]], [], 'admin-token');
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['filter' => ['status' => ['active', 'pending']]],
+            [],
+            'admin-token'
+        );
         $this->assertSame(200, $response->getStatusCode());
         $this->assertCount(5, $response->toArray()['data']);
     }
@@ -303,7 +347,13 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_filterAndSort_activeByLastNameAsc(): void
     {
         // Filter: active (Alice, Carol, Eve) → sort by last_name asc → Anderson, Clark, Evans
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['status' => 'active', 'order_by' => '+last_name'], [], 'admin-token');
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['status' => 'active', 'order_by' => '+last_name'],
+            [],
+            'admin-token'
+        );
         $items = $response->toArray()['data'];
         $this->assertCount(3, $items);
         $this->assertSame(['Anderson', 'Clark', 'Evans'], array_column($items, 'last_name'));
@@ -311,7 +361,13 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_filterAndSort_activeByLastNameDesc(): void
     {
-        $response = $this->makeRequest('GET', '/v1/api/customers', ['status' => 'active', 'order_by' => '-last_name'], [], 'admin-token');
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['status' => 'active', 'order_by' => '-last_name'],
+            [],
+            'admin-token'
+        );
         $items = $response->toArray()['data'];
         $this->assertCount(3, $items);
         $this->assertSame(['Evans', 'Clark', 'Anderson'], array_column($items, 'last_name'));
@@ -440,6 +496,40 @@ class CustomerIntegrationTest extends TestCase
         $this->assertNotEmpty($data['errors']);
     }
 
+    public function testCreateCustomer_responseContainsStringSimpleArray(): void
+    {
+        $response = $this->makeRequest('POST', '/v1/api/customers', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $this->assertSame(201, $response->getStatusCode());
+        $data = $response->toArray()['data'];
+        $this->assertSame(['admin', 'billing'], $data['roles']);
+    }
+
+    public function testCreateCustomer_responseContainsIntSimpleArray(): void
+    {
+        $response = $this->makeRequest('POST', '/v1/api/customers', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $this->assertSame(201, $response->getStatusCode());
+        $data = $response->toArray()['data'];
+        $this->assertSame([10, 20, 30], $data['permission_ids']);
+    }
+
+    public function testCustomerCreatedResponse_documentsSimpleArrayProperties(): void
+    {
+        $properties = CustomerCreatedResponse::getDocumentation()->getProperties();
+
+        $byName = [];
+        foreach ($properties as $property) {
+            $byName[$property->getPropertyName()] = $property;
+        }
+
+        $this->assertArrayHasKey('roles', $byName);
+        $this->assertInstanceOf(SimpleArrayProperty::class, $byName['roles']);
+        $this->assertSame(['type' => 'string'], $byName['roles']->getDocumentationArray()['items']);
+
+        $this->assertArrayHasKey('permission_ids', $byName);
+        $this->assertInstanceOf(SimpleArrayProperty::class, $byName['permission_ids']);
+        $this->assertSame(['type' => 'integer'], $byName['permission_ids']->getDocumentationArray()['items']);
+    }
+
     // --- View ---
 
     public function testViewCustomer_withAdminToken_returns200(): void
@@ -508,7 +598,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_withReadOnlyToken_returns403(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
+        $response =
+            $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
         $this->assertSame(403, $response->getStatusCode());
     }
 
@@ -555,7 +646,8 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_unknownCustomerId_returns404(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response =
+            $this->makeRequest('PATCH', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(404, $response->getStatusCode());
     }
 

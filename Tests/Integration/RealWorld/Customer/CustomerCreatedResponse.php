@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\RealWorld\Customer;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 class CustomerCreatedResponse extends AbstractApivalkResponse
@@ -22,6 +23,12 @@ class CustomerCreatedResponse extends AbstractApivalkResponse
     {
         $doc = new ApivalkResponseDocumentation();
         $doc->setDescription('Create customer response');
+        $doc->addProperty(
+            new SimpleArrayProperty('roles', 'Role names assigned to the customer', SimpleArrayProperty::TYPE_STRING)
+        );
+        $doc->addProperty(
+            new SimpleArrayProperty('permission_ids', 'Granted permission IDs', SimpleArrayProperty::TYPE_INT)
+        );
         return $doc;
     }
 

@@ -291,6 +291,44 @@ class ContractIntegrationTest extends TestCase
         $this->assertNotEmpty($data['errors']);
     }
 
+    public function testCreateContract_withSimpleArrayFields_returns201AndEchoesArrays(): void
+    {
+        // attachment_ids are sent as numeric strings (the usual wire format) to prove that
+        // the int item type is cast through to the value the controller reads back.
+        $body = array_merge(self::VALID_CONTRACT_BODY, [
+            'tags'           => ['vip', 'renewal'],
+            'attachment_ids' => ['11', '22', '33'],
+        ]);
+        $response = $this->makeRequest('POST', $this->listUrl(), [], $body, 'admin-token');
+        $this->assertSame(201, $response->getStatusCode());
+
+        $data = $response->toArray()['data'];
+        $this->assertSame(['vip', 'renewal'], $data['tags']);
+        $this->assertSame([11, 22, 33], $data['attachment_ids']);
+    }
+
+    public function testCreateContract_withoutSimpleArrayFields_returns201(): void
+    {
+        // tags / attachment_ids are optional simple arrays — omitting them is valid
+        $response = $this->makeRequest('POST', $this->listUrl(), [], self::VALID_CONTRACT_BODY, 'admin-token');
+        $this->assertSame(201, $response->getStatusCode());
+    }
+
+    public function testCreateContract_tagsNotAnArray_returns422(): void
+    {
+        $body = array_merge(self::VALID_CONTRACT_BODY, ['tags' => 'not-an-array']);
+        $response = $this->makeRequest('POST', $this->listUrl(), [], $body, 'admin-token');
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testCreateContract_attachmentIdsWithNonNumericElement_returns422(): void
+    {
+        // attachment_ids is an int simple array; a non-numeric element fails element-level validation
+        $body = array_merge(self::VALID_CONTRACT_BODY, ['attachment_ids' => [11, 'not-a-number', 33]]);
+        $response = $this->makeRequest('POST', $this->listUrl(), [], $body, 'admin-token');
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
     // --- View ---
 
     public function testViewContract_withAdminToken_returns200(): void
@@ -349,6 +387,22 @@ class ContractIntegrationTest extends TestCase
         $data = $response->toArray();
         $this->assertArrayHasKey('data', $data);
         $this->assertArrayHasKey('contract_uuid', $data['data']);
+    }
+
+    public function testViewContract_responseContainsStringSimpleArray(): void
+    {
+        $response = $this->makeRequest('GET', $this->itemUrl(self::VALID_UUID), [], [], 'admin-token');
+        $this->assertSame(200, $response->getStatusCode());
+        $data = $response->toArray()['data'];
+        $this->assertSame(['vip', 'enterprise', 'renewal'], $data['tags']);
+    }
+
+    public function testViewContract_responseContainsIntSimpleArray(): void
+    {
+        $response = $this->makeRequest('GET', $this->itemUrl(self::VALID_UUID), [], [], 'admin-token');
+        $this->assertSame(200, $response->getStatusCode());
+        $data = $response->toArray()['data'];
+        $this->assertSame([101, 102, 103], $data['attachment_ids']);
     }
 
     // --- Update ---
