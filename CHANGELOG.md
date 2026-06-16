@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.3.0](https://github.com/apivalk/apivalk/compare/v2.2.1...v2.3.0) (2026-06-16)
+
+
+### Features
+
+* add `SimpleArrayProperty` for scalar array validation and documentation ([#145](https://github.com/apivalk/apivalk/issues/145)) ([94007f6](https://github.com/apivalk/apivalk/commit/94007f6dbee65937d4646621ee6ef67cf435c880)), closes [#144](https://github.com/apivalk/apivalk/issues/144)
+* add Makefile, adjust DocBlock paginator handling, and update README formatting ([#143](https://github.com/apivalk/apivalk/issues/143)) ([21b5e8c](https://github.com/apivalk/apivalk/commit/21b5e8ce388f5c0c738f50e4d574c93a5685cfd3)), closes [#142](https://github.com/apivalk/apivalk/issues/142)
+
 ## [2.2.1](https://github.com/apivalk/apivalk/compare/v2.2.0...v2.2.1) (2026-05-17)
 
 
