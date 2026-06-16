@@ -196,6 +196,92 @@ PHP;
         $this->assertStringContainsString('@property float|null $weight', $updatedResource);
     }
 
+    public function testRunGeneratesSimpleArrayPropertyDocBlocks(): void
+    {
+        $resourceDir = $this->tempDir . '/Resource';
+        mkdir($resourceDir);
+
+        $resourceClassName = 'TestArrayResource_' . str_replace('.', '_', uniqid('', true));
+        $resourceFile = $resourceDir . '/' . $resourceClassName . '.php';
+        $resourceContent = <<<PHP
+<?php
+
+namespace TestNamespace\\Resource;
+
+use apivalk\\apivalk\\Documentation\\Property\\SimpleArrayProperty;
+use apivalk\\apivalk\\Documentation\\Property\\StringProperty;
+use apivalk\\apivalk\\Resource\\AbstractResource;
+
+class {$resourceClassName} extends AbstractResource
+{
+    public function getName(): string { return 'thing'; }
+    public function excludeFromMode(string \$mode): array { return []; }
+
+    protected function init(): void
+    {
+        \$this->addProperty(new StringProperty('thing_uuid', 'Identifier of the thing'));
+        \$this->addProperty(new SimpleArrayProperty('tags', 'Free-form tags', SimpleArrayProperty::TYPE_STRING));
+        \$this->addProperty(
+            (new SimpleArrayProperty('attachment_ids', 'Attached document IDs', SimpleArrayProperty::TYPE_INT))
+                ->setIsRequired(false)
+        );
+        \$this->addProperty(new SimpleArrayProperty('scores', 'Scores', SimpleArrayProperty::TYPE_NUMBER));
+        \$this->addProperty(new SimpleArrayProperty('flags', 'Flags', SimpleArrayProperty::TYPE_BOOL));
+    }
+}
+PHP;
+        file_put_contents($resourceFile, $resourceContent);
+        require_once $resourceFile;
+
+        $controllerClassName = 'TestArrayResourceController_' . str_replace('.', '_', uniqid('', true));
+        $controllerFile = $this->tempDir . '/' . $controllerClassName . '.php';
+        $controllerContent = <<<PHP
+<?php
+
+namespace TestNamespace;
+
+use apivalk\\apivalk\\Http\\Controller\\Resource\\AbstractListResourceController;
+use apivalk\\apivalk\\Http\\Request\\ApivalkRequestInterface;
+use apivalk\\apivalk\\Http\\Response\\AbstractApivalkResponse;
+use apivalk\\apivalk\\Http\\Response\\Resource\\ResourceListResponse;
+use apivalk\\apivalk\\Http\\Response\\Pagination\\PagePaginationResponse;
+use apivalk\\apivalk\\Router\\Route\\Route;
+use TestNamespace\\Resource\\{$resourceClassName};
+
+class {$controllerClassName} extends AbstractListResourceController
+{
+    protected static function buildRoute(): Route
+    {
+        return Route::get('/api/v1/things');
+    }
+
+    public static function getResourceClass(): string
+    {
+        return {$resourceClassName}::class;
+    }
+
+    public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse
+    {
+        return new ResourceListResponse([], new PagePaginationResponse(1, 25, false, 0));
+    }
+}
+PHP;
+        file_put_contents($controllerFile, $controllerContent);
+        require_once $controllerFile;
+
+        $generator = new DocBlockGenerator();
+
+        ob_start();
+        $generator->run($this->tempDir, 'TestNamespace');
+        ob_get_clean();
+
+        $updatedResource = file_get_contents($resourceFile);
+        $this->assertStringContainsString('@property string[] $tags Free-form tags', $updatedResource);
+        $this->assertStringContainsString('@property int[]|null $attachment_ids Attached document IDs', $updatedResource);
+        $this->assertStringContainsString('@property float[] $scores Scores', $updatedResource);
+        $this->assertStringContainsString('@property bool[] $flags Flags', $updatedResource);
+    }
+
     public function testRunOnlyProcessesEachResourceClassOnce(): void
     {
         $resourceDir = $this->tempDir . '/Resource';

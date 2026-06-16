@@ -40,6 +40,8 @@ class CreateCustomerController extends AbstractApivalkController
             'email'       => $request->body()->has('email') ? $request->body()->get('email')->getValue() : null,
             'phone'       => $request->body()->has('phone') ? $request->body()->get('phone')->getValue() : null,
             'status'      => $request->body()->has('status') ? $request->body()->get('status')->getValue() : null,
+            'roles'          => ['admin', 'billing'],
+            'permission_ids' => [10, 20, 30],
             'created_at'  => '2024-01-01T00:00:00Z',
             'updated_at'  => '2024-01-01T00:00:00Z',
         ];

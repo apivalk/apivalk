@@ -8,6 +8,7 @@ use apivalk\apivalk\Documentation\Property\DateProperty;
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
@@ -28,6 +29,8 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
  * @property \DateTime $start_date Contract start date
  * @property \DateTime|null $end_date Contract end date
  * @property string|null $notes Notes
+ * @property string[]|null $tags Free-form contract tags
+ * @property int[]|null $attachment_ids IDs of documents attached to the contract
  * @property string $created_at Created at
  * @property string $updated_at Updated at
  */
@@ -53,6 +56,14 @@ class ContractResource extends AbstractResource
         $this->addProperty(new DateProperty('start_date', 'Contract start date'));
         $this->addProperty((new DateProperty('end_date', 'Contract end date'))->setIsRequired(false));
         $this->addProperty((new StringProperty('notes', 'Notes'))->setMaxLength(5000)->setIsRequired(false));
+        $this->addProperty(
+            (new SimpleArrayProperty('tags', 'Free-form contract tags', SimpleArrayProperty::TYPE_STRING))
+                ->setIsRequired(false)
+        );
+        $this->addProperty(
+            (new SimpleArrayProperty('attachment_ids', 'IDs of documents attached to the contract', SimpleArrayProperty::TYPE_INT))
+                ->setIsRequired(false)
+        );
         $this->addProperty(new StringProperty('created_at', 'Created at'));
         $this->addProperty(new StringProperty('updated_at', 'Updated at'));
     }

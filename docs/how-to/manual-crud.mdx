@@ -56,6 +56,7 @@ namespace App\Http\Request\Pet;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 
@@ -67,6 +68,11 @@ class CreatePetRequest extends AbstractApivalkRequest
         $doc->addBodyProperty(new StringProperty('name', 'Pet name'));
         $doc->addBodyProperty(new EnumProperty('species', 'Species', ['cat', 'dog', 'fish']));
         $doc->addBodyProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+        // One-dimensional scalar array — accepts ["Rex", "Buddy"], validates each element is a string
+        $doc->addBodyProperty(
+            (new SimpleArrayProperty('nicknames', 'Alternate names', SimpleArrayProperty::TYPE_STRING))
+                ->setIsRequired(false)
+        );
 
         return $doc;
     }
@@ -83,12 +89,13 @@ declare(strict_types=1);
 namespace App\Http\Response\Pet;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 
 class CreatePetResponse extends AbstractApivalkResponse
 {
-    /** @var array{pet_uuid: string, name: string, species: string} */
+    /** @var array{pet_uuid: string, name: string, species: string, nicknames: string[]} */
     private $pet;
 
     public function __construct(array $pet)
@@ -108,6 +115,7 @@ class CreatePetResponse extends AbstractApivalkResponse
         $doc->addProperty(new StringProperty('pet_uuid', 'Unique identifier'));
         $doc->addProperty(new StringProperty('name', 'Pet name'));
         $doc->addProperty(new StringProperty('species', 'Species'));
+        $doc->addProperty(new SimpleArrayProperty('nicknames', 'Alternate names', SimpleArrayProperty::TYPE_STRING));
 
         return $doc;
     }
@@ -173,9 +181,11 @@ final class CreatePetController extends AbstractApivalkController
     public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
         $pet = $this->repository->create([
-            'name'    => $request->body()->name,
-            'species' => $request->body()->species,
-            'weight'  => $request->body()->weight,
+            'name'      => $request->body()->name,
+            'species'   => $request->body()->species,
+            'weight'    => $request->body()->weight,
+            // already validated and cast to string[] by the time it reaches here
+            'nicknames' => $request->body()->nicknames ?? [],
         ]);
 
         return new CreatePetResponse($pet);

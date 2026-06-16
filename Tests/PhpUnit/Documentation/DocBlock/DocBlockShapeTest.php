@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\DocBlock\DocBlockShape;
 use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
@@ -60,6 +61,25 @@ class DocBlockShapeTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $shape = new DocBlockShape('User', 'Body');
         $shape->toString('Invalid-Namespace');
+    }
+
+    public function testToStringWithSimpleArrayProperty(): void
+    {
+        $shape = new DocBlockShape('User', 'Body');
+
+        $required = new SimpleArrayProperty('tags', 'Tags', SimpleArrayProperty::TYPE_STRING);
+        $required->setIsRequired(true);
+
+        $optional = new SimpleArrayProperty('attachment_ids', 'IDs', SimpleArrayProperty::TYPE_INT);
+        $optional->setIsRequired(false);
+
+        $shape->addProperty($required);
+        $shape->addProperty($optional);
+
+        $result = $shape->toString('App\\Api\\Shape');
+
+        $this->assertStringContainsString('@property-read string[] $tags', $result);
+        $this->assertStringContainsString('@property-read int[]|null $attachment_ids', $result);
     }
 
     public function testToStringWithNamespacedPhpType(): void

@@ -50,6 +50,8 @@ class ViewContractController extends AbstractViewResourceController
         $resource->currency = 'EUR';
         $resource->status = 'active';
         $resource->start_date = '2024-01-01';
+        $resource->tags = ['vip', 'enterprise', 'renewal'];
+        $resource->attachment_ids = [101, 102, 103];
         $resource->created_at = '2024-01-01T00:00:00Z';
         $resource->updated_at = '2024-01-01T00:00:00Z';
 

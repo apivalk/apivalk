@@ -8,6 +8,7 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\DateProperty;
 use apivalk\apivalk\Documentation\Property\DateTimeProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
 use apivalk\apivalk\Router\Route\Route;
@@ -115,6 +116,30 @@ class ParameterBagFactoryTest extends TestCase
         
         $prop = new StringProperty('test');
         $this->assertEquals('123', ParameterBagFactory::typeCastValueByProperty(123, $prop));
+    }
+
+    public function testTypeCastSimpleArrayCastsElementsToItemType(): void
+    {
+        $intProp = new SimpleArrayProperty('ids', '', SimpleArrayProperty::TYPE_INT);
+        $this->assertSame([1, 2, 3], ParameterBagFactory::typeCastValueByProperty(['1', '2', '3'], $intProp));
+
+        $numberProp = new SimpleArrayProperty('prices', '', SimpleArrayProperty::TYPE_NUMBER);
+        $this->assertSame([1.5, 2.0], ParameterBagFactory::typeCastValueByProperty(['1.5', 2], $numberProp));
+
+        $stringProp = new SimpleArrayProperty('codes', '', SimpleArrayProperty::TYPE_STRING);
+        $this->assertSame(['1', '2'], ParameterBagFactory::typeCastValueByProperty([1, 2], $stringProp));
+    }
+
+    public function testTypeCastSimpleArrayDecodesJsonString(): void
+    {
+        $intProp = new SimpleArrayProperty('ids', '', SimpleArrayProperty::TYPE_INT);
+        $this->assertSame([1, 2, 3], ParameterBagFactory::typeCastValueByProperty('[1, 2, 3]', $intProp));
+    }
+
+    public function testTypeCastSimpleArrayReturnsNullForNonArray(): void
+    {
+        $intProp = new SimpleArrayProperty('ids', '', SimpleArrayProperty::TYPE_INT);
+        $this->assertNull(ParameterBagFactory::typeCastValueByProperty('not-an-array', $intProp));
     }
 
     public function testTypeCastDateTimeValue(): void

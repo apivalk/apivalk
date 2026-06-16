@@ -15,6 +15,7 @@ use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
@@ -44,6 +45,10 @@ final class ValidatorFactory
 
         if ($property instanceof StringProperty) {
             return new StringValidator($property);
+        }
+
+        if ($property instanceof SimpleArrayProperty) {
+            return new SimpleArrayValidator($property);
         }
 
         if ($property instanceof ArrayProperty) {

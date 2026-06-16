@@ -33,6 +33,7 @@ namespace App\Resource;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
@@ -83,11 +84,18 @@ class AnimalResource extends AbstractResource
         $this->addProperty(new StringProperty('name', 'Animal name'));
         $this->addProperty(new EnumProperty('status', 'Lifecycle status', ['active', 'archived']));
         $this->addProperty((new FloatProperty('weight', 'Weight in kg'))->setIsRequired(false));
+        // One-dimensional scalar array — no object wrapper needed
+        $this->addProperty(
+            (new SimpleArrayProperty('tags', 'Free-form labels', SimpleArrayProperty::TYPE_STRING))
+                ->setIsRequired(false)
+        );
     }
 }
 ```
 
 The identifier (`animal_uuid`) is a regular property declared first by convention. Excluding it from `MODE_CREATE` removes it from the create request body documentation — the server generates it.
+
+`tags` is a [`SimpleArrayProperty`](/documentation/property#simplearrayproperty): a plain list of scalars (`["friendly", "indoor"]`). Each element is validated against the declared item type and cast on the way in, so `$animal->tags` is always a `string[]`. Reach for the object-based [`ArrayProperty`](/how-to/complex-objects) only when the list holds objects.
 
 ## 2. Wire the five controllers
 
