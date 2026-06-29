@@ -92,6 +92,64 @@ class FilesystemCacheTest extends TestCase
         $this->assertFalse($cache->has('key2'));
     }
 
+    public function testDeleteReturnsTrueWhenFileAlreadyGone(): void
+    {
+        $cache = new FilesystemCache($this->cacheDir);
+
+        $this->assertTrue($cache->delete('never_existed'));
+    }
+
+    public function testDeleteSurvivesHandlerThatPromotesWarningToException(): void
+    {
+        $cache = new FilesystemCache($this->cacheDir);
+        $cache->set(new CacheItem('racy_key', 'value'));
+
+        $reflection = new \ReflectionMethod(FilesystemCache::class, 'getCacheFilePath');
+        $reflection->setAccessible(true);
+        $path = $reflection->invoke($cache, 'racy_key');
+
+        // Simulate a concurrent process winning the unlink race after our guard would have passed.
+        $this->assertFileExists($path);
+        unlink($path);
+
+        // Mirror CRMI's ErrorHandler: promote every PHP warning to an exception, ignoring @-suppression.
+        set_error_handler(static function (int $errno, string $message): bool {
+            throw new \ErrorException($message, 0, $errno);
+        });
+
+        try {
+            $result = $cache->delete('racy_key');
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertTrue($result, 'delete() must report success when the file is already gone');
+    }
+
+    public function testClearSurvivesHandlerThatPromotesWarningToException(): void
+    {
+        $cache = new FilesystemCache($this->cacheDir);
+        $cache->set(new CacheItem('key1', 'val1'));
+        $cache->set(new CacheItem('key2', 'val2'));
+
+        set_error_handler(static function (int $errno, string $message): bool {
+            throw new \ErrorException($message, 0, $errno);
+        });
+
+        try {
+            // Remove the files out from under clear() to mimic a concurrent deletion.
+            foreach (glob($this->cacheDir . '/*.cache') as $file) {
+                unlink($file);
+            }
+            $cache->clear();
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertFalse($cache->has('key1'));
+        $this->assertFalse($cache->has('key2'));
+    }
+
     public function testTtlValidation(): void
     {
         $cache = new FilesystemCache($this->cacheDir);
