@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.3.1](https://github.com/apivalk/apivalk/compare/v2.3.0...v2.3.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* improve cache handling for FilesystemCache and RouteCacheFactory ([#148](https://github.com/apivalk/apivalk/issues/148)) ([6004b54](https://github.com/apivalk/apivalk/commit/6004b54ff88d209f5550cea563a88ddfdbb0aa6a)), closes [#147](https://github.com/apivalk/apivalk/issues/147)
+
 ## [2.3.0](https://github.com/apivalk/apivalk/compare/v2.2.1...v2.3.0) (2026-06-16)
 
 
