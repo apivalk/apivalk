@@ -10,6 +10,13 @@ use apivalk\apivalk\Router\AbstractRouter;
 
 class RouteCacheFactory
 {
+    /**
+     * Route entries live longer than the index so that an expired index always triggers a
+     * rebuild while its route files are still present, avoiding a window where the index
+     * references already-expired route files.
+     */
+    private const ROUTE_CACHE_LIFETIME_BUFFER = 60;
+
     /** @var AbstractRouter */
     private $abstractRouter;
 
@@ -26,8 +33,6 @@ class RouteCacheFactory
         if ($cacheIndex instanceof CacheItem) {
             return;
         }
-
-        $cache->clear();
 
         $cacheIndex = [];
 
@@ -53,7 +58,7 @@ class RouteCacheFactory
                 new CacheItem(
                     $routeCacheKey,
                     json_encode(RouteJsonSerializer::serialize($route)),
-                    $cache->getDefaultCacheLifetime()
+                    $cache->getDefaultCacheLifetime() + self::ROUTE_CACHE_LIFETIME_BUFFER
                 )
             );
 
