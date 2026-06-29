@@ -55,25 +55,45 @@ class FilesystemCache implements CacheInterface
 
     public function set(CacheItem $cacheItem): bool
     {
-        return (bool)file_put_contents(
-            $this->getCacheFilePath($cacheItem->getKey()),
-            $cacheItem->toJson()
-        );
+        $path = $this->getCacheFilePath($cacheItem->getKey());
+        $tmpPath = \sprintf('%s.%d.tmp', $path, getmypid());
+
+        if (file_put_contents($tmpPath, $cacheItem->toJson()) === false) {
+            return false;
+        }
+
+        if (!rename($tmpPath, $path)) {
+            @unlink($tmpPath);
+            return false;
+        }
+
+        return true;
     }
 
     public function delete(string $key): bool
     {
-        if (!file_exists($this->getCacheFilePath($key))) {
-            return true;
+        $path = $this->getCacheFilePath($key);
+
+        try {
+            if (@unlink($path)) {
+                return true;
+            }
+        } catch (\Throwable $exception) {
+            // A strict error handler may promote unlink()'s warning to an exception when a
+            // concurrent process removed the file first; the desired state is still reached.
         }
 
-        return unlink($this->getCacheFilePath($key));
+        return !file_exists($path);
     }
 
     public function clear(): void
     {
         foreach (glob(\sprintf('%s/*.cache', $this->cacheDir)) as $file) {
-            unlink($file);
+            try {
+                @unlink($file);
+            } catch (\Throwable $exception) {
+                // Another process may have removed this file concurrently; nothing left to do.
+            }
         }
     }
 
