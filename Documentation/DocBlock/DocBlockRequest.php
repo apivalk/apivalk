@@ -18,6 +18,8 @@ class DocBlockRequest
     private $filteringShape;
     /** @var string|null */
     private $paginatorClass;
+    /** @var DocBlockShape|null */
+    private $fileShape;
 
     public function __construct(
         DocBlockShape $bodyShape,
@@ -25,7 +27,8 @@ class DocBlockRequest
         DocBlockShape $queryShape,
         DocBlockShape $sortingShape,
         DocBlockShape $filteringShape,
-        ?string $paginatorClass
+        ?string $paginatorClass,
+        ?DocBlockShape $fileShape = null
     ) {
         $this->bodyShape = $bodyShape;
         $this->pathShape = $pathShape;
@@ -33,6 +36,7 @@ class DocBlockRequest
         $this->sortingShape = $sortingShape;
         $this->filteringShape = $filteringShape;
         $this->paginatorClass = $paginatorClass;
+        $this->fileShape = $fileShape;
     }
 
     public function getBodyShape(): DocBlockShape
@@ -60,6 +64,12 @@ class DocBlockRequest
         return $this->filteringShape;
     }
 
+    /** Is only present when the request declares uploaded files. */
+    public function getFileShape(): ?DocBlockShape
+    {
+        return $this->fileShape;
+    }
+
     public function getRequestDocBlockOnly(string $shapeNamespace): string
     {
         $lines = [
@@ -70,6 +80,10 @@ class DocBlockRequest
             ' * @method \\apivalk\\apivalk\\Router\\Route\\Sort\\SortBag|\\' . $shapeNamespace . '\\' . $this->sortingShape->getClassName() . ' sorting()',
             ' * @method \\apivalk\\apivalk\\Router\\Route\\Filter\\FilterBag|\\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()',
         ];
+
+        if ($this->hasFileShape()) {
+            $lines[] = ' * @method \\apivalk\\apivalk\\Http\\Request\\File\\FileBag|\\' . $shapeNamespace . '\\' . $this->fileShape->getClassName() . ' file()';
+        }
 
         if ($this->paginatorClass !== null) {
             $lines[] = ' * @method \\' . $this->paginatorClass . ' paginator()';
@@ -85,12 +99,24 @@ class DocBlockRequest
 
     public function getShapeFilenames(string $requestFolder): array
     {
-        return [
+        $filenames = [
             'path' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->pathShape->getClassName()),
             'query' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->queryShape->getClassName()),
             'body' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->bodyShape->getClassName()),
             'sorting' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->sortingShape->getClassName()),
             'filtering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->filteringShape->getClassName()),
         ];
+
+        // Requests without uploads must not get an empty file shape written next to them.
+        if ($this->hasFileShape()) {
+            $filenames['file'] = \sprintf('%s/Shape/%s.php', $requestFolder, $this->fileShape->getClassName());
+        }
+
+        return $filenames;
+    }
+
+    public function hasFileShape(): bool
+    {
+        return $this->fileShape !== null && $this->fileShape->hasProperties();
     }
 }

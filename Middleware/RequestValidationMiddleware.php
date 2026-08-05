@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Middleware;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\FileProperty;
+use apivalk\apivalk\Documentation\Property\Validator\FileValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -34,6 +37,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
         $this->validateProperties($documentation->getBodyProperties(), $request->body());
         $this->validateProperties($documentation->getQueryProperties(), $request->query());
         $this->validateProperties($documentation->getPathProperties(), $request->path());
+        $this->validateFiles($documentation->getFileProperties(), $request->file());
         $this->validateFilters($request->filtering());
         $this->validateSortings($request->sorting(), $documentation->getAvailableSortFields());
 
@@ -59,6 +63,34 @@ class RequestValidationMiddleware implements MiddlewareInterface
                     'order_by',
                     new ValidatorResult(false, \sprintf('Invalid sort field "%s"', $sort->getField()))
                 );
+            }
+        }
+    }
+
+    /**
+     * @param array<string, FileProperty> $fileProperties
+     */
+    private function validateFiles(array $fileProperties, FileBag $fileBag): void
+    {
+        foreach ($fileProperties as $property) {
+            $file = $fileBag->get($property->getPropertyName());
+
+            if ($file === null) {
+                if ($property->isRequired()) {
+                    $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                        $property->getPropertyName(),
+                        new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
+                    );
+                }
+
+                continue;
+            }
+
+            $validatorResult = (new FileValidator($property))->validate($file);
+
+            if (!$validatorResult->isSuccess()) {
+                $this->errors[] =
+                    ValidationErrorObject::createByValidatorResult($property->getPropertyName(), $validatorResult);
             }
         }
     }

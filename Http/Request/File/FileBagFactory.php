@@ -10,18 +10,24 @@ final class FileBagFactory
     {
         $requestFileBag = new FileBag();
 
-        foreach ($_FILES as $file) {
+        foreach ($_FILES as $fieldName => $file) {
             $fileInformations = self::normalizeUploadedFiles($file);
+            $holdsSeveralFiles = \count($fileInformations) > 1;
 
-            foreach ($fileInformations as $fileInformation) {
+            foreach ($fileInformations as $index => $fileInformation) {
+                // A single field carrying several files needs distinct keys, mirroring the HTML array notation.
+                $key = $holdsSeveralFiles ? \sprintf('%s[%d]', $fieldName, $index) : (string)$fieldName;
+
                 $requestFileBag->set(
                     new File(
                         $fileInformation['name'],
                         $fileInformation['type'],
                         $fileInformation['tmp_name'],
                         $fileInformation['error'],
-                        $fileInformation['size']
-                    )
+                        $fileInformation['size'],
+                        (string)$fieldName
+                    ),
+                    $key
                 );
             }
         }

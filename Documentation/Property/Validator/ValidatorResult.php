@@ -9,6 +9,12 @@ class ValidatorResult
     /** @var string */
     public const FIELD_IS_REQUIRED = 'field_is_required';
     /** @var string */
+    public const FILE_IS_LARGER_THAN_MAX_SIZE = 'file_is_larger_than_max_size';
+    /** @var string */
+    public const FILE_MEDIA_TYPE_IS_NOT_ALLOWED = 'file_media_type_is_not_allowed';
+    /** @var string */
+    public const FILE_UPLOAD_FAILED = 'file_upload_failed';
+    /** @var string */
     public const VALUE_DOES_NOT_MATCH_PATTERN = 'value_does_not_match_pattern';
     /** @var string */
     public const VALUE_IS_HIGHER_THAN_MAXIMUM = 'value_is_higher_than_maximum';
@@ -63,6 +69,15 @@ class ValidatorResult
         switch ($this->errorKey) {
             case self::FIELD_IS_REQUIRED:
                 return 'This field is required.';
+
+            case self::FILE_IS_LARGER_THAN_MAX_SIZE:
+                return 'This file is larger than the maximum allowed size.';
+
+            case self::FILE_MEDIA_TYPE_IS_NOT_ALLOWED:
+                return 'This file has a media type that is not allowed.';
+
+            case self::FILE_UPLOAD_FAILED:
+                return 'This file could not be uploaded.';
 
             case self::VALUE_DOES_NOT_MATCH_PATTERN:
                 return 'This value does not match the required pattern.';

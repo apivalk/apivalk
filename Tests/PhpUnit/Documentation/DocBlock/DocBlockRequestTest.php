@@ -111,5 +111,46 @@ class DocBlockRequestTest extends TestCase
         $this->assertEquals('src/Api/Shape/UserBodyShape.php', $filenames['body']);
         $this->assertEquals('src/Api/Shape/UserSortingShape.php', $filenames['sorting']);
         $this->assertEquals('src/Api/Shape/UserFilteringShape.php', $filenames['filtering']);
+        $this->assertArrayNotHasKey('file', $filenames);
+    }
+
+    public function testRequestWithoutFilePropertiesHasNoFileShape(): void
+    {
+        $request = $this->createRequest(null, new DocBlockShape('User', 'File'));
+
+        $this->assertFalse($request->hasFileShape());
+        $this->assertStringNotContainsString('file()', $request->getRequestDocBlockOnly('App\\Api\\Shape'));
+    }
+
+    public function testDeclaredFilePropertyAddsTheFileShape(): void
+    {
+        $fileShape = new DocBlockShape('User', 'File');
+        $fileShape->addCustomField('avatar', '\\apivalk\\apivalk\\Http\\Request\\File\\File');
+
+        $request = $this->createRequest(null, $fileShape);
+
+        $this->assertTrue($request->hasFileShape());
+        $this->assertSame($fileShape, $request->getFileShape());
+        $this->assertStringContainsString(
+            '@method \apivalk\apivalk\Http\Request\File\FileBag|\\App\\Api\\Shape\\UserFileShape file()',
+            $request->getRequestDocBlockOnly('App\\Api\\Shape')
+        );
+        $this->assertEquals(
+            'src/Api/Shape/UserFileShape.php',
+            $request->getShapeFilenames('src/Api')['file']
+        );
+    }
+
+    private function createRequest(?string $paginatorClass, ?DocBlockShape $fileShape): DocBlockRequest
+    {
+        return new DocBlockRequest(
+            new DocBlockShape('User', 'Body'),
+            new DocBlockShape('User', 'Path'),
+            new DocBlockShape('User', 'Query'),
+            new DocBlockShape('User', 'Sorting'),
+            new DocBlockShape('User', 'Filtering'),
+            $paginatorClass,
+            $fileShape
+        );
     }
 }
