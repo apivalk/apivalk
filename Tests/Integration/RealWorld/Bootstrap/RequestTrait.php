@@ -42,13 +42,17 @@ trait RequestTrait
         $_FILES = [];
     }
 
+    /**
+     * @param array<string, mixed> $files Uploaded files in $_FILES shape, for multipart requests
+     */
     protected function makeRequest(
         string $method,
         string $path,
         array $query = [],
         array $body = [],
         ?string $token = null,
-        string $ip = '127.0.0.1'
+        string $ip = '127.0.0.1',
+        array $files = []
     ): AbstractApivalkResponse {
         $_SERVER['REQUEST_METHOD'] = strtoupper($method);
         $_SERVER['REQUEST_URI']    = $path . ($query ? '?' . http_build_query($query) : '');
@@ -58,8 +62,9 @@ trait RequestTrait
             $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
         }
 
-        $_GET  = $query;
-        $_POST = $body;
+        $_GET   = $query;
+        $_POST  = $body;
+        $_FILES = $files;
 
         return $this->apivalk->run();
     }

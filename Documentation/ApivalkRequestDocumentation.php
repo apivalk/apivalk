@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
+use apivalk\apivalk\Documentation\Property\FileProperty;
 
 class ApivalkRequestDocumentation
 {
@@ -14,6 +15,8 @@ class ApivalkRequestDocumentation
     private $queryProperties = [];
     /** @var array<string, AbstractProperty> */
     private $pathProperties = [];
+    /** @var array<string, FileProperty> */
+    private $fileProperties = [];
     /** @var string[] */
     private $availableSortFields = [];
 
@@ -45,6 +48,18 @@ class ApivalkRequestDocumentation
     public function getPathProperties(): array
     {
         return $this->pathProperties;
+    }
+
+    /** Declares an uploaded file of a multipart/form-data request. */
+    public function addFileProperty(FileProperty $property): void
+    {
+        $this->fileProperties[$property->getPropertyName()] = $property;
+    }
+
+    /** @return array<string, FileProperty> */
+    public function getFileProperties(): array
+    {
+        return $this->fileProperties;
     }
 
     public function addAvailableSortField(string $field): void

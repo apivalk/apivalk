@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\DocBlock;
 
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Http\Request\File\File;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
 use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
@@ -26,6 +27,7 @@ final class DocBlockRequestGenerator
         $queryShape = new DocBlockShape($requestName, 'Query');
         $sortingShape = new DocBlockShape($requestName, 'Sorting');
         $filteringShape = new DocBlockShape($requestName, 'Filtering');
+        $fileShape = new DocBlockShape($requestName, 'File');
 
         foreach ($documentation->getBodyProperties() as $property) {
             $bodyShape->addProperty($property);
@@ -41,6 +43,14 @@ final class DocBlockRequestGenerator
 
         foreach ($documentation->getQueryProperties() as $property) {
             $queryShape->addProperty($property);
+        }
+
+        // The file bag holds File objects, not the property's PHP type, so the type is declared explicitly.
+        foreach ($documentation->getFileProperties() as $property) {
+            $fileShape->addCustomField(
+                $property->getPropertyName(),
+                $property->isRequired() ? '\\' . File::class : '\\' . File::class . '|null'
+            );
         }
 
         foreach ($route->getSortings() as $ordering) {
@@ -72,7 +82,8 @@ final class DocBlockRequestGenerator
             $queryShape,
             $sortingShape,
             $filteringShape,
-            $paginatorClass
+            $paginatorClass,
+            $fileShape
         );
     }
 }

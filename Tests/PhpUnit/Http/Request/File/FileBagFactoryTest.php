@@ -49,9 +49,42 @@ class FileBagFactoryTest extends TestCase
 
         $bag = FileBagFactory::create();
         $this->assertCount(3, $bag);
-        $this->assertTrue($bag->has('avatar.png'));
-        $this->assertTrue($bag->has('doc1.pdf'));
-        $this->assertTrue($bag->has('doc2.pdf'));
+        $this->assertTrue($bag->has('avatar'));
+        // A field carrying several files is disambiguated by index.
+        $this->assertTrue($bag->has('documents[0]'));
+        $this->assertTrue($bag->has('documents[1]'));
+    }
+
+    public function testCreateKeepsTheFormFieldNameOnEveryFile(): void
+    {
+        $_FILES = [
+            'avatar' => [
+                'name' => 'avatar.png',
+                'type' => 'image/png',
+                'tmp_name' => '/tmp/php1',
+                'error' => UPLOAD_ERR_OK,
+                'size' => 100
+            ],
+            'documents' => [
+                'name' => ['doc1.pdf', 'doc2.pdf'],
+                'type' => ['application/pdf', 'application/pdf'],
+                'tmp_name' => ['/tmp/php2', '/tmp/php3'],
+                'error' => [UPLOAD_ERR_OK, UPLOAD_ERR_OK],
+                'size' => [200, 300]
+            ]
+        ];
+
+        $bag = FileBagFactory::create();
+
+        $avatar = $bag->get('avatar');
+        $this->assertNotNull($avatar);
+        $this->assertEquals('avatar', $avatar->getFieldName());
+        $this->assertEquals('avatar.png', $avatar->getName());
+
+        $document = $bag->get('documents[1]');
+        $this->assertNotNull($document);
+        $this->assertEquals('documents', $document->getFieldName());
+        $this->assertEquals('doc2.pdf', $document->getName());
     }
 
     public function testNormalizeUploadedFilesSingle(): void

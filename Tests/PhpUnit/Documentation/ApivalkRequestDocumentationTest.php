@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\FileProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use PHPUnit\Framework\TestCase;
 
@@ -48,5 +49,24 @@ class ApivalkRequestDocumentationTest extends TestCase
         $this->assertCount(1, $pathProperties);
         $this->assertArrayHasKey('testPath', $pathProperties);
         $this->assertSame($property, $pathProperties['testPath']);
+    }
+
+    public function testAddAndGetFileProperties(): void
+    {
+        $property = new FileProperty('file', 'Test Description');
+        $this->requestDocumentation->addFileProperty($property);
+
+        $fileProperties = $this->requestDocumentation->getFileProperties();
+        $this->assertCount(1, $fileProperties);
+        $this->assertArrayHasKey('file', $fileProperties);
+        $this->assertSame($property, $fileProperties['file']);
+    }
+
+    public function testFilePropertiesAreKeptApartFromBodyProperties(): void
+    {
+        $this->requestDocumentation->addFileProperty(new FileProperty('file'));
+
+        $this->assertCount(0, $this->requestDocumentation->getBodyProperties());
+        $this->assertCount(1, $this->requestDocumentation->getFileProperties());
     }
 }
