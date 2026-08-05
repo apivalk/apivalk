@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.4.0](https://github.com/apivalk/apivalk/compare/v2.3.1...v2.4.0) (2026-08-05)
+
+
+### Features
+
+* add multipart file upload support ([#155](https://github.com/apivalk/apivalk/issues/155)) ([b977f60](https://github.com/apivalk/apivalk/commit/b977f60f433060e1bba22786d4eac40e5e722b6c)), closes [#153](https://github.com/apivalk/apivalk/issues/153)
+
 ## [2.3.1](https://github.com/apivalk/apivalk/compare/v2.3.0...v2.3.1) (2026-06-29)
 
 
