@@ -17,6 +17,7 @@ Apivalk provides several built-in property classes:
 | `DateTimeProperty`       | Date-time values (ISO 8601)    | `\DateTime` | `string`     |
 | `ByteProperty`           | Base64-encoded data            | `string`    | `string`     |
 | `BinaryProperty`         | Raw binary data                | `string`    | `string`     |
+| `FileProperty`           | Uploaded file (multipart)      | `string`    | `string`     |
 | `BooleanProperty`        | True/False values              | `bool`      | `boolean`    |
 | `SimpleArrayProperty`    | List of scalars (one-dimensional) | `int[]` / `string[]` / `float[]` / `bool[]` | `array` |
 | `ArrayProperty`          | List of objects                | `array`     | `array`      |
@@ -125,6 +126,45 @@ For raw binary data (e.g., file uploads). Automatically sets the OpenAPI format 
 
 ```php
 $prop = new BinaryProperty('file', 'Uploaded file content');
+```
+
+<Note>
+  `BinaryProperty` describes binary data inside the request **body**. For an actual
+  `multipart/form-data` upload use `FileProperty` — body properties are never populated from `$_FILES`.
+</Note>
+
+### `FileProperty`
+
+For files uploaded as `multipart/form-data`. Unlike every other property the value does not live in a parameter
+bag but in the request's file bag, so it is declared with `addFileProperty()` and validated by the `FileValidator`.
+Declaring at least one file property also switches the generated OpenAPI request body to `multipart/form-data`.
+
+* `setMaxSizeInBytes(?int)`: Rejects larger uploads with `file_is_larger_than_max_size`.
+* `setAllowedMediaTypes(string[])`: Whitelist of media types. The type is detected from the file contents, the
+  client supplied `Content-Type` is never trusted. An empty list accepts every type.
+
+```php
+public static function getDocumentation(): ApivalkRequestDocumentation
+{
+    $documentation = new ApivalkRequestDocumentation();
+
+    $file = new FileProperty('file', 'The document to archive');
+    $file->setMaxSizeInBytes(32 * 1024 * 1024)
+        ->setAllowedMediaTypes(['application/pdf']);
+
+    $documentation->addFileProperty($file);
+    $documentation->addBodyProperty(new StringProperty('document_type', 'The document type'));
+
+    return $documentation;
+}
+```
+
+Declared file properties are picked up by the DocBlock generator, which adds a `file()` shape to the request just
+like the body, query and path shapes. In the controller the file is then read from the file bag with typed access:
+
+```php
+$file = $request->file()->file;      // ?File, typed through the generated file shape
+$contents = $file->getContents();
 ```
 
 ### `SimpleArrayProperty`

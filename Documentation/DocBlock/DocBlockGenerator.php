@@ -176,13 +176,19 @@ class DocBlockGenerator
 
         $filenames = $docBlockRequest->getShapeFilenames(dirname($filePath));
 
-        foreach ([
+        $shapes = [
             'path'      => [$docBlockRequest->getPathShape(), $shapeNamespace],
             'query'     => [$docBlockRequest->getQueryShape(), $shapeNamespace],
             'body'      => [$docBlockRequest->getBodyShape(), $shapeNamespace],
             'sorting'   => [$docBlockRequest->getSortingShape(), $shapeNamespace],
             'filtering' => [$docBlockRequest->getFilteringShape(), $shapeNamespace],
-        ] as $key => [$shape, $ns]) {
+        ];
+
+        if ($docBlockRequest->hasFileShape()) {
+            $shapes['file'] = [$docBlockRequest->getFileShape(), $shapeNamespace];
+        }
+
+        foreach ($shapes as $key => [$shape, $ns]) {
             if (file_put_contents($filenames[$key], $shape->toString($ns)) === false) {
                 throw new \RuntimeException(\sprintf('Failed to write %s shape file', $key));
             }

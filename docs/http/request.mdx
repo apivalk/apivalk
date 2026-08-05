@@ -60,7 +60,7 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     // Access headers
     $token = $request->header()->Authorization;
     
-    // Access uploaded files (returns File object)
+    // Access uploaded files by form field name (returns File object)
     $image = $request->file()->get('avatar');
 
     // Access populated sorting (as defined in Route). SortBag is iterable —
@@ -73,6 +73,33 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
     }
 }
 ```
+
+## Uploaded Files
+
+Files arrive as `multipart/form-data` and live in their own bag, keyed by the **form field name**. A field carrying
+several files (`documents[]`) is disambiguated by index: `documents[0]`, `documents[1]`.
+
+```php
+$file = $request->file()->file;   // same as $request->file()->get('file')
+
+if ($file !== null) {
+    $file->getFieldName();          // 'file'
+    $file->getName();               // client supplied filename
+    $file->getSize();               // bytes
+    $file->getDetectedMediaType();  // detected from the contents, not from the client
+    $file->getContents();           // throws when the upload failed or is unreadable
+}
+```
+
+Declare uploads with `addFileProperty()` so that size and media type are validated by the framework, the request
+gets a generated `file()` shape for typed access, and the OpenAPI request body is generated as
+`multipart/form-data` — see [FileProperty](/documentation/property#fileproperty).
+
+<Warning>
+  Text fields of a multipart request are populated as normal body properties, but the file itself never reaches
+  the body bag. Declaring a file as a `BinaryProperty` body property therefore fails validation even though the
+  upload arrived.
+</Warning>
 
 ### Magic Getters
 
