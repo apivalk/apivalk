@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Population\Strategy;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
-use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\FilteringPopulationStrategy;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
@@ -20,159 +25,155 @@ class FilteringPopulationStrategyTest extends TestCase
 {
     protected function tearDown(): void
     {
-        unset($_GET['filter']);
+        $_GET = [];
         parent::tearDown();
     }
 
-    public function testFiltersWithNoQueryParamsHaveNullValues(): void
+    /**
+     * @param FilterInterface[] $filters
+     */
+    private function populate(array $filters): FilterBag
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
-
         $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
+        $route->filtering($filters);
 
-        $queryBag = new ParameterBag();
-        $request = $this->makeRequest($queryBag);
+        $request = $this->makeRequest();
+        (new FilteringPopulationStrategy())->populate(
+            $request,
+            new RequestPopulationContext($route, new ApivalkRequestDocumentation())
+        );
 
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        $filterBag = $request->filtering();
-        self::assertTrue($filterBag->has('status'));
-        self::assertNull($filterBag->get('status')->getValue());
+        return $request->filtering();
     }
 
-    public function testFiltersPickUpValueFromQueryBag(): void
+    public function testDeclaredFilterWithoutInputIsPresentButEmpty(): void
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::EQ)]);
 
-        $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
-
-        $queryBag = new ParameterBag();
-        $queryBag->set(new Parameter('status', 'active', 'active'));
-        $request = $this->makeRequest($queryBag);
-
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        $filterBag = $request->filtering();
-        self::assertSame('active', $filterBag->get('status')->getValue());
+        self::assertTrue($filters->has('status'));
+        self::assertSame([], $filters->get('status')->conditions());
+        self::assertFalse($filters->get('status')->has(Operator::EQ));
     }
 
-    public function testFilterCloneDoesNotMutateOriginalRoute(): void
+    public function testFlatNotationUsesTheFirstDeclaredOperator(): void
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
+        $_GET['status'] = 'active';
 
-        $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
+        $filters = $this->populate([
+            new StringFilter(new StringProperty('status'), Operator::EQ, Operator::LIKE),
+        ]);
 
-        $queryBag = new ParameterBag();
-        $queryBag->set(new Parameter('status', 'active', 'active'));
-        $request = $this->makeRequest($queryBag);
-
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        self::assertNull($route->getFilters()[0]->getValue());
+        self::assertTrue($filters->get('status')->has(Operator::EQ));
+        self::assertSame('active', $filters->status->equal);
+        self::assertSame('active', $filters->get('status')->raw(Operator::EQ));
+        self::assertFalse($filters->get('status')->has(Operator::LIKE));
     }
 
-    public function testEmptyRouteFiltersProducesEmptyFilterBag(): void
+    public function testBracketNotationCarriesSeveralOperatorsOnOneField(): void
     {
-        $route = Route::get('/api/v1/animals');
+        $_GET['weight'] = ['gte' => '5', 'lte' => '20'];
 
-        $request = $this->makeRequest(new ParameterBag());
+        $filters = $this->populate([
+            new IntegerFilter(new IntegerProperty('weight'), Operator::GTE, Operator::LTE),
+        ]);
 
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        self::assertCount(0, $request->filtering());
+        self::assertSame(5, $filters->weight->greaterThanOrEqual);
+        self::assertSame(20, $filters->weight->lessThanOrEqual);
+        self::assertSame('5', $filters->get('weight')->raw(Operator::GTE));
     }
 
-    public function testBracketFilterPicksUpValue(): void
+    public function testValuesAreCastToThePropertyType(): void
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
+        $_GET['born'] = ['gt' => '2020-01-15'];
 
-        $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
+        $filters = $this->populate([new DateFilter(new DateProperty('born'), Operator::GT)]);
 
+        self::assertInstanceOf(\DateTime::class, $filters->born->greaterThan);
+    }
+
+    public function testInIsSplitOnCommasAndCastPerItem(): void
+    {
+        $_GET['weight'] = ['in' => '5, 20,7'];
+
+        $filters = $this->populate([new IntegerFilter(new IntegerProperty('weight'), Operator::IN)]);
+
+        self::assertSame([5, 20, 7], $filters->weight->in);
+    }
+
+    public function testNullOperatorTakesABoolean(): void
+    {
+        $_GET['status'] = ['null' => 'true'];
+
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::NULL)]);
+
+        self::assertTrue($filters->status->isNull);
+    }
+
+    public function testAnOperatorTheFieldDoesNotAllowBecomesAViolation(): void
+    {
+        $_GET['status'] = ['like' => 'act'];
+
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::EQ)]);
+
+        self::assertSame([['field' => 'status', 'operator' => 'like']], $filters->getViolations());
+        self::assertSame([], $filters->get('status')->conditions());
+    }
+
+    public function testAnUnknownOperatorBecomesAViolation(): void
+    {
+        $_GET['status'] = ['0' => 'active'];
+
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::EQ)]);
+
+        self::assertSame([['field' => 'status', 'operator' => '0']], $filters->getViolations());
+    }
+
+    public function testANonScalarOperatorValueBecomesAViolation(): void
+    {
+        $_GET['status'] = ['eq' => ['active', 'draft']];
+
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::EQ)]);
+
+        self::assertSame([['field' => 'status', 'operator' => 'eq']], $filters->getViolations());
+    }
+
+    public function testTheLegacyFilterWrapperNoLongerResolves(): void
+    {
         $_GET['filter'] = ['status' => 'active'];
-        $request = $this->makeRequest(new ParameterBag());
 
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
+        $filters = $this->populate([new StringFilter(new StringProperty('status'), Operator::EQ)]);
 
-        self::assertSame('active', $request->filtering()->get('status')->getValue());
-        self::assertSame('active', $request->filtering()->get('status')->getRawValue());
+        self::assertSame([], $filters->get('status')->conditions());
+        self::assertSame([], $filters->getViolations());
     }
 
-    public function testFlatNotationTakesPrecedenceOverBracket(): void
+    public function testPopulationDoesNotMutateTheRouteFilter(): void
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
+        $_GET['status'] = 'active';
 
+        $declared = new StringFilter(new StringProperty('status'), Operator::EQ);
         $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
+        $route->filtering([$declared]);
 
-        $_GET['filter'] = ['status' => 'bracket'];
-        $queryBag = new ParameterBag();
-        $queryBag->set(new Parameter('status', 'flat', 'flat'));
-        $request = $this->makeRequest($queryBag);
+        $request = $this->makeRequest();
+        (new FilteringPopulationStrategy())->populate(
+            $request,
+            new RequestPopulationContext($route, new ApivalkRequestDocumentation())
+        );
 
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        self::assertSame('flat', $request->filtering()->get('status')->getValue());
+        self::assertSame('active', $request->filtering()->status->equal);
+        self::assertSame([], $declared->conditions());
     }
 
-    public function testBracketFilterNonScalarValueIsIgnored(): void
+    private function makeRequest(): AbstractApivalkRequest
     {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
-
-        $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
-
-        $_GET['filter'] = ['status' => ['active', 'pending']];
-        $request = $this->makeRequest(new ParameterBag());
-
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        self::assertNull($request->filtering()->get('status')->getValue());
-        self::assertNull($request->filtering()->get('status')->getRawValue());
-    }
-
-    public function testBracketFilterUnknownFieldIsIgnored(): void
-    {
-        $property = new StringProperty('status');
-        $filter = StringFilter::equals($property);
-
-        $route = Route::get('/api/v1/animals');
-        $route->filtering([$filter]);
-
-        $_GET['filter'] = ['unknown_field' => 'value'];
-        $request = $this->makeRequest(new ParameterBag());
-
-        $strategy = new FilteringPopulationStrategy();
-        $strategy->populate($request, new RequestPopulationContext($route, new ApivalkRequestDocumentation()));
-
-        self::assertNull($request->filtering()->get('status')->getValue());
-    }
-
-    private function makeRequest(ParameterBag $queryBag): AbstractApivalkRequest
-    {
-        return new class($queryBag) extends AbstractApivalkRequest {
+        return new class() extends AbstractApivalkRequest {
             private ParameterBag $queryBag;
             private FilterBag $filterBag;
 
-            public function __construct(ParameterBag $queryBag)
+            public function __construct()
             {
-                $this->queryBag = $queryBag;
+                $this->queryBag = new ParameterBag();
                 $this->filterBag = new FilterBag();
             }
 

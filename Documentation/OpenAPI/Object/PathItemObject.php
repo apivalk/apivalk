@@ -23,6 +23,7 @@ class PathItemObject implements ObjectInterface
     private ?OperationObject $head;
     private ?OperationObject $patch;
     private ?OperationObject $trace;
+    private ?OperationObject $query;
     /** @var ParameterObject[] */
     private array $parameters;
 
@@ -37,7 +38,8 @@ class PathItemObject implements ObjectInterface
         ?OperationObject $head = null,
         ?OperationObject $patch = null,
         ?OperationObject $trace = null,
-        array $parameters = []
+        array $parameters = [],
+        ?OperationObject $query = null
     ) {
         $this->summary = $summary;
         $this->description = $description;
@@ -50,6 +52,7 @@ class PathItemObject implements ObjectInterface
         $this->patch = $patch;
         $this->trace = $trace;
         $this->parameters = $parameters;
+        $this->query = $query;
     }
 
     public function getSummary(): ?string
@@ -102,6 +105,11 @@ class PathItemObject implements ObjectInterface
         return $this->trace;
     }
 
+    public function getQuery(): ?OperationObject
+    {
+        return $this->query;
+    }
+
     /**
      * @return ParameterObject[]
      */
@@ -128,6 +136,7 @@ class PathItemObject implements ObjectInterface
             'head' => $this->head instanceof OperationObject ? array_filter($this->head->toArray()) : null,
             'patch' => $this->patch instanceof OperationObject ? array_filter($this->patch->toArray()) : null,
             'trace' => $this->trace instanceof OperationObject ? array_filter($this->trace->toArray()) : null,
+            'query' => $this->query instanceof OperationObject ? array_filter($this->query->toArray()) : null,
             'parameters' => $parameters,
         ];
     }

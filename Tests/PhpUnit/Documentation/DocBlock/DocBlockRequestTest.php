@@ -53,7 +53,7 @@ class DocBlockRequestTest extends TestCase
             $docBlock
         );
         $this->assertStringContainsString(
-            '@method \apivalk\apivalk\Router\Route\Filter\FilterBag|\\App\\Api\\Shape\\UserFilteringShape filtering()',
+            '@method \\App\\Api\\Shape\\UserFilteringShape filtering()',
             $docBlock
         );
         $this->assertStringNotContainsString('paginator()', $docBlock);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router\Route;
 
+use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Router\AbstractRouter;
@@ -49,6 +50,15 @@ class RouteCacheFactory
                 continue;
             }
 
+            // AbstractApivalkController cannot declare __invoke() abstractly without pinning
+            // every controller to the interface parameter, so the contract is checked here.
+            if (!method_exists($className, '__invoke')) {
+                throw new \LogicException(\sprintf(
+                    'Controller "%s" has no __invoke() method.',
+                    $className
+                ));
+            }
+
             $route = $className::getRoute();
 
             $routeCacheKey = $this->getRouteCacheKey($route);
@@ -67,6 +77,16 @@ class RouteCacheFactory
                 'key' => $routeCacheKey,
                 'controllerClass' => $className,
             ];
+
+            if ($route->isQueryEnabled()) {
+                // Same route, same controller, reachable a second time as RFC 10008 QUERY.
+                $cacheIndex[] = [
+                    'regex' => RouteRegexFactory::build($route),
+                    'method' => MethodInterface::METHOD_QUERY,
+                    'key' => $routeCacheKey,
+                    'controllerClass' => $className,
+                ];
+            }
         }
 
         $cache->set(

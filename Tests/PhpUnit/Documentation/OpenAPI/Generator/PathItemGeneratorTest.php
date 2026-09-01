@@ -32,6 +32,9 @@ use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\UpdateAnimalController;
 use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\ViewAnimalController;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @extends AbstractApivalkController<PathItemTestRequest>
+ */
 class PathItemTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -49,7 +52,7 @@ class PathItemTestController extends AbstractApivalkController
         return [];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(PathItemTestRequest $request): AbstractApivalkResponse
     {
         return new class extends AbstractApivalkResponse {
             public static function getDocumentation(): ApivalkResponseDocumentation
@@ -172,6 +175,9 @@ class PathItemTestRequest implements ApivalkRequestInterface
     }
 }
 
+/**
+ * @extends AbstractApivalkController<PathItemTestRequest>
+ */
 class PathItemWithRoutePathPropertyController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -189,7 +195,7 @@ class PathItemWithRoutePathPropertyController extends AbstractApivalkController
         return [];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(PathItemTestRequest $request): AbstractApivalkResponse
     {
         return new class extends AbstractApivalkResponse {
             public static function getDocumentation(): ApivalkResponseDocumentation

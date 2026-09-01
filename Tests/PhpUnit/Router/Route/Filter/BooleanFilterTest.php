@@ -6,67 +6,112 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\Route\Filter;
 
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
-use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use PHPUnit\Framework\TestCase;
 
 class BooleanFilterTest extends TestCase
 {
-    private function prop(string $name = 'active'): BooleanProperty
+    private function property(string $name = 'field'): BooleanProperty
     {
-        return new BooleanProperty($name, '', false);
+        return new BooleanProperty($name, 'Description', false);
     }
 
-    public function testFactory(): void
+    public function testSupportedOperators(): void
     {
-        $this->assertSame(FilterInterface::TYPE_EQUALS, BooleanFilter::equals($this->prop())->getType());
+        $this->assertSame([Operator::EQ, Operator::NULL], BooleanFilter::supportedOperators());
     }
 
-    public function testGetters(): void
+    public function testDeclaredOperatorsAreKeptInOrder(): void
     {
-        $prop = $this->prop('enabled');
-        $filter = BooleanFilter::equals($prop);
+        $filter = new BooleanFilter($this->property(), Operator::NULL, Operator::EQ);
 
-        $this->assertSame('enabled', $filter->getField());
-        $this->assertSame(FilterInterface::TYPE_EQUALS, $filter->getType());
-        $this->assertInstanceOf(BooleanProperty::class, $filter->getProperty());
-        $this->assertSame($prop, $filter->getProperty());
+        $this->assertSame([Operator::NULL, Operator::EQ], $filter->getAllowedOperators());
+        $this->assertSame(Operator::NULL, $filter->getDefaultOperator());
+        $this->assertTrue($filter->allows(Operator::EQ));
     }
 
-    public function testTypeChecks(): void
+    public function testRejectsAnEmptyOperatorList(): void
     {
-        $this->assertTrue(BooleanFilter::equals($this->prop())->isTypeEquals());
-        $this->assertFalse(BooleanFilter::equals($this->prop())->isTypeIn());
-        $this->assertFalse(BooleanFilter::equals($this->prop())->isTypeLike());
-        $this->assertFalse(BooleanFilter::equals($this->prop())->isTypeContains());
-        $this->assertFalse(BooleanFilter::equals($this->prop())->isTypeGreaterThan());
-        $this->assertFalse(BooleanFilter::equals($this->prop())->isTypeLessThan());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('declares no operator');
+
+        new BooleanFilter($this->property());
     }
 
-    public function testValueCasting(): void
+    public function testRejectsAnUnsupportedOperator(): void
     {
-        $filter = BooleanFilter::equals($this->prop());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not supported by');
 
-        $this->assertNull($filter->getValue());
+        new BooleanFilter($this->property(), Operator::IN);
+    }
 
-        $filter->setValue(true);
-        $this->assertTrue($filter->getValue());
+    public function testRejectsADuplicateOperator(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('duplicate operator');
 
-        $filter->setValue(false);
-        $this->assertFalse($filter->getValue());
+        new BooleanFilter($this->property(), Operator::EQ, Operator::EQ);
+    }
 
-        $filter->setValue(1);
-        $this->assertTrue($filter->getValue());
+    public function testConditionRoundTrip(): void
+    {
+        $filter = new BooleanFilter($this->property('created'), Operator::EQ);
 
-        $filter->setValue(0);
-        $this->assertFalse($filter->getValue());
+        $this->assertFalse($filter->has(Operator::EQ));
+        $this->assertNull($filter->raw(Operator::EQ));
 
-        $filter->setValue('1');
-        $this->assertTrue($filter->getValue());
+        $filter->setCondition(Operator::EQ, true, 'true');
 
-        $filter->setValue('');
-        $this->assertFalse($filter->getValue());
+        $this->assertTrue($filter->has(Operator::EQ));
+        $this->assertSame(true, $filter->equal);
+        $this->assertSame('true', $filter->raw(Operator::EQ));
+        $this->assertSame('created', $filter->getField());
+    }
 
-        $filter->setValue(null);
-        $this->assertNull($filter->getValue());
+    public function testSetConditionRejectsAnUndeclaredOperator(): void
+    {
+        $filter = new BooleanFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not allowed on field');
+
+        $filter->setCondition(Operator::NULL, true, 'true');
+    }
+
+    public function testReadingAnUndeclaredOperatorThrows(): void
+    {
+        $filter = new BooleanFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('is not declared on field');
+
+        $filter->isNull;
+    }
+
+    public function testReadingAnUnknownAccessorThrows(): void
+    {
+        $filter = new BooleanFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Unknown filter accessor');
+
+        $filter->nonsense;
+    }
+
+    public function testIssetReflectsTheDeclaredOperators(): void
+    {
+        $filter = new BooleanFilter($this->property(), Operator::EQ);
+
+        $this->assertTrue(isset($filter->equal));
+        $this->assertFalse(isset($filter->isNull));
+    }
+
+    public function testGetPropertyKeepsTheDeclaredProperty(): void
+    {
+        $property = $this->property();
+        $filter = new BooleanFilter($property, Operator::EQ);
+
+        $this->assertSame($property, $filter->getProperty());
     }
 }

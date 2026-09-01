@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
-use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 
 /**
  * Class ParameterObject
@@ -44,34 +45,55 @@ class ParameterObject implements ObjectInterface
     }
 
     /**
-     * Build a deepObject parameter that groups all filters under a single `filter` key.
-     * Produces: ?filter[field]=value — each property becomes a named sub-field.
+     * One deepObject parameter per filter field, whose properties are the operators the
+     * field allows: `?price[gt]=10&price[lt]=100`.
      *
-     * @param AbstractProperty[] $properties
+     * A single bracket level with primitive properties is the case OpenAPI actually
+     * defines for deepObject, which is why filters are not nested under a `filter` key.
      */
-    public static function forFilterGroup(array $properties): self
+    public static function forFilter(FilterInterface $filter): self
     {
-        $placeholder = new StringProperty(
-            'filter',
-            'Filter results. Pass each field using bracket notation: ?filter[field]=value'
-        );
-        $placeholder->setIsRequired(false);
+        $property = $filter->getProperty();
 
-        $instance = new self('query', $placeholder);
-        $instance->style   = 'deepObject';
+        $instance = new self('query', $property);
+        $instance->required = false;
+        $instance->style = 'deepObject';
         $instance->explode = true;
 
-        $subProperties = [];
-        foreach ($properties as $property) {
-            $subProperties[$property->getPropertyName()] = $property->getDocumentationArray();
+        $operatorSchemas = [];
+        foreach ($filter->getAllowedOperators() as $operator) {
+            $operatorSchemas[$operator] = self::operatorSchema($operator, $property);
         }
 
         $instance->rawSchema = [
-            'type'       => 'object',
-            'properties' => $subProperties,
+            'type' => 'object',
+            'properties' => $operatorSchemas,
+            'additionalProperties' => false,
         ];
 
         return $instance;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function operatorSchema(string $operator, AbstractProperty $property): array
+    {
+        if ($operator === Operator::NULL) {
+            return [
+                'type' => 'boolean',
+                'description' => 'true matches null values, false matches non-null values.',
+            ];
+        }
+
+        if ($operator === Operator::IN) {
+            return [
+                'type' => 'string',
+                'description' => 'Comma-separated list of values.',
+            ];
+        }
+
+        return $property->getDocumentationArray();
     }
 
     public function getName(): string

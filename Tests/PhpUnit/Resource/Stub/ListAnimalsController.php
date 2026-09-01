@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Resource\Stub;
 
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
@@ -26,7 +26,7 @@ class ListAnimalsController extends AbstractListResourceController
         return AnimalResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         return new ResourceListResponse([], new PagePaginationResponse(1, 25, false, 0));
     }

@@ -21,7 +21,7 @@ class OpenAPITest extends TestCase
         
         $result = $openApi->toArray();
 
-        $this->assertEquals('3.1.1', $result['openapi']);
+        $this->assertEquals('3.2.0', $result['openapi']);
         $this->assertEquals('Title', $result['info']['title']);
         $this->assertArrayHasKey('/test', $result['paths']);
     }
@@ -33,6 +33,6 @@ class OpenAPITest extends TestCase
         
         $json = $openApi->toJson();
         $this->assertJson($json);
-        $this->assertStringContainsString('"openapi":"3.1.1"', $json);
+        $this->assertStringContainsString('"openapi":"3.2.0"', $json);
     }
 }

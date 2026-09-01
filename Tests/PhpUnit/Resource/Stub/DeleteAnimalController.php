@@ -6,7 +6,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Resource\Stub;
 
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
@@ -25,7 +25,7 @@ class DeleteAnimalController extends AbstractDeleteResourceController
         return AnimalResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         return new DeletedApivalkResponse();
     }

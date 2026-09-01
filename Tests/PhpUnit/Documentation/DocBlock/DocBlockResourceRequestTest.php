@@ -124,7 +124,10 @@ class DocBlockResourceRequestTest extends TestCase
 
         self::assertStringContainsString(ParameterBag::class, $rendered);
         self::assertStringContainsString(SortBag::class, $rendered);
-        self::assertStringContainsString(FilterBag::class, $rendered);
+
+        // filtering() names the shape alone: a union with FilterBag would resolve
+        // $filters->field through FilterBag::__get() as well as through the field shape.
+        self::assertStringNotContainsString(FilterBag::class, $rendered);
     }
 
     public function testShapeNamespace(): void

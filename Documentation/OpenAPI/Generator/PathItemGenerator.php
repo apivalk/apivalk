@@ -49,6 +49,7 @@ class PathItemGenerator
         $head = null;
         $patch = null;
         $trace = null;
+        $query = null;
 
         foreach ($routes as $routeContainer) {
             $route = $routeContainer['route'];
@@ -59,6 +60,10 @@ class PathItemGenerator
 
             if ($route->getMethod() instanceof GetMethod) {
                 $get = $operation;
+
+                if ($route->isQueryEnabled()) {
+                    $query = $this->generateOperation($operationGenerator, $route, $controllerClass, true);
+                }
             }
 
             if ($route->getMethod() instanceof PatchMethod) {
@@ -89,7 +94,8 @@ class PathItemGenerator
             $head,
             $patch,
             $trace,
-            []
+            [],
+            $query
         );
     }
 
@@ -103,10 +109,16 @@ class PathItemGenerator
     private function generateOperation(
         OperationGenerator $operationGenerator,
         Route $route,
-        string $controllerClass
+        string $controllerClass,
+        bool $asQueryOperation = false
     ): OperationObject {
         if (\is_subclass_of($controllerClass, AbstractResourceController::class)) {
-            return $this->generateResourceOperation($operationGenerator, $route, $controllerClass);
+            return $this->generateResourceOperation(
+                $operationGenerator,
+                $route,
+                $controllerClass,
+                $asQueryOperation
+            );
         }
 
         /** @var class-string<ApivalkRequestInterface> $requestClass */
@@ -121,7 +133,8 @@ class PathItemGenerator
         return $operationGenerator->generate(
             $route,
             $requestDocumentation,
-            $responseClasses
+            $responseClasses,
+            $asQueryOperation
         );
     }
 
@@ -135,7 +148,8 @@ class PathItemGenerator
     private function generateResourceOperation(
         OperationGenerator $operationGenerator,
         Route $route,
-        string $controllerClass
+        string $controllerClass,
+        bool $asQueryOperation = false
     ): OperationObject {
         $resource = $controllerClass::getEmptyResource();
         $mode = RequestDocumentationFactory::getModeFromController($controllerClass);
@@ -167,7 +181,8 @@ class PathItemGenerator
         return $operationGenerator->generateFromDocumentation(
             $route,
             $requestDocumentation,
-            $responseDocumentations
+            $responseDocumentations,
+            $asQueryOperation
         );
     }
 }

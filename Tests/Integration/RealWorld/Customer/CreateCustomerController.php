@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Tests\Integration\RealWorld\Customer;
 
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerCreateRequest;
 
+/**
+ * @extends AbstractApivalkController<CustomerCreateRequest>
+ */
 class CreateCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -31,7 +33,7 @@ class CreateCustomerController extends AbstractApivalkController
         return [CustomerCreatedResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CustomerCreateRequest $request): AbstractApivalkResponse
     {
         $data = [
             'customer_id' => 42,

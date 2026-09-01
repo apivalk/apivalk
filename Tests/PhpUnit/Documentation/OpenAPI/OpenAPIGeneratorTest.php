@@ -40,7 +40,7 @@ class OpenAPIGeneratorTest extends TestCase
         $this->assertIsString($json);
         
         $data = json_decode($json, true);
-        $this->assertEquals('3.1.1', $data['openapi']);
+        $this->assertEquals('3.2.0', $data['openapi']);
         $this->assertEquals('Title', $data['info']['title']);
         $this->assertEquals('http://localhost', $data['servers'][0]['url']);
         $this->assertArrayHasKey('/test', $data['paths']);

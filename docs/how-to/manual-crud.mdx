@@ -178,7 +178,7 @@ final class CreatePetController extends AbstractApivalkController
         ];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CreatePetRequest $request): AbstractApivalkResponse
     {
         $pet = $this->repository->create([
             'name'      => $request->body()->name,
@@ -313,7 +313,7 @@ final class ViewPetController extends AbstractApivalkController
         ];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ViewPetRequest $request): AbstractApivalkResponse
     {
         $pet = $this->repository->findByUuid($request->path()->pet_uuid);
         if ($pet === null) {
@@ -455,7 +455,7 @@ final class UpdatePetController extends AbstractApivalkController
         ];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(UpdatePetRequest $request): AbstractApivalkResponse
     {
         $uuid = $request->path()->pet_uuid;
 
@@ -596,7 +596,7 @@ final class DeletePetController extends AbstractApivalkController
         ];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(DeletePetRequest $request): AbstractApivalkResponse
     {
         $uuid = $request->path()->pet_uuid;
 

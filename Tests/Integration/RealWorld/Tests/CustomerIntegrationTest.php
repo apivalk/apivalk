@@ -264,7 +264,7 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_bracketFilterByStatus_returns200WithMatchingData(): void
     {
         $response =
-            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['status' => 'active']], [], 'admin-token');
+            $this->makeRequest('GET', '/v1/api/customers', ['status' => ['eq' => 'active']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(3, $items);
@@ -276,7 +276,7 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_bracketFilterByFirstNameLike_returnsMatch(): void
     {
         $response =
-            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['first_name' => 'ali']], [], 'admin-token');
+            $this->makeRequest('GET', '/v1/api/customers', ['first_name' => ['like' => 'ali']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(1, $items);
@@ -285,11 +285,11 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_mixedFlatAndBracketFilters_intersectsCorrectly(): void
     {
-        // first_name flat + status bracket — Alice is the only active customer whose name contains 'ali'
+        // first_name flat + status bracket, Alice is the only active customer whose name contains 'ali'
         $response = $this->makeRequest(
             'GET',
             '/v1/api/customers',
-            ['first_name' => 'ali', 'filter' => ['status' => 'active']],
+            ['first_name' => 'ali', 'status' => ['eq' => 'active']],
             [],
             'admin-token'
         );
@@ -300,17 +300,110 @@ class CustomerIntegrationTest extends TestCase
         $this->assertSame('active', $items[0]['status']);
     }
 
-    public function testListCustomers_bracketFilterNonScalarValueIsIgnored_returnsAllItems(): void
+    public function testListCustomers_unknownBracketOperator_returns422(): void
     {
         $response = $this->makeRequest(
             'GET',
             '/v1/api/customers',
-            ['filter' => ['status' => ['active', 'pending']]],
+            ['status' => ['active', 'pending']],
+            [],
+            'admin-token'
+        );
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testListCustomers_operatorNotAllowedOnField_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['status' => ['like' => 'act']],
+            [],
+            'admin-token'
+        );
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testListCustomers_legacyFilterWrapperIsGone_returnsAllItems(): void
+    {
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['filter' => ['status' => 'active']],
             [],
             'admin-token'
         );
         $this->assertSame(200, $response->getStatusCode());
         $this->assertCount(5, $response->toArray()['data']);
+    }
+
+    // --- QUERY transport (RFC 10008) ---
+
+    public function testQueryCustomers_filterInBody_returnsMatchingData(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $items = $response->toArray()['data'];
+        $this->assertCount(3, $items);
+        foreach ($items as $item) {
+            $this->assertSame('active', $item['status']);
+        }
+    }
+
+    public function testQueryCustomers_severalFieldsInBody_intersectsCorrectly(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['first_name' => ['like' => 'ali'], 'status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $items = $response->toArray()['data'];
+        $this->assertCount(1, $items);
+        $this->assertSame('Alice', $items[0]['first_name']);
+    }
+
+    public function testQueryCustomers_bodyAndQueryStringTogether_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            ['status' => 'active'],
+            ['status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testQueryCustomers_operatorNotAllowed_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['status' => ['like' => 'act']],
+            'admin-token'
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testQueryOnARouteWithoutEnableQuery_returns405(): void
+    {
+        $response = $this->makeRequest('QUERY', '/v1/api/contracts', [], [], 'admin-token');
+
+        $this->assertSame(405, $response->getStatusCode());
     }
 
     // --- Sorting: data correctness ---

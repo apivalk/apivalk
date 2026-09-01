@@ -426,23 +426,30 @@ $generator = new OpenAPIGenerator(
 
 ### Filter Documentation Style
 
-By default, all filters for a route are grouped under a single `filter` parameter using OpenAPI's `style: deepObject` convention. Swagger UI renders each filter as a separate input labelled `filter[field]`, and clients send filters as `?filter[status]=active`.
+By default, each filter field becomes its own `deepObject` parameter whose properties are the operators that field declares. Clients send `?status[eq]=active&amount[gte]=10`.
 
 ```yaml
-- name: filter
+- name: amount
   in: query
+  description: "Contract amount"
   required: false
   style: deepObject
   explode: true
   schema:
     type: object
     properties:
-      status:
-        type: string
-        description: "Filter by status"
+      gte:
+        type: number
+        description: "Contract amount"
+      lte:
+        type: number
+        description: "Contract amount"
+    additionalProperties: false
 ```
 
-If you prefer each filter to appear as its own flat query parameter (`?status=active`), pass `true` for the `$flatFilters` parameter:
+One bracket level with primitive properties is the case OpenAPI defines for `deepObject`, which is why filters are not nested under a shared `filter` key.
+
+If you prefer each filter to appear as a flat query parameter without operators (`?status=active`, which resolves to the first declared operator), pass `true` for the `$flatFilters` parameter:
 
 ```php
 $generator = new OpenAPIGenerator(
@@ -456,12 +463,14 @@ $generator = new OpenAPIGenerator(
 ```
 
 With `flatFilters: false` (default):
-- Swagger UI shows inputs labelled `filter[status]`, `filter[name]`, etc.
-- Clients send `?filter[status]=active&filter[name]=Acme`
+- One parameter per field, with its allowed operators as sub-inputs
+- Clients send `?status[eq]=active&amount[gte]=10`
 
 With `flatFilters: true`:
-- Swagger UI shows inputs labelled `status`, `name`, etc.
-- Clients send `?status=active&name=Acme`
+- One flat input per field, no operator choice documented
+- Clients send `?status=active&amount=10`, resolving to each field's first declared operator
+
+Both notations are accepted at runtime regardless of which style you document.
 
 **Both formats are accepted by the server at runtime regardless of this setting.** This option only controls how the filters are presented in the OpenAPI spec.
 

@@ -55,6 +55,9 @@ class FactoryTestRequest implements ApivalkRequestInterface
     public function setIp(?string $ip): void {}
 }
 
+/**
+ * @extends AbstractApivalkController<FactoryTestRequest>
+ */
 class FactoryTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -72,7 +75,7 @@ class FactoryTestController extends AbstractApivalkController
         return [];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(FactoryTestRequest $request): AbstractApivalkResponse
     {
         return new class extends AbstractApivalkResponse {
             public static function getDocumentation(): ApivalkResponseDocumentation { return new ApivalkResponseDocumentation(); }

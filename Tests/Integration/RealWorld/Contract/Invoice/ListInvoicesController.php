@@ -6,7 +6,7 @@ namespace Tests\Integration\RealWorld\Contract\Invoice;
 
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\OffsetPaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
@@ -35,7 +35,7 @@ class ListInvoicesController extends AbstractListResourceController
         return InvoiceResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         $contractUuid = $request->path()->has('contract_uuid')
             ? $request->path()->get('contract_uuid')->getValue()

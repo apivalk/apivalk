@@ -6,13 +6,15 @@ namespace Tests\Integration\RealWorld\Customer\Document;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadRequestApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Document\Request\DocumentUploadRequest;
 
+/**
+ * @extends AbstractApivalkController<DocumentUploadRequest>
+ */
 class UploadDocumentController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -38,7 +40,7 @@ class UploadDocumentController extends AbstractApivalkController
     }
 
     /** @var DocumentUploadRequest $request */
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(DocumentUploadRequest $request): AbstractApivalkResponse
     {
         // Typed access through the generated file shape.
         $file = $request->file()->file;

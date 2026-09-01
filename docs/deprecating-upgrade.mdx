@@ -6,6 +6,70 @@ title: "Deprecation & Upgrade"
 
 This section contains upgrade guides between major versions.
 
+### v2 to v3
+
+#### Breaking Changes
+
+- **PHP 7.4 required**, was 7.2. Docker image, CI jobs and the composer platform config move with it. `firebase/php-jwt` widens to `^6.10 || ^7.0`, so PHP 8 consumers pull the patched v7.
+
+- **Resource controllers enforce their HTTP method.** `AbstractUpdateResourceController` requires a `PATCH` route and `AbstractDeleteResourceController` a `DELETE` route, checked when the route is built. An update controller returning a `PUT` route now throws. Partial-update semantics were always what these controllers documented; the check makes a mismatching route fail instead of publishing a contract the controller does not implement.
+
+- **Filters declare operators instead of being one.** A field is one filter with the operators it accepts, rather than one filter per operator:
+
+  ```php
+  // v2
+  IntegerFilter::greaterThan(new IntegerProperty('gt_value', 'Value')),
+  IntegerFilter::lessThan(new IntegerProperty('lt_value', 'Value')),
+
+  // v3
+  new IntegerFilter(new IntegerProperty('value', 'Value'), Operator::GT, Operator::LT),
+  ```
+
+  The named constructors (`::equals()`, `::in()`, `::like()`, `::contains()`, `::greaterThan()`, `::lessThan()`) are gone. Declaring the same field twice now throws, where v2 silently kept the last one, which means a v2 route that declared two filters for one field was only ever applying one of them.
+
+- **Reading filters changed.** `getType()`, the `isType*()` family, `getValue()` and `getRawValue()` are replaced by typed properties plus `has()` and `raw()`:
+
+  ```php
+  // v2
+  if ($filters->status->getType() === FilterInterface::TYPE_EQUALS) {
+      $value = $filters->status->getValue();
+  }
+
+  // v3
+  if ($filters->status->has(Operator::EQ)) {
+      $value = $filters->status->equal;
+  }
+  ```
+
+  Property names are `equal`, `notEqual`, `in`, `greaterThan`, `greaterThanOrEqual`, `lessThan`, `lessThanOrEqual`, `like`, `contains` and `isNull`.
+
+- **The `filter[...]` query wrapper is gone.** Clients send `?status[eq]=active`, one bracket level, with the operator inside. `?filter[status]=active` no longer resolves. Flat notation is unchanged: `?status=active` still works and maps to the first operator a field declares, so v2 clients that never used the wrapper need no change.
+
+  Filter field names may no longer collide with `order_by`, `offset`, `cursor`, `page` or `limit`, since filters and framework parameters now share one namespace. A colliding declaration throws when the route is built.
+
+- **Filters are validated per operator.** An operator a field does not declare, and combinations that can never match (`value[gte]=100&value[lte]=10`, `eq` equal to `neq`, an empty `in` list), answer `422` instead of being ignored.
+
+- **OpenAPI output targets 3.2.0**, was 3.1.1. Each filter field becomes one `deepObject` parameter whose properties are its allowed operators. Toolchains pinned to 3.1 will reject the document.
+
+- **`AbstractApivalkController::__invoke()` is no longer abstract.** Existing controllers keep working, `ApivalkRequestInterface` is still a valid parameter type. What changes is that you *can* now name your own request class, and should, since the generated shapes for `path()`, `body()` and `filtering()` only resolve against the concrete class:
+
+  ```php
+  // still valid
+  public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+
+  // recommended
+  public function __invoke(GetPetRequest $request): AbstractApivalkResponse
+  ```
+
+  A controller without `__invoke()` is no longer a compile-time error. It is rejected at runtime by `RouteCacheFactory` and `ApivalkControllerFactory` instead. See [Typing `$request`](/http/controller).
+
+#### New Features
+
+- **QUERY transport (RFC 10008).** `$route->enableQuery()` makes a filtered route additionally reachable as a `QUERY` request whose JSON body carries the filters. Opt-in per route. See [Filtering](/http/filtering).
+- **New operators**: `neq`, `gte`, `lte` and `null` (`?end_date[null]=true` matches rows without a value).
+- **Per-field IDE shapes.** `DocBlockGenerator` emits one interface per filter field listing only the operators that field declares.
+- **`excludeFromDocumentation()`** keeps a route out of the generated OpenAPI document, for internal endpoints that should not reach public docs or generated SDKs.
+
 ### v1 to v2
 
 This section lists major changes and steps required to upgrade from Apivalk v1 to v2.

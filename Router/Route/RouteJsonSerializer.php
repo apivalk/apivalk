@@ -45,9 +45,10 @@ class RouteJsonSerializer
      *          type: string,
      *          maxLimit: int
      *     }|null,
+     *     queryEnabled: bool,
      *     filters: array<int, array{
      *          class: class-string<FilterInterface>,
-     *          type: string,
+     *          operators: string[],
      *          property: array{
      *              class: class-string<AbstractProperty>,
      *              name: string,
@@ -109,7 +110,7 @@ class RouteJsonSerializer
             foreach ($filters as $filter) {
                 $filtersData[] = [
                     'class' => \get_class($filter),
-                    'type' => $filter->getType(),
+                    'operators' => $filter->getAllowedOperators(),
                     'property' => PropertySerializer::serialize($filter->getProperty()),
                 ];
             }
@@ -133,6 +134,7 @@ class RouteJsonSerializer
             'sortings' => $orderingsData ?? null,
             'pagination' => $paginationData ?? null,
             'filters' => $filtersData ?? null,
+            'queryEnabled' => $route->isQueryEnabled(),
             'pathProperties' => $pathPropertiesData ?? null,
             'excludedFromDocumentation' => $route->isExcludedFromDocumentation(),
         ];
@@ -202,7 +204,7 @@ class RouteJsonSerializer
             foreach ($filtersData as $filterData) {
                 $property = PropertySerializer::deserialize($filterData['property']);
                 $filterClass = $filterData['class'];
-                $filters[] = new $filterClass($filterData['type'], $property);
+                $filters[] = new $filterClass($property, ...$filterData['operators']);
             }
         }
 
@@ -228,6 +230,10 @@ class RouteJsonSerializer
 
         if ($jsonArray['excludedFromDocumentation'] ?? false) {
             $route->excludeFromDocumentation();
+        }
+
+        if ($jsonArray['queryEnabled'] ?? false) {
+            $route->enableQuery();
         }
 
         return $route;

@@ -16,6 +16,7 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 use apivalk\apivalk\Router\Route\Filter\BinaryFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\ByteFilter;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
@@ -103,7 +104,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(2)->setMaxLength(100)->setPattern('^[a-zA-Z]+$')->setDefault('John');
 
         $route = $this->createRouteWithFilters([
-                                                   StringFilter::equals($property),
+                                                   new StringFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -111,7 +112,7 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertCount(1, $deserialized->getFilters());
         $filter = $deserialized->getFilters()[0];
         $this->assertInstanceOf(StringFilter::class, $filter);
-        $this->assertEquals(FilterInterface::TYPE_EQUALS, $filter->getType());
+        $this->assertSame([Operator::EQ], $filter->getAllowedOperators());
 
         /** @var StringProperty $restoredProperty */
         $restoredProperty = $filter->getProperty();
@@ -130,7 +131,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('active');
 
         $route = $this->createRouteWithFilters([
-                                                   EnumFilter::equals($property),
+                                                   new EnumFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -138,7 +139,7 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertCount(1, $deserialized->getFilters());
         $filter = $deserialized->getFilters()[0];
         $this->assertInstanceOf(EnumFilter::class, $filter);
-        $this->assertEquals(FilterInterface::TYPE_EQUALS, $filter->getType());
+        $this->assertSame([Operator::EQ], $filter->getAllowedOperators());
 
         /** @var EnumProperty $restoredProperty */
         $restoredProperty = $filter->getProperty();
@@ -154,7 +155,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('2000-01-01');
 
         $route = $this->createRouteWithFilters([
-                                                   DateFilter::equals($property),
+                                                   new DateFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -177,7 +178,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setDefault('2024-01-01T00:00:00Z');
 
         $route = $this->createRouteWithFilters([
-                                                   DateTimeFilter::equals($property),
+                                                   new DateTimeFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -200,7 +201,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(4)->setMaxLength(1024)->setPattern('^[A-Za-z0-9+/=]+$')->setDefault('dGVzdA==');
 
         $route = $this->createRouteWithFilters([
-                                                   ByteFilter::equals($property),
+                                                   new ByteFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -226,7 +227,7 @@ class RouteJsonSerializerTest extends TestCase
         $property->setMinLength(1)->setMaxLength(2048)->setPattern('^.+$')->setDefault('data');
 
         $route = $this->createRouteWithFilters([
-                                                   BinaryFilter::equals($property),
+                                                   new BinaryFilter($property, Operator::EQ),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -255,7 +256,7 @@ class RouteJsonSerializerTest extends TestCase
             ->setIsExclusiveMaximum(false);
 
         $route = $this->createRouteWithFilters([
-                                                   IntegerFilter::greaterThan($property),
+                                                   new IntegerFilter($property, Operator::GT),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -263,7 +264,7 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertCount(1, $deserialized->getFilters());
         $filter = $deserialized->getFilters()[0];
         $this->assertInstanceOf(IntegerFilter::class, $filter);
-        $this->assertEquals(FilterInterface::TYPE_GREATER_THAN, $filter->getType());
+        $this->assertSame([Operator::GT], $filter->getAllowedOperators());
 
         /** @var IntegerProperty $restoredProperty */
         $restoredProperty = $filter->getProperty();
@@ -285,7 +286,7 @@ class RouteJsonSerializerTest extends TestCase
             ->setIsExclusiveMaximum(true);
 
         $route = $this->createRouteWithFilters([
-                                                   FloatFilter::lessThan($property),
+                                                   new FloatFilter($property, Operator::LT),
                                                ]);
 
         $deserialized = $this->serializeAndDeserialize($route);
@@ -293,7 +294,7 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertCount(1, $deserialized->getFilters());
         $filter = $deserialized->getFilters()[0];
         $this->assertInstanceOf(FloatFilter::class, $filter);
-        $this->assertEquals(FilterInterface::TYPE_LESS_THAN, $filter->getType());
+        $this->assertSame([Operator::LT], $filter->getAllowedOperators());
 
         /** @var FloatProperty $restoredProperty */
         $restoredProperty = $filter->getProperty();
@@ -330,14 +331,14 @@ class RouteJsonSerializerTest extends TestCase
         $floatProp->setMaximumValue(100000.0)->setIsExclusiveMaximum(false);
 
         $filters = [
-            StringFilter::like($stringProp),
-            EnumFilter::in($enumProp),
-            DateFilter::greaterThan($dateProp),
-            DateTimeFilter::lessThan($dateTimeProp),
-            ByteFilter::equals($byteProp),
-            BinaryFilter::equals($binaryProp),
-            IntegerFilter::equals($intProp),
-            FloatFilter::greaterThan($floatProp),
+            new StringFilter($stringProp, Operator::LIKE),
+            new EnumFilter($enumProp, Operator::IN),
+            new DateFilter($dateProp, Operator::GT),
+            new DateTimeFilter($dateTimeProp, Operator::LT),
+            new ByteFilter($byteProp, Operator::EQ),
+            new BinaryFilter($binaryProp, Operator::EQ),
+            new IntegerFilter($intProp, Operator::EQ),
+            new FloatFilter($floatProp, Operator::GT),
         ];
 
         $route = $this->createRouteWithFilters($filters);
@@ -348,22 +349,22 @@ class RouteJsonSerializerTest extends TestCase
 
         $this->assertInstanceOf(StringFilter::class, $restoredFilters[0]);
         $this->assertInstanceOf(StringProperty::class, $restoredFilters[0]->getProperty());
-        $this->assertEquals(FilterInterface::TYPE_LIKE, $restoredFilters[0]->getType());
+        $this->assertSame([Operator::LIKE], $restoredFilters[0]->getAllowedOperators());
         $this->assertEquals(1, $restoredFilters[0]->getProperty()->getMinLength());
         $this->assertEquals(255, $restoredFilters[0]->getProperty()->getMaxLength());
 
         $this->assertInstanceOf(EnumFilter::class, $restoredFilters[1]);
         $this->assertInstanceOf(EnumProperty::class, $restoredFilters[1]->getProperty());
-        $this->assertEquals(FilterInterface::TYPE_IN, $restoredFilters[1]->getType());
+        $this->assertSame([Operator::IN], $restoredFilters[1]->getAllowedOperators());
         $this->assertEquals(['active', 'inactive'], $restoredFilters[1]->getProperty()->getEnums());
 
         $this->assertInstanceOf(DateFilter::class, $restoredFilters[2]);
         $this->assertInstanceOf(DateProperty::class, $restoredFilters[2]->getProperty());
-        $this->assertEquals(FilterInterface::TYPE_GREATER_THAN, $restoredFilters[2]->getType());
+        $this->assertSame([Operator::GT], $restoredFilters[2]->getAllowedOperators());
 
         $this->assertInstanceOf(DateTimeFilter::class, $restoredFilters[3]);
         $this->assertInstanceOf(DateTimeProperty::class, $restoredFilters[3]->getProperty());
-        $this->assertEquals(FilterInterface::TYPE_LESS_THAN, $restoredFilters[3]->getType());
+        $this->assertSame([Operator::LT], $restoredFilters[3]->getAllowedOperators());
 
         $this->assertInstanceOf(ByteFilter::class, $restoredFilters[4]);
         $this->assertInstanceOf(ByteProperty::class, $restoredFilters[4]->getProperty());
@@ -389,14 +390,14 @@ class RouteJsonSerializerTest extends TestCase
         // Verifies that double-init (once in constructor, once in PropertySerializer::deserialize)
         // remains idempotent and does not produce duplicate validators.
         $filters = [
-            StringFilter::equals(new StringProperty('name', '')),
-            EnumFilter::equals(new EnumProperty('status', '', ['a', 'b'])),
-            IntegerFilter::greaterThan(new IntegerProperty('age', '')),
-            FloatFilter::lessThan(new FloatProperty('score', '')),
-            DateFilter::equals(new DateProperty('dob', '')),
-            DateTimeFilter::greaterThan(new DateTimeProperty('created_at', '')),
-            ByteFilter::equals(new ByteProperty('payload', '')),
-            BinaryFilter::equals(new BinaryProperty('file', '')),
+            new StringFilter(new StringProperty('name', ''), Operator::EQ),
+            new EnumFilter(new EnumProperty('status', '', ['a', 'b']), Operator::EQ),
+            new IntegerFilter(new IntegerProperty('age', ''), Operator::GT),
+            new FloatFilter(new FloatProperty('score', ''), Operator::LT),
+            new DateFilter(new DateProperty('dob', ''), Operator::EQ),
+            new DateTimeFilter(new DateTimeProperty('created_at', ''), Operator::GT),
+            new ByteFilter(new ByteProperty('payload', ''), Operator::EQ),
+            new BinaryFilter(new BinaryProperty('file', ''), Operator::EQ),
         ];
 
         $deserialized = $this->serializeAndDeserialize($this->createRouteWithFilters($filters));
@@ -409,7 +410,7 @@ class RouteJsonSerializerTest extends TestCase
     public function testEnumFilterStillValidatesAfterRoundTrip(): void
     {
         $property = new EnumProperty('status', '', ['active', 'inactive']);
-        $route = $this->createRouteWithFilters([EnumFilter::equals($property)]);
+        $route = $this->createRouteWithFilters([new EnumFilter($property, Operator::EQ)]);
         $deserialized = $this->serializeAndDeserialize($route);
 
         /** @var EnumFilter $filter */

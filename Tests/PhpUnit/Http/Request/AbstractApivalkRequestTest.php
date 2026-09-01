@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Method\MethodInterface;
@@ -30,13 +31,13 @@ class AbstractApivalkRequestTest extends TestCase
             }
         };
 
-        $filter = IntegerFilter::greaterThan(new IntegerProperty('id'));
+        $filter = new IntegerFilter(new IntegerProperty('id'), Operator::GT);
         $route = Route::get('/test')
             ->filtering([$filter]);
 
         $request->populate($route, new ApivalkRequestDocumentation());
 
-        $this->assertEquals(123, $request->filtering()->id->getValue());
+        $this->assertSame(123, $request->filtering()->id->greaterThan);
         $this->assertInstanceOf(IntegerFilter::class, $request->filtering()->get('id'));
     }
 

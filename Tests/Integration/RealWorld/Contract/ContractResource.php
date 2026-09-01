@@ -12,6 +12,7 @@ use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\FloatFilter;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
@@ -84,13 +85,11 @@ class ContractResource extends AbstractResource
     public function availableFilters(): array
     {
         return [
-            IntegerFilter::equals(new IntegerProperty('customer_id', 'Customer ID')),
-            EnumFilter::in(new EnumProperty('status', 'Status', ['draft', 'active', 'expired', 'terminated'])),
-            StringFilter::like(new StringProperty('title', 'Title')),
-            FloatFilter::greaterThan((new FloatProperty('value', 'Value'))->setMinimumValue(0.01)),
-            FloatFilter::lessThan((new FloatProperty('value', 'Value'))->setMinimumValue(0.01)),
-            DateFilter::greaterThan(new DateProperty('start_date', 'Start date')),
-            DateFilter::lessThan(new DateProperty('start_date', 'Start date')),
+            new IntegerFilter(new IntegerProperty('customer_id', 'Customer ID'), Operator::EQ),
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active', 'expired', 'terminated']), Operator::IN),
+            new StringFilter(new StringProperty('title', 'Title'), Operator::LIKE),
+            new FloatFilter((new FloatProperty('value', 'Value'))->setMinimumValue(0.01), Operator::GT, Operator::LT),
+            new DateFilter(new DateProperty('start_date', 'Start date'), Operator::GT, Operator::LT),
         ];
     }
 

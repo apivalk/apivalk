@@ -32,6 +32,15 @@ class Route
     private array $sortings;
     /** @var FilterInterface[] */
     private array $filters;
+
+    /**
+     * Query parameters the framework reads itself, so they cannot be filter fields.
+     *
+     * @var string[]
+     */
+    public const RESERVED_QUERY_PARAMETERS = ['order_by', 'offset', 'cursor', 'page', 'limit'];
+
+    private bool $queryEnabled = false;
     private ?Pagination $pagination;
     /** @var AbstractProperty[] */
     private array $pathProperties = [];
@@ -70,6 +79,7 @@ class Route
         $this->rateLimit = $rateLimit;
         $this->sortings = $sortings ?? [];
         $this->pagination = $pagination;
+        self::assertFilterFieldsAreAvailable($filters ?? []);
         $this->filters = $filters ?? [];
     }
 
@@ -142,10 +152,29 @@ class Route
     }
 
     /**
+     * Also accept this route as an RFC 10008 QUERY request, where the filters arrive as a
+     * JSON body instead of a query string. Opt-in, because gateways that do not know the
+     * method drop it, and generated SDKs would otherwise expose two calls for one read.
+     */
+    public function enableQuery(): self
+    {
+        $this->queryEnabled = true;
+
+        return $this;
+    }
+
+    public function isQueryEnabled(): bool
+    {
+        return $this->queryEnabled;
+    }
+
+    /**
      * @param FilterInterface[] $filters
      */
     public function filtering(array $filters): self
     {
+        self::assertFilterFieldsAreAvailable($filters);
+
         $this->filters = $filters;
 
         return $this;
@@ -231,6 +260,39 @@ class Route
     public function getPagination(): ?Pagination
     {
         return $this->pagination;
+    }
+
+    /**
+     * Filters share the query string with the framework's own parameters, so a filter
+     * field named after one of them would be ambiguous in flat notation.
+     *
+     * @param FilterInterface[] $filters
+     */
+    private static function assertFilterFieldsAreAvailable(array $filters): void
+    {
+        $seen = [];
+
+        foreach ($filters as $filter) {
+            $field = $filter->getField();
+
+            if (\in_array($field, self::RESERVED_QUERY_PARAMETERS, true)) {
+                throw new \InvalidArgumentException(\sprintf(
+                    'Filter field "%s" collides with the reserved query parameter "%s". Reserved: %s.',
+                    $field,
+                    $field,
+                    \implode(', ', self::RESERVED_QUERY_PARAMETERS)
+                ));
+            }
+
+            if (isset($seen[$field])) {
+                throw new \InvalidArgumentException(\sprintf(
+                    'Filter field "%s" is declared twice. Declare one filter with several operators instead.',
+                    $field
+                ));
+            }
+
+            $seen[$field] = true;
+        }
     }
 
     /**

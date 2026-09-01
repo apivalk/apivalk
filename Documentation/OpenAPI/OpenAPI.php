@@ -20,7 +20,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
  */
 class OpenAPI
 {
-    private string $openapi = '3.1.1';
+    private string $openapi = '3.2.0';
     private ?InfoObject $info = null;
     private ?string $jsonSchemaDialect = null;
     /** @var ServerObject[] */

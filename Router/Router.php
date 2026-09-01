@@ -110,7 +110,10 @@ class Router extends AbstractRouter
                 }
 
                 $route = RouteJsonSerializer::deserialize($routeCacheItem->getValue());
-                $matchingRoutes[$route->getMethod()->getName()] = [
+
+                // Keyed by the index entry, not the route: a query-enabled route is indexed
+                // under both its own method and QUERY while staying one GET route.
+                $matchingRoutes[$indexEntry['method']] = [
                     'route' => $route,
                     'controllerClass' => $indexEntry['controllerClass'],
                 ];
@@ -133,6 +136,12 @@ class Router extends AbstractRouter
         $routes = [];
 
         foreach ($routeIndexCache as $indexEntry) {
+            if ($indexEntry['method'] === MethodInterface::METHOD_QUERY) {
+                // The QUERY alias points at a route that is already listed under its own
+                // method, and the documentation generator derives the QUERY operation itself.
+                continue;
+            }
+
             $routeCacheItem = $this->getCache()->get($indexEntry['key']);
             if (!$routeCacheItem instanceof CacheItem) {
                 continue;

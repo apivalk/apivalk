@@ -26,6 +26,9 @@ use App\Http\Request\Pet\GetPetRequest;
 use App\Http\Response\Pet\GetPetResponse;
 use App\Http\Response\Common\NotFoundResponse;
 
+/**
+ * @extends AbstractApivalkController<GetPetRequest>
+ */
 class GetPetController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -46,7 +49,7 @@ class GetPetController extends AbstractApivalkController
         ];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(GetPetRequest $request): AbstractApivalkResponse
     {
         // $request is already populated and validated!
         $id = $request->path()->id;
@@ -76,6 +79,38 @@ class GetPetController extends AbstractApivalkController
 }
 ```
 
+## Typing `$request`
+
+Name your own request class in `__invoke()`:
+
+```php
+public function __invoke(GetPetRequest $request): AbstractApivalkResponse
+{
+    $id = $request->path()->id;
+}
+```
+
+This works because `AbstractApivalkController` does **not** declare `__invoke()` as an abstract method. If it did, every controller would be pinned to that signature: PHP allows an override to widen a parameter type, never to narrow it, so `__invoke(GetPetRequest $request)` would be a fatal error in every PHP version. With no inherited signature there is nothing to be compatible with.
+
+The contract is kept as a `@method` annotation on the base class, so static analysis still knows controllers are callable.
+
+What is lost is the compile-time guarantee that `__invoke()` exists at all. Two runtime checks take its place: `RouteCacheFactory` rejects such a controller while indexing routes, and `ApivalkControllerFactory` rejects it when instantiating one, both with a `LogicException` naming the class. The first catches it when the route cache is built, the second on every request, so a controller that reaches dispatch without `__invoke()` fails with that message rather than "object is not callable" from inside the middleware stack.
+
+Be aware that your IDE will not flag the missing method while you write it, the way it did when the base class declared it abstract. That is the price for naming your own request class.
+
+`ApivalkRequestInterface` still works as the parameter type if you prefer it, for instance in a controller that handles several request shapes.
+
+Pair it with the template argument so the declared request class and `getRequestClass()` cannot drift apart:
+
+```php
+/**
+ * @extends AbstractApivalkController<GetPetRequest>
+ */
+class GetPetController extends AbstractApivalkController
+```
+
+`getRequestClass()` is typed `class-string<TRequest>`, so returning a different class than the one in `@extends` is a static-analysis error. Leaving the annotation off keeps the old behaviour, the template defaults to `ApivalkRequestInterface`.
+
 ## Dependency Injection
 
 If you [configured a PSR-11 container](https://dopodev.mintlify.app/configuration#dependency-injection-psr-11-container), you can use constructor injection:
@@ -103,6 +138,7 @@ A minimal list controller looks like this:
 
 ```php
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use App\Resource\AnimalResource;
 
 /**
@@ -115,7 +151,7 @@ final class ListAnimalController extends AbstractListResourceController
         return AnimalResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         // fetch, paginate, return ResourceListResponse
     }

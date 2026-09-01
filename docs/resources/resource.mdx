@@ -80,8 +80,8 @@ Declare filters exposed on the list endpoint:
 public function availableFilters(): array
 {
     return [
-        EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'archived'])),
-        StringFilter::contains(new StringProperty('name', 'Name contains')),
+        new EnumFilter(new EnumProperty('status', 'Status', ['active', 'archived']), Operator::EQ),
+        new StringFilter(new StringProperty('name', 'Name'), Operator::CONTAINS),
     ];
 }
 ```

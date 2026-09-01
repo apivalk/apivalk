@@ -171,7 +171,7 @@ class ReadPetRequest extends AbstractApivalkRequest { /* empty */ }
  * @method ParameterBag|Shape\ReadPetPathShape path()
  * @method ParameterBag|Shape\ReadPetBodyShape body()
  * @method SortBag|Shape\ReadPetSortingShape sorting()
- * @method FilterBag|Shape\ReadPetFilteringShape filtering()
+ * @method Shape\ReadPetFilteringShape filtering()
  * @method Paginator|null paginator()
  */
 class ReadPetRequest extends AbstractApivalkRequest { /* still empty */ }
@@ -221,9 +221,10 @@ automatically. → [Pagination docs](https://docs.apivalk.com/http/pagination) �
 
 ### 🔢 Sorting & Filtering
 
-Declare allowed sort fields and filter types on the route. Sorting defaults are applied when `order_by` is omitted —
-`$request->sorting()` is always populated. Undeclared filter keys are silently
-ignored. → [Sorting](https://docs.apivalk.com/http/sorting) · [Filtering](https://docs.apivalk.com/http/filtering)
+Declare allowed sort fields on the route, and per filter field the operators it accepts. Clients pick one:
+`?price[gte]=200&price[lte]=500`. Sorting defaults are applied when `order_by` is omitted —
+`$request->sorting()` is always populated. An operator a field does not declare answers `422`; an undeclared
+filter key is ignored. → [Sorting](https://docs.apivalk.com/http/sorting) · [Filtering](https://docs.apivalk.com/http/filtering)
 
 ### ⏱️ Rate Limiting
 

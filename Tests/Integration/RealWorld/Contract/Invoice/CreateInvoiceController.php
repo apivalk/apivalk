@@ -6,7 +6,7 @@ namespace Tests\Integration\RealWorld\Contract\Invoice;
 
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractCreateResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceCreatedResponse;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
@@ -32,7 +32,7 @@ class CreateInvoiceController extends AbstractCreateResourceController
         return InvoiceResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         $resource = $this->getResource($request);
 

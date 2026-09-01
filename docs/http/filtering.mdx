@@ -1,195 +1,249 @@
 ---
 title: "Filtering"
-description: "Apivalk provides built-in support for route-level filtering, allowing clients to narrow down results by specifying conditions on fields."
+description: "Apivalk provides built-in support for route-level filtering: each field declares which operators it accepts, and clients pick one per request."
 ---
 
-<Tip>For a task-focused walkthrough (typed filters, controller usage, resource integration), see the [Add filtering](/how-to/filtering) how-to.</Tip>
+<Tip>For a task-focused walkthrough (declaring filters, controller usage, resource integration), see the [Add filtering](/how-to/filtering) how-to.</Tip>
 
 ## Route Configuration
 
-To enable filtering for a specific route, you use the `filtering()` method on the `Route` object. This automatically handles the documentation and request parameter resolution.
+Filtering is declared with `filtering()` on the `Route`. One filter per field, with the operators that field accepts:
 
 ```php
-use apivalk\apivalk\Router\Route\Filter\StringFilter;
-use apivalk\apivalk\Router\Route\Filter\EnumFilter;
-use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
-use apivalk\apivalk\Router\Route\Filter\FloatFilter;
-use apivalk\apivalk\Router\Route\Filter\DateFilter;
-use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
-use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
-use apivalk\apivalk\Router\Route\Route;
-use apivalk\apivalk\Documentation\Property\StringProperty;
-use apivalk\apivalk\Documentation\Property\EnumProperty;
-use apivalk\apivalk\Documentation\Property\IntegerProperty;
-use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\DateProperty;
 use apivalk\apivalk\Documentation\Property\DateTimeProperty;
-use apivalk\apivalk\Documentation\Property\BooleanProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Documentation\Property\FloatProperty;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
+use apivalk\apivalk\Documentation\Property\StringProperty;
+use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
+use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\FloatFilter;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
+use apivalk\apivalk\Router\Route\Route;
 
 public static function getRoute(): Route
 {
     return Route::get('/contracts')
         ->filtering([
-            EnumFilter::equals(new EnumProperty('status', 'Filter by status', ['active', 'inactive'])),
-            StringFilter::contains(new StringProperty('name', 'Filter by name (contains)')),
-            FloatFilter::greaterThan(new FloatProperty('amount', 'Minimum amount', FloatProperty::FORMAT_DOUBLE)),
-            IntegerFilter::lessThan(new IntegerProperty('id', 'Filter by ID (less than)')),
-            DateFilter::greaterThan(new DateProperty('created_at', 'Filter by creation date (greater than)')),
-            DateTimeFilter::lessThan(new DateTimeProperty('updated_at', 'Filter by update date (less than)')),
-            BooleanFilter::equals(new BooleanProperty('is_active', 'Filter by active flag', false)),
+            new EnumFilter(new EnumProperty('status', 'Contract status', ['active', 'inactive']), Operator::EQ, Operator::IN),
+            new StringFilter(new StringProperty('name', 'Contract name'), Operator::CONTAINS),
+            new FloatFilter(new FloatProperty('amount', 'Contract amount', FloatProperty::FORMAT_DOUBLE), Operator::GTE, Operator::LTE),
+            new IntegerFilter(new IntegerProperty('id', 'Contract ID'), Operator::EQ, Operator::IN),
+            new DateFilter(new DateProperty('created_at', 'Creation date'), Operator::GT, Operator::LT),
+            new DateTimeFilter(new DateTimeProperty('updated_at', 'Last update'), Operator::GTE),
+            new BooleanFilter(new BooleanProperty('is_active', 'Active flag', false), Operator::EQ),
         ]);
 }
 ```
 
-### Type-Safe Filtering
+## Operators
 
-Apivalk provides specialized filter classes for different property types. Each filter is linked to its corresponding property type, ensuring that filter values are correctly type-cast when retrieved in your controller.
+`Operator` holds every operator Apivalk knows. The constant value is also the wire name, so `Operator::GTE` is what a client sends as `amount[gte]=10`.
 
-1.  **StringFilter**: Linked to `StringProperty`. Supports `equals`, `in`, `like`, and `contains`.
-2.  **EnumFilter**: Linked to `EnumProperty`. Supports `equals` and `in`.
-3.  **IntegerFilter**: Linked to `IntegerProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `int` values.
-4.  **FloatFilter**: Linked to `FloatProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `float` values.
-5.  **DateFilter**: Linked to `DateProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `\DateTime` values.
-6.  **DateTimeFilter**: Linked to `DateTimeProperty`. Supports `equals`, `in`, `greaterThan`, and `lessThan`. Returns `\DateTime` values.
-7.  **ByteFilter**: Linked to `ByteProperty`. Supports `equals` and `in`.
-8.  **BinaryFilter**: Linked to `BinaryProperty`. Supports `equals` and `in`.
-9.  **BooleanFilter**: Linked to `BooleanProperty`. Supports `equals`. Returns `bool` values.
+| Constant | Wire | Meaning |
+|---|---|---|
+| `Operator::EQ` | `eq` | Equals |
+| `Operator::NEQ` | `neq` | Not equals |
+| `Operator::IN` | `in` | One of a comma-separated list |
+| `Operator::GT` | `gt` | Greater than |
+| `Operator::GTE` | `gte` | Greater than or equal |
+| `Operator::LT` | `lt` | Less than |
+| `Operator::LTE` | `lte` | Less than or equal |
+| `Operator::LIKE` | `like` | Pattern match |
+| `Operator::CONTAINS` | `contains` | Substring match |
+| `Operator::NULL` | `null` | `true` matches null, `false` matches non-null |
 
-Benefits:
--   **OpenAPI Accuracy**: The documentation reflects the correct data type (e.g., `number`, `integer`, `string`).
--   **Automatic Casting**: `getValue()` returns the correct PHP type (`string`, `int`, `float`, or `\DateTime`), or `null` if the filter was not provided by the client.
--   **Raw Access**: `getRawValue()` returns the original query string the client sent (e.g. `"2024-01-15T14:30:00+00:00"` for a `DateTimeFilter`), or `null` if the filter wasn't provided. Useful for audit logs, error messages that quote the user's literal input, or distinguishing "client supplied an unparseable value" (`getRawValue() !== null && getValue() === null`) from "client omitted the filter" (both `null`).
--   **Detailed Documentation**: You can add custom descriptions, examples, and constraints to your filters.
+Each filter class supports the subset that makes sense for its type:
 
-```php
-IntegerFilter::equals(new IntegerProperty('id', 'Filter by ID (equals)', IntegerProperty::FORMAT_INT64))
+| Filter class | Property | Supported operators |
+|---|---|---|
+| `IntegerFilter` | `IntegerProperty` | `EQ`, `NEQ`, `IN`, `GT`, `GTE`, `LT`, `LTE`, `NULL` |
+| `FloatFilter` | `FloatProperty` | `EQ`, `NEQ`, `IN`, `GT`, `GTE`, `LT`, `LTE`, `NULL` |
+| `DateFilter` | `DateProperty` | `EQ`, `NEQ`, `IN`, `GT`, `GTE`, `LT`, `LTE`, `NULL` |
+| `DateTimeFilter` | `DateTimeProperty` | `EQ`, `NEQ`, `IN`, `GT`, `GTE`, `LT`, `LTE`, `NULL` |
+| `StringFilter` | `StringProperty` | `EQ`, `NEQ`, `IN`, `LIKE`, `CONTAINS`, `NULL` |
+| `EnumFilter` | `EnumProperty` | `EQ`, `NEQ`, `IN`, `NULL` |
+| `ByteFilter` | `ByteProperty` | `EQ`, `NEQ`, `IN`, `NULL` |
+| `BinaryFilter` | `BinaryProperty` | `EQ`, `NEQ`, `IN`, `NULL` |
+| `BooleanFilter` | `BooleanProperty` | `EQ`, `NULL` |
+
+Passing an operator a class does not support throws when the route is built, as does declaring the same field twice or declaring a filter with no operator at all. `availableFilters()` runs during routing and documentation generation, so a bad declaration surfaces on the first request rather than in production.
+
+Filter field names must not collide with the query parameters the framework reads itself: `order_by`, `offset`, `cursor`, `page` and `limit`. A filter on one of those throws with the reserved list in the message.
+
+## Client-Side Usage
+
+### Bracket notation
+
+The operator is the second bracket level:
+
+```
+GET /contracts?amount[gte]=10&amount[lte]=100
+GET /contracts?status[in]=active,inactive
+GET /contracts?created_at[gt]=2026-01-01
+GET /contracts?end_date[null]=true
 ```
 
-### Supported Filter Types
+`IN` takes a comma-separated list, so a value containing a comma cannot be filtered with it. `NULL` takes a boolean rather than a value.
 
-#### StringFilter
-- `StringFilter::equals(StringProperty $property)`: Exact match for a single string.
-- `StringFilter::in(StringProperty $property)`: Match against a list of strings.
-- `StringFilter::like(StringProperty $property)`: Partial string matching (e.g., `prefix%`).
-- `StringFilter::contains(StringProperty $property)`: Match if a string contains another.
+### Flat notation
 
-#### EnumFilter
-- `EnumFilter::equals(EnumProperty $property)`: Exact match against allowed values.
-- `EnumFilter::in(EnumProperty $property)`: Match against a list of allowed values.
+A shortcut that resolves to the **first operator declared** for that field:
 
-#### IntegerFilter
-- `IntegerFilter::equals(IntegerProperty $property)`: Exact integer match.
-- `IntegerFilter::in(IntegerProperty $property)`: Match against a list of integers.
-- `IntegerFilter::greaterThan(IntegerProperty $property)`: Integer comparison.
-- `IntegerFilter::lessThan(IntegerProperty $property)`: Integer comparison.
+```
+GET /contracts?status=active
+```
 
-#### FloatFilter
-- `FloatFilter::equals(FloatProperty $property)`: Exact float match.
-- `FloatFilter::in(FloatProperty $property)`: Match against a list of floats.
-- `FloatFilter::greaterThan(FloatProperty $property)`: Float comparison.
-- `FloatFilter::lessThan(FloatProperty $property)`: Float comparison.
+With `new EnumFilter($property, Operator::EQ, Operator::IN)` that is `status[eq]=active`. Reorder the declaration and you change what flat notation means, so declare the operator you want as the default first.
 
-#### DateFilter
-- `DateFilter::equals(DateProperty $property)`: Exact date match.
-- `DateFilter::in(DateProperty $property)`: Match against a list of dates.
-- `DateFilter::greaterThan(DateProperty $property)`: Date comparison.
-- `DateFilter::lessThan(DateProperty $property)`: Date comparison.
+Both notations produce the same `FilterBag`. Sending both for one field is a client-side contradiction that PHP resolves before Apivalk sees it, last one wins.
 
-#### DateTimeFilter
-- `DateTimeFilter::equals(DateTimeProperty $property)`: Exact date-time match.
-- `DateTimeFilter::in(DateTimeProperty $property)`: Match against a list of date-times.
-- `DateTimeFilter::greaterThan(DateTimeProperty $property)`: Date-time comparison.
-- `DateTimeFilter::lessThan(DateTimeProperty $property)`: Date-time comparison.
+### Validation
 
-#### ByteFilter
-- `ByteFilter::equals(ByteProperty $property)`: Exact byte match.
-- `ByteFilter::in(ByteProperty $property)`: Match against a list of byte values.
+`RequestValidationMiddleware` answers with `422` when:
 
-#### BinaryFilter
-- `BinaryFilter::equals(BinaryProperty $property)`: Exact binary match.
-- `BinaryFilter::in(BinaryProperty $property)`: Match against a list of binary values.
+- the client sends an operator the field does not declare
+- a value fails the property's own validation (wrong type, outside `minimum`, not in the enum, …)
+- two conditions can never match at once, for example `amount[gte]=100&amount[lte]=10`, `eq` equal to `neq`, or `eq` outside a declared range
+- an `IN` list is empty
 
-#### BooleanFilter
-- `BooleanFilter::equals(BooleanProperty $property)`: Exact boolean match. Returns a `bool` value.
-
----
+A query parameter you never declared as a filter is ignored, not rejected.
 
 ## Usage in Controller
 
-When a route has filtering enabled, you can access the resolved filters from the request via the `filtering()` method.
+`$request->filtering()` returns the `FilterBag`. Every operator a field declares is a property on its filter, typed to the property behind it:
 
 ```php
-public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+public function __invoke(ContractListRequest $request): AbstractApivalkResponse
 {
     $filters = $request->filtering();
-    
-    // Check if a specific filter was provided by the client
-    if ($filters->has('status')) {
-        $type = $filters->status->getType(); // for example contains, so you know you do str_contains for example
-        $status = $filters->status->getValue();
-        // apply to your query...
+
+    $from = $filters->created_at->greaterThan;      // ?\DateTime
+    $min = $filters->amount->greaterThanOrEqual;    // ?float
+    $statuses = $filters->status->in;               // string[]
+    $missingEnd = $filters->end_date->isNull;       // ?bool
+
+    if ($filters->is_active->has(Operator::EQ)) {
+        $active = $filters->is_active->equal;       // ?bool
     }
-    
-    // Iterate over all provided filters
-    foreach ($filters as $field => $filter) {
-        $type = $filter->getType();
-        $value = $filter->getValue();
-        // ...
-    }
-    
+
     // ...
 }
 ```
 
----
+| Operator | Property |
+|---|---|
+| `Operator::EQ` | `equal` |
+| `Operator::NEQ` | `notEqual` |
+| `Operator::IN` | `in` |
+| `Operator::GT` | `greaterThan` |
+| `Operator::GTE` | `greaterThanOrEqual` |
+| `Operator::LT` | `lessThan` |
+| `Operator::LTE` | `lessThanOrEqual` |
+| `Operator::LIKE` | `like` |
+| `Operator::CONTAINS` | `contains` |
+| `Operator::NULL` | `isNull` |
 
-## Client-Side Usage
+Beyond those properties a filter exposes three things, and nothing else your code should touch:
 
-Apivalk supports two query string formats — both reach the same filter values in your controller.
+- **`has(Operator::X)`** answers whether the client supplied that operator. Use it for boolean and numeric filters, where `false` and `0` are legitimate values that `!== null` reads awkwardly for.
+- **`raw(Operator::X)`** returns the literal string the client sent, before casting. Useful for audit logs and error messages that quote the input.
+- **`conditions()`** returns every supplied condition as `operator => cast value`, for generic fan-out to a query builder.
 
-### Flat notation
+The remaining methods on `FilterInterface` are marked `@internal`: they exist for the population strategy, the validation middleware and the documentation generators.
 
-Each filter is a top-level query parameter. Simple and compact.
+Reading an operator the field does not declare throws a `LogicException`, as does an accessor that does not exist at all. Both are bugs in your code rather than client input, so they fail loudly on the first run.
+
+If the client sent nothing, every property is `null` (or `[]` for `in`) and `conditions()` is empty.
+
+## QUERY requests
+
+Add `->enableQuery()` to accept the same filters as an [RFC 10008](https://datatracker.ietf.org/doc/rfc10008/) `QUERY` request body:
 
 ```
-GET /contracts?status=active
-GET /contracts?status=active&name=Acme
+QUERY /contracts
+
+{"amount": {"gte": 10, "lte": 100}, "status": {"in": ["active", "inactive"]}}
 ```
 
-### Bracket notation
+Same declaration, same `FilterBag`, same validation, and `IN` takes a real JSON array here rather than a comma-separated string. Sending body filters and query-string filters on one request is a `422`.
 
-Filters are nested under a `filter` key. Useful when you want a clear namespace separation from other parameters (pagination, sorting, etc.), or when tooling like OpenAPI client generators constructs nested objects.
-
-```
-GET /contracts?filter[status]=active
-GET /contracts?filter[status]=active&filter[name]=Acme
-```
-
-Both formats are equivalent — they produce the same `FilterBag` in your controller and can be mixed freely within a single request (flat takes precedence if both supply the same field).
-
----
+It is opt-in per route: a gateway that does not know the method drops the request before it reaches your application, and generating it everywhere would make SDK generators emit two calls for the same read.
 
 ## OpenAPI Documentation
 
-When you configure filters on a route, Apivalk generates a single `filter` parameter in the OpenAPI spec using `style: deepObject`. Each declared filter appears as a named property inside its schema:
+Each filter field becomes one `deepObject` query parameter whose properties are the operators it declares:
 
 ```yaml
-- name: filter
+- name: amount
   in: query
+  description: "Contract amount"
   required: false
   style: deepObject
   explode: true
   schema:
     type: object
     properties:
-      status:
-        type: string
-        description: "Filter by status"
-      amount:
+      gte:
         type: number
-        description: "Minimum amount (greater than)"
+        format: double
+        description: "Contract amount"
+      lte:
+        type: number
+        format: double
+        description: "Contract amount"
+    additionalProperties: false
 ```
 
-In Swagger UI, this renders as separate inputs labelled `filter[status]`, `filter[amount]`, etc. — matching the bracket notation clients should use at runtime. Both flat notation (`?status=active`) and bracket notation (`?filter[status]=active`) are accepted by the server regardless of which style is chosen.
+Property constraints (`minimum`, `maximum`, `pattern`, `enum`) carry into each operator schema, and `additionalProperties: false` makes an undeclared operator a schema error rather than something a client discovers at runtime.
 
-Pass `flatFilters: true` to `OpenAPIGenerator` to switch to one flat query parameter per filter instead. See [OpenAPI Generator → Filter Documentation Style](/documentation/openapi-generator) for the full reference.
+A single bracket level with primitive properties is the case OpenAPI actually defines for `deepObject`, which is why filters are not nested under a shared `filter` key.
+
+With `->enableQuery()` the path also gets a `query` operation whose `requestBody` mirrors those schemas, one object per field. That requires OpenAPI 3.2, which is what Apivalk emits.
+
+Pass `flatFilters: true` to `OpenAPIGenerator` to document one flat parameter per field instead, matching flat notation. See [OpenAPI Generator → Filter Documentation Style](/documentation/openapi-generator).
+
+## IDE Support
+
+`DocBlockGenerator` writes one interface per filter field, carrying only the operators that field declares:
+
+```php
+/**
+ * @generated Auto generated by apivalk
+ * @property-read \DateTime|null $greaterThan Creation date, strictly greater
+ * @property-read \DateTime|null $lessThan Creation date, strictly lower
+ * @method bool has(string $operator)
+ * @method string|null raw(string $operator)
+ */
+interface ContractListRequestFilterCreatedAtShape {}
+```
+
+The filtering shape points each field at its own interface, so autocompletion on `created_at` offers exactly those entries. The operator values are read through `__get` rather than declared as methods on the filter class, which is what keeps every other operator out of the list.
+
+The filtering shape replaces `FilterBag` in the request docblock rather than being unioned with it, and carries the bag's own API instead:
+
+```php
+/**
+ * @generated Auto generated by apivalk
+ * @property-read ContractListRequestFilterCreatedAtShape $created_at
+ * @method bool has(string $field)
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterInterface|null get(string $field)
+ * @method \apivalk\apivalk\Router\Route\Filter\FilterInterface[] all()
+ * @method int count()
+ */
+interface ContractListRequestFilteringShape extends \IteratorAggregate {}
+```
+
+A union would resolve `$filters->created_at` through `FilterBag::__get()` as well as through the field shape, and report `FilterInterface|null` alongside it. For the same reason the controller has to name the concrete request class, otherwise `ApivalkRequestInterface::filtering(): FilterBag` puts that second path right back:
+
+```php
+public function __invoke(ContractListRequest $request): AbstractApivalkResponse
+```
+
+See [Typing `$request`](/http/controller) for why that is possible despite PHP's rules on parameter types.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\RealWorld\Contract;
 
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\CursorPaginationResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
@@ -29,7 +29,7 @@ class ListContractsController extends AbstractListResourceController
         return ContractResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         $resource = new ContractResource();
         $resource->contract_uuid = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';

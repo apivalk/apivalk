@@ -21,7 +21,10 @@ class MiddlewareStackTest extends TestCase
         $request = $this->createMock(ApivalkRequestInterface::class);
         $response = $this->createMock(AbstractApivalkResponse::class);
 
-        $controller = $this->createMock(AbstractApivalkController::class);
+        $controller = $this->getMockBuilder(AbstractApivalkController::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['__invoke'])
+            ->getMockForAbstractClass();
         $controller->expects($this->once())
             ->method('__invoke')
             ->with($request)
@@ -47,7 +50,10 @@ class MiddlewareStackTest extends TestCase
         $stack = new MiddlewareStack();
         $request = $this->createMock(ApivalkRequestInterface::class);
         $response = $this->createMock(AbstractApivalkResponse::class);
-        $controller = $this->createMock(AbstractApivalkController::class);
+        $controller = $this->getMockBuilder(AbstractApivalkController::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['__invoke'])
+            ->getMockForAbstractClass();
 
         $executionOrder = [];
 
@@ -101,7 +107,10 @@ class MiddlewareStackTest extends TestCase
         $stack = new MiddlewareStack();
         $request = $this->createMock(ApivalkRequestInterface::class);
         $response = $this->createMock(AbstractApivalkResponse::class);
-        $controller = $this->createMock(AbstractApivalkController::class);
+        $controller = $this->getMockBuilder(AbstractApivalkController::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['__invoke'])
+            ->getMockForAbstractClass();
 
         $rateLimitResult = new RateLimitResult('test', 100, 50, 60, 123456789);
 

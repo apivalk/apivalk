@@ -6,82 +6,122 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\Route\Filter;
 
 use apivalk\apivalk\Documentation\Property\DateTimeProperty;
 use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
-use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use PHPUnit\Framework\TestCase;
 
 class DateTimeFilterTest extends TestCase
 {
-    private function prop(string $name = 'updated_at'): DateTimeProperty
+    private function property(string $name = 'field'): DateTimeProperty
     {
-        return new DateTimeProperty($name);
+        return new DateTimeProperty($name, 'Description');
     }
 
-    public function testFactories(): void
+    public function testSupportedOperators(): void
     {
-        $this->assertSame(FilterInterface::TYPE_EQUALS, DateTimeFilter::equals($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_IN, DateTimeFilter::in($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_GREATER_THAN, DateTimeFilter::greaterThan($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_LESS_THAN, DateTimeFilter::lessThan($this->prop())->getType());
+        $this->assertSame([Operator::EQ, Operator::NEQ, Operator::IN, Operator::GT, Operator::GTE, Operator::LT, Operator::LTE, Operator::NULL], DateTimeFilter::supportedOperators());
     }
 
-    public function testGetters(): void
+    public function testDeclaredOperatorsAreKeptInOrder(): void
     {
-        $prop = $this->prop('deleted_at');
-        $filter = DateTimeFilter::equals($prop);
+        $filter = new DateTimeFilter($this->property(), Operator::NEQ, Operator::EQ);
 
-        $this->assertSame('deleted_at', $filter->getField());
-        $this->assertSame(FilterInterface::TYPE_EQUALS, $filter->getType());
-        $this->assertInstanceOf(DateTimeProperty::class, $filter->getProperty());
-        $this->assertSame($prop, $filter->getProperty());
-        $this->assertSame('date-time', $filter->getProperty()->getFormat());
+        $this->assertSame([Operator::NEQ, Operator::EQ], $filter->getAllowedOperators());
+        $this->assertSame(Operator::NEQ, $filter->getDefaultOperator());
+        $this->assertTrue($filter->allows(Operator::EQ));
     }
 
-    public function testTypeChecks(): void
+    public function testRejectsAnEmptyOperatorList(): void
     {
-        $this->assertTrue(DateTimeFilter::equals($this->prop())->isTypeEquals());
-        $this->assertFalse(DateTimeFilter::equals($this->prop())->isTypeIn());
-        $this->assertFalse(DateTimeFilter::equals($this->prop())->isTypeLike());
-        $this->assertFalse(DateTimeFilter::equals($this->prop())->isTypeContains());
-        $this->assertFalse(DateTimeFilter::equals($this->prop())->isTypeGreaterThan());
-        $this->assertFalse(DateTimeFilter::equals($this->prop())->isTypeLessThan());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('declares no operator');
 
-        $this->assertTrue(DateTimeFilter::in($this->prop())->isTypeIn());
-        $this->assertTrue(DateTimeFilter::greaterThan($this->prop())->isTypeGreaterThan());
-        $this->assertTrue(DateTimeFilter::lessThan($this->prop())->isTypeLessThan());
+        new DateTimeFilter($this->property());
     }
 
-    public function testValueFromString(): void
+    public function testRejectsAnUnsupportedOperator(): void
     {
-        $filter = DateTimeFilter::equals($this->prop());
-        $filter->setValue('2023-06-15 14:30:00');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not supported by');
 
-        $this->assertInstanceOf(\DateTime::class, $filter->getValue());
-        $this->assertSame('2023-06-15 14:30:00', $filter->getValue()->format('Y-m-d H:i:s'));
+        new DateTimeFilter($this->property(), Operator::LIKE);
     }
 
-    public function testValueFromDateTimeObject(): void
+    public function testRejectsADuplicateOperator(): void
     {
-        $filter = DateTimeFilter::equals($this->prop());
-        $dt = new \DateTime('2023-06-15T14:30:00Z');
-        $filter->setValue($dt);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('duplicate operator');
 
-        $this->assertSame($dt, $filter->getValue());
+        new DateTimeFilter($this->property(), Operator::EQ, Operator::EQ);
     }
 
-    public function testValueNull(): void
+    public function testConditionRoundTrip(): void
     {
-        $filter = DateTimeFilter::equals($this->prop());
-        $filter->setValue('2023-06-15 14:30:00');
-        $filter->setValue(null);
+        $filter = new DateTimeFilter($this->property('created'), Operator::EQ);
 
-        $this->assertNull($filter->getValue());
+        $this->assertFalse($filter->has(Operator::EQ));
+        $this->assertNull($filter->raw(Operator::EQ));
+
+        $filter->setCondition(Operator::EQ, new \DateTime('2026-01-15T10:00:00+00:00'), '2026-01-15T10:00:00+00:00');
+
+        $this->assertTrue($filter->has(Operator::EQ));
+        $this->assertEquals(new \DateTime('2026-01-15T10:00:00+00:00'), $filter->equal);
+        $this->assertSame('2026-01-15T10:00:00+00:00', $filter->raw(Operator::EQ));
+        $this->assertSame('created', $filter->getField());
     }
 
-    public function testInvalidStringYieldsNull(): void
+    public function testSetConditionRejectsAnUndeclaredOperator(): void
     {
-        $filter = DateTimeFilter::equals($this->prop());
-        $filter->setValue('not-a-datetime-at-all!!!invalid@@@');
+        $filter = new DateTimeFilter($this->property(), Operator::EQ);
 
-        $this->assertNull($filter->getValue());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not allowed on field');
+
+        $filter->setCondition(Operator::NEQ, new \DateTime('2026-01-15T10:00:00+00:00'), '2026-01-15T10:00:00+00:00');
+    }
+
+    public function testReadingAnUndeclaredOperatorThrows(): void
+    {
+        $filter = new DateTimeFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('is not declared on field');
+
+        $filter->notEqual;
+    }
+
+    public function testReadingAnUnknownAccessorThrows(): void
+    {
+        $filter = new DateTimeFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Unknown filter accessor');
+
+        $filter->nonsense;
+    }
+
+    public function testIssetReflectsTheDeclaredOperators(): void
+    {
+        $filter = new DateTimeFilter($this->property(), Operator::EQ);
+
+        $this->assertTrue(isset($filter->equal));
+        $this->assertFalse(isset($filter->notEqual));
+    }
+
+    public function testGetPropertyKeepsTheDeclaredProperty(): void
+    {
+        $property = $this->property();
+        $filter = new DateTimeFilter($property, Operator::EQ);
+
+        $this->assertSame($property, $filter->getProperty());
+    }
+
+    public function testInIsAList(): void
+    {
+        $filter = new DateTimeFilter($this->property(), Operator::IN);
+        $this->assertSame([], $filter->in);
+
+        $filter->setCondition(Operator::IN, [new \DateTime('2026-01-15T10:00:00+00:00')], '2026-01-15T10:00:00+00:00');
+        $this->assertCount(1, $filter->in);
+        $this->assertInstanceOf(\DateTime::class, $filter->in[0]);
     }
 }

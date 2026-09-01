@@ -6,7 +6,6 @@ namespace Tests\Integration\RealWorld\Customer;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\DeletedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
@@ -14,6 +13,9 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerDeleteRequest;
 
+/**
+ * @extends AbstractApivalkController<CustomerDeleteRequest>
+ */
 class DeleteCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -35,7 +37,7 @@ class DeleteCustomerController extends AbstractApivalkController
         return [DeletedApivalkResponse::class, NotFoundApivalkResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CustomerDeleteRequest $request): AbstractApivalkResponse
     {
         $customerId = $request->path()->has('customer_id')
             ? (int) $request->path()->get('customer_id')->getValue()

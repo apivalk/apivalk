@@ -18,6 +18,7 @@ use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
@@ -120,18 +121,18 @@ PHP
 
         $species = $request->filtering()->__get('species');
         $this->assertNotNull($species);
-        $this->assertSame('cat', $species->getValue());
-        $this->assertSame('cat', $species->getRawValue());
+        $this->assertSame('cat', $species->equal);
+        $this->assertSame('cat', $species->raw(Operator::EQ));
 
         $minWeight = $request->filtering()->__get('min_weight_kg');
         $this->assertNotNull($minWeight);
-        $this->assertSame(5, $minWeight->getValue());
-        $this->assertSame('5', $minWeight->getRawValue());
+        $this->assertSame(5, $minWeight->greaterThan);
+        $this->assertSame('5', $minWeight->raw(Operator::GT));
 
         $bornAfter = $request->filtering()->__get('born_after');
         $this->assertNotNull($bornAfter);
-        $this->assertInstanceOf(\DateTime::class, $bornAfter->getValue());
-        $this->assertSame('2020-01-15T00:00:00+00:00', $bornAfter->getRawValue());
+        $this->assertInstanceOf(\DateTime::class, $bornAfter->greaterThan);
+        $this->assertSame('2020-01-15T00:00:00+00:00', $bornAfter->raw(Operator::GT));
     }
 
     /**
@@ -327,9 +328,9 @@ PHP
 
         return Route::get('/animals')
             ->filtering([
-                StringFilter::equals($species),
-                IntegerFilter::greaterThan($minWeight),
-                DateTimeFilter::greaterThan($bornAfter),
+                new StringFilter($species, Operator::EQ),
+                new IntegerFilter($minWeight, Operator::GT),
+                new DateTimeFilter($bornAfter, Operator::GT),
             ])
             ->sorting([Sort::asc('name'), Sort::desc('id')])
             ->pagination(Pagination::page());

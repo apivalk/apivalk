@@ -6,58 +6,121 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\Route\Filter;
 
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
-use apivalk\apivalk\Router\Route\Filter\FilterInterface;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use PHPUnit\Framework\TestCase;
 
 class EnumFilterTest extends TestCase
 {
-    private function prop(string $name = 'status'): EnumProperty
+    private function property(string $name = 'field'): EnumProperty
     {
-        return new EnumProperty($name, '', ['active', 'inactive']);
+        return new EnumProperty($name, 'Description', ['draft', 'active']);
     }
 
-    public function testFactories(): void
+    public function testSupportedOperators(): void
     {
-        $this->assertSame(FilterInterface::TYPE_EQUALS, EnumFilter::equals($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_IN, EnumFilter::in($this->prop())->getType());
+        $this->assertSame([Operator::EQ, Operator::NEQ, Operator::IN, Operator::NULL], EnumFilter::supportedOperators());
     }
 
-    public function testGetters(): void
+    public function testDeclaredOperatorsAreKeptInOrder(): void
     {
-        $prop = $this->prop('state');
-        $filter = EnumFilter::equals($prop);
+        $filter = new EnumFilter($this->property(), Operator::NEQ, Operator::EQ);
 
-        $this->assertSame('state', $filter->getField());
-        $this->assertSame(FilterInterface::TYPE_EQUALS, $filter->getType());
-        $this->assertInstanceOf(EnumProperty::class, $filter->getProperty());
-        $this->assertSame($prop, $filter->getProperty());
+        $this->assertSame([Operator::NEQ, Operator::EQ], $filter->getAllowedOperators());
+        $this->assertSame(Operator::NEQ, $filter->getDefaultOperator());
+        $this->assertTrue($filter->allows(Operator::EQ));
     }
 
-    public function testTypeChecks(): void
+    public function testRejectsAnEmptyOperatorList(): void
     {
-        $this->assertTrue(EnumFilter::equals($this->prop())->isTypeEquals());
-        $this->assertFalse(EnumFilter::equals($this->prop())->isTypeIn());
-        $this->assertFalse(EnumFilter::equals($this->prop())->isTypeLike());
-        $this->assertFalse(EnumFilter::equals($this->prop())->isTypeContains());
-        $this->assertFalse(EnumFilter::equals($this->prop())->isTypeGreaterThan());
-        $this->assertFalse(EnumFilter::equals($this->prop())->isTypeLessThan());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('declares no operator');
 
-        $this->assertTrue(EnumFilter::in($this->prop())->isTypeIn());
+        new EnumFilter($this->property());
     }
 
-    public function testValueCasting(): void
+    public function testRejectsAnUnsupportedOperator(): void
     {
-        $filter = EnumFilter::equals($this->prop());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not supported by');
 
-        $this->assertNull($filter->getValue());
+        new EnumFilter($this->property(), Operator::LIKE);
+    }
 
-        $filter->setValue('active');
-        $this->assertSame('active', $filter->getValue());
+    public function testRejectsADuplicateOperator(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('duplicate operator');
 
-        $filter->setValue(0);
-        $this->assertSame('0', $filter->getValue());
+        new EnumFilter($this->property(), Operator::EQ, Operator::EQ);
+    }
 
-        $filter->setValue(null);
-        $this->assertNull($filter->getValue());
+    public function testConditionRoundTrip(): void
+    {
+        $filter = new EnumFilter($this->property('created'), Operator::EQ);
+
+        $this->assertFalse($filter->has(Operator::EQ));
+        $this->assertNull($filter->raw(Operator::EQ));
+
+        $filter->setCondition(Operator::EQ, 'active', 'active');
+
+        $this->assertTrue($filter->has(Operator::EQ));
+        $this->assertSame('active', $filter->equal);
+        $this->assertSame('active', $filter->raw(Operator::EQ));
+        $this->assertSame('created', $filter->getField());
+    }
+
+    public function testSetConditionRejectsAnUndeclaredOperator(): void
+    {
+        $filter = new EnumFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not allowed on field');
+
+        $filter->setCondition(Operator::NEQ, 'active', 'active');
+    }
+
+    public function testReadingAnUndeclaredOperatorThrows(): void
+    {
+        $filter = new EnumFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('is not declared on field');
+
+        $filter->notEqual;
+    }
+
+    public function testReadingAnUnknownAccessorThrows(): void
+    {
+        $filter = new EnumFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Unknown filter accessor');
+
+        $filter->nonsense;
+    }
+
+    public function testIssetReflectsTheDeclaredOperators(): void
+    {
+        $filter = new EnumFilter($this->property(), Operator::EQ);
+
+        $this->assertTrue(isset($filter->equal));
+        $this->assertFalse(isset($filter->notEqual));
+    }
+
+    public function testGetPropertyKeepsTheDeclaredProperty(): void
+    {
+        $property = $this->property();
+        $filter = new EnumFilter($property, Operator::EQ);
+
+        $this->assertSame($property, $filter->getProperty());
+    }
+
+    public function testInIsAList(): void
+    {
+        $filter = new EnumFilter($this->property(), Operator::IN);
+        $this->assertSame([], $filter->in);
+
+        $filter->setCondition(Operator::IN, ['active'], 'active');
+        $this->assertSame(['active'], $filter->in);
     }
 }

@@ -11,6 +11,7 @@ use apivalk\apivalk\Documentation\Property\FloatProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\DateTimeFilter;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\FloatFilter;
@@ -66,13 +67,10 @@ class InvoiceResource extends AbstractResource
     public function availableFilters(): array
     {
         return [
-            EnumFilter::equals(new EnumProperty('status', 'Status', ['draft', 'sent', 'paid', 'overdue', 'cancelled'])),
-            FloatFilter::greaterThan((new FloatProperty('amount', 'Amount'))->setMinimumValue(0.01)),
-            FloatFilter::lessThan((new FloatProperty('amount', 'Amount'))->setMinimumValue(0.01)),
-            DateFilter::greaterThan(new DateProperty('due_date', 'Due date')),
-            DateFilter::lessThan(new DateProperty('due_date', 'Due date')),
-            DateTimeFilter::greaterThan(new DateTimeProperty('paid_at', 'Paid at')),
-            DateTimeFilter::lessThan(new DateTimeProperty('paid_at', 'Paid at')),
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'sent', 'paid', 'overdue', 'cancelled']), Operator::EQ),
+            new FloatFilter((new FloatProperty('amount', 'Amount'))->setMinimumValue(0.01), Operator::GT, Operator::LT),
+            new DateFilter(new DateProperty('due_date', 'Due date'), Operator::GT, Operator::LT),
+            new DateTimeFilter(new DateTimeProperty('paid_at', 'Paid at'), Operator::GT, Operator::LT),
         ];
     }
 
