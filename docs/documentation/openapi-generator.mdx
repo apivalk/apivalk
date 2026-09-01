@@ -14,6 +14,21 @@ The generator leverages the existing framework infrastructure to discover and pr
 3. **Object Mapping**: It maps the Apivalk `Property` system to OpenAPI objects (Schemas, Parameters, RequestBodies, Responses).
 4. **Serialization**: It assembles these objects into a final `OpenAPI` object and serializes it to JSON.
 
+## Excluding Routes
+
+Routes marked with `Route::excludeFromDocumentation()` are skipped during route discovery and never appear in `paths`. If every method of a URL is excluded, the path itself is omitted entirely.
+
+```php
+public static function getRoute(): Route
+{
+    return Route::post('/v1/internal/reindex')
+                  ->description('Rebuild the search index')
+                  ->excludeFromDocumentation();
+}
+```
+
+The exclusion is documentation-only. The endpoint stays reachable at runtime, so use `routeAuthorization()` to actually protect it. See [Route](/routing/route) for details.
+
 ## Core Logic
 
 ### The `OpenAPI` Object

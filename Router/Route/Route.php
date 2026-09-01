@@ -42,6 +42,8 @@ class Route
     private $pagination;
     /** @var AbstractProperty[] */
     private $pathProperties = [];
+    /** @var bool */
+    private $excludedFromDocumentation = false;
 
     /**
      * @param string                  $url
@@ -179,6 +181,17 @@ class Route
         return $this;
     }
 
+    /**
+     * Hides the route from generated documentation. Routing and access control are untouched,
+     * the endpoint stays reachable at runtime.
+     */
+    public function excludeFromDocumentation(): self
+    {
+        $this->excludedFromDocumentation = true;
+
+        return $this;
+    }
+
     public function getSummary(): ?string
     {
         return $this->summary;
@@ -242,5 +255,10 @@ class Route
     public function getPathProperties(): array
     {
         return $this->pathProperties;
+    }
+
+    public function isExcludedFromDocumentation(): bool
+    {
+        return $this->excludedFromDocumentation;
     }
 }
