@@ -6,8 +6,7 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class DateProperty extends AbstractProperty
 {
-    /** @var string|null */
-    private $default;
+    private ?string $default = null;
 
     public function getType(): string
     {

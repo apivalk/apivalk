@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router\RateLimit;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
@@ -14,8 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class RateLimiterTest extends TestCase
 {
-    private $cache;
-    private $rateLimiter;
+    private MockObject $cache;
+    private RateLimiter $rateLimiter;
 
     protected function setUp(): void
     {
@@ -40,9 +41,7 @@ class RateLimiterTest extends TestCase
 
         $this->cache->expects($this->once())
             ->method('set')
-            ->with($this->callback(function (CacheItem $item) {
-                return $item->getKey() === 'key' && $item->getValue() === 1;
-            }));
+            ->with($this->callback(fn(CacheItem $item) => $item->getKey() === 'key' && $item->getValue() === 1));
 
         $result = $this->rateLimiter->allow($rateLimit, $context);
 
@@ -69,9 +68,7 @@ class RateLimiterTest extends TestCase
 
         $this->cache->expects($this->once())
             ->method('set')
-            ->with($this->callback(function (CacheItem $item) {
-                return $item->getKey() === 'key' && $item->getValue() === 2;
-            }));
+            ->with($this->callback(fn(CacheItem $item) => $item->getKey() === 'key' && $item->getValue() === 2));
 
         $result = $this->rateLimiter->allow($rateLimit, $context);
 

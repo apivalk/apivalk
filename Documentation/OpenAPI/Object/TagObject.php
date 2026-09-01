@@ -13,10 +13,8 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class TagObject implements ObjectInterface
 {
-    /** @var string */
-    private $name;
-    /** @var string|null */
-    private $description;
+    private string $name;
+    private ?string $description;
 
     public function __construct(string $name, ?string $description = null)
     {

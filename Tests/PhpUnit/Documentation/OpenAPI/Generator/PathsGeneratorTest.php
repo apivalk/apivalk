@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Http\Request\File\FileBagFactory;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
@@ -34,12 +43,12 @@ class PathsTestController extends AbstractApivalkController
         return [];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
     {
-        return new class extends \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
-            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation
+        return new class extends AbstractApivalkResponse {
+            public static function getDocumentation(): ApivalkResponseDocumentation
             {
-                return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation();
+                return new ApivalkResponseDocumentation();
             }
 
             public static function getStatusCode(): int
@@ -71,50 +80,50 @@ class PathsTestRequest implements ApivalkRequestInterface
         return self::getDocumentation();
     }
 
-    public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
+    public function getMethod(): MethodInterface
     {
         return new GetMethod();
     }
 
-    public function header(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
+    public function header(): ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createHeaderBag();
+        return ParameterBagFactory::createHeaderBag();
     }
 
-    public function query(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
+    public function query(): ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createQueryBag(
+        return ParameterBagFactory::createQueryBag(
             new Route('', new GetMethod()),
             self::getDocumentation()->getQueryProperties()
         );
     }
 
-    public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
+    public function body(): ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createBodyBag(
+        return ParameterBagFactory::createBodyBag(
             self::getDocumentation()->getBodyProperties()
         );
     }
 
-    public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag
+    public function path(): ParameterBag
     {
-        return \apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory::createPathBag(
+        return ParameterBagFactory::createPathBag(
             new Route('', new GetMethod()),
             self::getDocumentation()->getPathProperties()
         );
     }
 
-    public function file(): \apivalk\apivalk\Http\Request\File\FileBag
+    public function file(): FileBag
     {
-        return \apivalk\apivalk\Http\Request\File\FileBagFactory::create();
+        return FileBagFactory::create();
     }
 
-    public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity
+    public function getAuthIdentity(): AbstractAuthIdentity
     {
         return new GuestAuthIdentity([]);
     }
 
-    public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity): void
+    public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void
     {
     }
 
@@ -146,9 +155,9 @@ class PathsTestRequest implements ApivalkRequestInterface
         return new SortBag();
     }
 
-    public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+    public function filtering(): FilterBag
     {
-        return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
+        return new FilterBag();
     }
 
     public function paginator()

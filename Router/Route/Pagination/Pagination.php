@@ -10,10 +10,8 @@ class Pagination
     public const TYPE_OFFSET = 'offset';
     public const TYPE_PAGE = 'page';
 
-    /** @var int */
-    private $maxLimit = 100;
-    /** @var string */
-    private $type;
+    private int $maxLimit = 100;
+    private string $type;
 
     public function __construct(string $type)
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Router\Route;
 
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\PropertySerializer;
 use apivalk\apivalk\Http\Method\MethodFactory;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;

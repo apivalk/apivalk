@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\ByteProperty;
 
 class ByteFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var ByteProperty */
-    private $property;
-    /** @var string|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?string $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, ByteProperty $property)
     {

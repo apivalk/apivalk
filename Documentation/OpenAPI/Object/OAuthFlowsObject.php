@@ -13,14 +13,10 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class OAuthFlowsObject
 {
-    /** @var OAuthFlowObject|null */
-    private $implicit;
-    /** @var OAuthFlowObject|null */
-    private $password;
-    /** @var OAuthFlowObject|null */
-    private $clientCredentials;
-    /** @var OAuthFlowObject|null */
-    private $authorizationCode;
+    private ?OAuthFlowObject $implicit;
+    private ?OAuthFlowObject $password;
+    private ?OAuthFlowObject $clientCredentials;
+    private ?OAuthFlowObject $authorizationCode;
 
     public function __construct(
         ?OAuthFlowObject $implicit,

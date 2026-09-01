@@ -13,16 +13,15 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class SecurityRequirementObject implements ObjectInterface
 {
-    /** @var string|null */
-    private $securitySchemeName;
+    private ?string $securitySchemeName;
     /** @var string[] */
-    private $scopes;
+    private array $scopes;
 
     /**
      * @param string|null $securitySchemeName Null means "no security required" (OpenAPI {})
      * @param string[]    $scopes
      */
-    function __construct(?string $securitySchemeName = null, array $scopes = [])
+    public function __construct(?string $securitySchemeName = null, array $scopes = [])
     {
         $this->securitySchemeName = $securitySchemeName;
         $this->scopes = $scopes;

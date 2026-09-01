@@ -10,8 +10,7 @@ use apivalk\apivalk\Resource\AbstractResource;
 
 class ResourceViewResponse extends AbstractApivalkResponse
 {
-    /** @var AbstractResource */
-    private $resource;
+    private AbstractResource $resource;
 
     public function __construct(AbstractResource $resource)
     {

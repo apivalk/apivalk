@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class IntegerFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var IntegerProperty */
-    private $property;
-    /** @var int|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?int $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, IntegerProperty $property)
     {

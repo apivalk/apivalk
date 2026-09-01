@@ -19,14 +19,11 @@ use apivalk\apivalk\Router\Route\Pagination\Pagination;
  */
 class SchemaObject implements ObjectInterface
 {
-    /** @var string */
-    private $type;
-    /** @var bool */
-    private $required;
+    private string $type;
+    private bool $required;
     /** @var AbstractProperty[] */
-    private $properties;
-    /** @var Pagination|null */
-    private $pagination;
+    private array $properties;
+    private ?Pagination $pagination;
 
     public function __construct(
         string $type,

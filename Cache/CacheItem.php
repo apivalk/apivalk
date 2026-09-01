@@ -6,14 +6,11 @@ namespace apivalk\apivalk\Cache;
 
 class CacheItem
 {
-    /** @var int|null */
-    private $ttl;
-    /** @var string */
-    private $key;
+    private ?int $ttl;
+    private string $key;
     /** @var mixed */
     private $value;
-    /** @var \DateTime */
-    private $createdAt;
+    private \DateTime $createdAt;
 
     /**
      * @param mixed          $value

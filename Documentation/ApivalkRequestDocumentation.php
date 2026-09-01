@@ -10,15 +10,15 @@ use apivalk\apivalk\Documentation\Property\FileProperty;
 class ApivalkRequestDocumentation
 {
     /** @var array<string, AbstractProperty> */
-    private $bodyProperties = [];
+    private array $bodyProperties = [];
     /** @var array<string, AbstractProperty> */
-    private $queryProperties = [];
+    private array $queryProperties = [];
     /** @var array<string, AbstractProperty> */
-    private $pathProperties = [];
+    private array $pathProperties = [];
     /** @var array<string, FileProperty> */
-    private $fileProperties = [];
+    private array $fileProperties = [];
     /** @var string[] */
-    private $availableSortFields = [];
+    private array $availableSortFields = [];
 
     public function addBodyProperty(AbstractProperty $property): void
     {

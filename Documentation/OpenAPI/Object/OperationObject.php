@@ -20,23 +20,17 @@ use apivalk\apivalk\Security\RouteAuthorization;
 class OperationObject implements ObjectInterface
 {
     /** @var TagObject[] */
-    private $tags;
-    /** @var string|null */
-    private $summary;
-    /** @var string|null */
-    private $description;
-    /** @var string|null */
-    private $operationId;
+    private array $tags;
+    private ?string $summary;
+    private ?string $description;
+    private ?string $operationId;
     /** @var ParameterObject[] */
-    private $parameters;
-    /** @var RequestBodyObject|null */
-    private $requestBody;
+    private array $parameters;
+    private ?RequestBodyObject $requestBody;
     /** @var ResponseObject[] */
-    private $responses;
-    /** @var RouteAuthorization */
-    private $routeAuthorization;
-    /** @var MethodInterface */
-    private $method;
+    private array $responses;
+    private ?RouteAuthorization $routeAuthorization;
+    private MethodInterface $method;
 
     /**
      * @param MethodInterface $method

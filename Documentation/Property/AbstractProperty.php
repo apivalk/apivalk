@@ -9,16 +9,12 @@ use apivalk\apivalk\Documentation\Property\Validator\ValidatorFactory;
 
 abstract class AbstractProperty
 {
-    /** @var string */
-    private $propertyName;
-    /** @var string */
-    private $propertyDescription;
-    /** @var bool */
-    private $isRequired = true;
-    /** @var string|null */
-    private $example;
+    private string $propertyName;
+    private string $propertyDescription;
+    private bool $isRequired = true;
+    private ?string $example = null;
     /** @var array<string, AbstractValidator> */
-    private $validators = [];
+    private array $validators = [];
 
     /** Is the swagger type definition of the value. Required for the documentation. */
     abstract public function getType(): string;

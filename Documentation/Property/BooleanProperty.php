@@ -6,8 +6,7 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class BooleanProperty extends AbstractProperty
 {
-    /** @var bool */
-    private $default;
+    private bool $default;
 
     public function __construct(
         string $propertyName,

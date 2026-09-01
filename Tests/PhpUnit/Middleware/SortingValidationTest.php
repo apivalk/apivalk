@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\i18n\Locale;
@@ -31,9 +35,7 @@ class SortingValidationTest extends TestCase
 
         $request = $this->makeRequest($doc, $sortBag);
         $middleware = new RequestValidationMiddleware();
-        $next = function () {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn() => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
 
@@ -50,9 +52,7 @@ class SortingValidationTest extends TestCase
 
         $request = $this->makeRequest($doc, $sortBag);
         $middleware = new RequestValidationMiddleware();
-        $next = function () {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn() => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
 
@@ -70,9 +70,7 @@ class SortingValidationTest extends TestCase
 
         $request = $this->makeRequest($doc, $sortBag);
         $middleware = new RequestValidationMiddleware();
-        $next = function () {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn() => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
 
@@ -90,9 +88,7 @@ class SortingValidationTest extends TestCase
 
         $request = $this->makeRequest($doc, $sortBag);
         $middleware = new RequestValidationMiddleware();
-        $next = function () {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn() => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
 
@@ -118,7 +114,7 @@ class SortingValidationTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $doc): void
+            public function populate(Route $route, ApivalkRequestDocumentation $doc): void
             {
             }
 
@@ -127,9 +123,9 @@ class SortingValidationTest extends TestCase
                 return self::$d;
             }
 
-            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
+            public function getMethod(): MethodInterface
             {
-                return new class implements \apivalk\apivalk\Http\Method\MethodInterface {
+                return new class implements MethodInterface {
                     public function getMethod(): string
                     {
                         return 'GET';
@@ -142,17 +138,17 @@ class SortingValidationTest extends TestCase
             public function body(): ParameterBag { return new ParameterBag(); }
             public function path(): ParameterBag { return new ParameterBag(); }
 
-            public function file(): \apivalk\apivalk\Http\Request\File\FileBag
+            public function file(): FileBag
             {
-                return new \apivalk\apivalk\Http\Request\File\FileBag();
+                return new FileBag();
             }
 
-            public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity
+            public function getAuthIdentity(): AbstractAuthIdentity
             {
                 return new GuestAuthIdentity([]);
             }
 
-            public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $i): void {}
+            public function setAuthIdentity(AbstractAuthIdentity $i): void {}
 
             public function getIp(): string { return '127.0.0.1'; }
 

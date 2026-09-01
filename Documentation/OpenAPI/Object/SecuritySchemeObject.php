@@ -20,22 +20,14 @@ class SecuritySchemeObject implements ObjectInterface
     const TYPE_OPEN_ID_CONNECT = 'openIdConnect';
     const TYPE_MUTUAL_TLS = 'mutualTLS';
 
-    /** @var string */
-    private $type;
-    /** @var string */
-    private $name;
-    /** @var string|null */
-    private $description;
-    /** @var null|string */
-    private $in;
-    /** @var null|string */
-    private $scheme;
-    /** @var null|string */
-    private $bearerFormat;
-    /** @var OAuthFlowsObject|null */
-    private $flows;
-    /** @var null|string */
-    private $openIdConnectUrl;
+    private string $type;
+    private string $name;
+    private ?string $description;
+    private ?string $in;
+    private ?string $scheme;
+    private ?string $bearerFormat;
+    private ?OAuthFlowsObject $flows;
+    private ?string $openIdConnectUrl;
 
     public function __construct(
         string $type,

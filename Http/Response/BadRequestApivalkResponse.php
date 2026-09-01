@@ -9,8 +9,7 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class BadRequestApivalkResponse extends AbstractApivalkResponse
 {
-    /** @var string */
-    private $errorMessage = 'Bad request';
+    private string $errorMessage = 'Bad request';
 
     public static function getDocumentation(): ApivalkResponseDocumentation
     {

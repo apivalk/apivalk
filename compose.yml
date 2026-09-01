@@ -1,9 +1,9 @@
 services:
-  php72:
-    container_name: apivalk-dev-php72
+  php74:
+    container_name: apivalk-dev-php74
     build:
       context: .
-      dockerfile: docker/php72/Dockerfile
+      dockerfile: docker/php74/Dockerfile
     working_dir: /app
     volumes:
       - ./:/app

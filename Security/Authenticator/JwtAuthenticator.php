@@ -14,20 +14,16 @@ use Firebase\JWT\Key;
 
 class JwtAuthenticator implements AuthenticatorInterface
 {
-    /** @var string */
-    private $jwkSetUrl;
+    private string $jwkSetUrl;
 
-    /** @var CacheInterface|null */
-    private $cache;
+    private ?CacheInterface $cache;
 
-    /** @var string */
-    private $issuer;
+    private string $issuer;
 
-    /** @var string */
-    private $audience;
+    private string $audience;
 
     /** @var array<string, Key>|null */
-    private $keys;
+    private ?array $keys = null;
 
     /**
      * @param string              $jwkSetUrl The URL to the JWK Set (e.g. https://example.com/.well-known/jwks.json)

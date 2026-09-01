@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\BinaryProperty;
 
 class BinaryFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var BinaryProperty */
-    private $property;
-    /** @var string|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?string $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, BinaryProperty $property)
     {

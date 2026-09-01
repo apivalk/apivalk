@@ -10,7 +10,7 @@ use apivalk\apivalk\Cache\CacheItem;
 
 class FilesystemCacheTest extends TestCase
 {
-    private $cacheDir;
+    private string $cacheDir;
 
     protected function setUp(): void
     {

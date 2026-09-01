@@ -15,9 +15,7 @@ class ResponseDocumentationFactoryTest extends TestCase
     {
         $doc = ResponseDocumentationFactory::create(new AnimalResource(), AbstractResource::MODE_VIEW);
 
-        $names = array_map(static function ($p) {
-            return $p->getPropertyName();
-        }, $doc->getProperties());
+        $names = array_map(static fn($p) => $p->getPropertyName(), $doc->getProperties());
 
         self::assertContains('animal_uuid', $names);
         self::assertContains('name', $names);
@@ -29,9 +27,7 @@ class ResponseDocumentationFactoryTest extends TestCase
     {
         $doc = ResponseDocumentationFactory::create(new AnimalResource(), AbstractResource::MODE_LIST);
 
-        $names = array_map(static function ($p) {
-            return $p->getPropertyName();
-        }, $doc->getProperties());
+        $names = array_map(static fn($p) => $p->getPropertyName(), $doc->getProperties());
 
         self::assertContains('animal_uuid', $names);
         self::assertContains('name', $names);
@@ -56,9 +52,7 @@ class ResponseDocumentationFactoryTest extends TestCase
         ] as $mode) {
             $doc = ResponseDocumentationFactory::create(new AnimalResource(), $mode);
 
-            $names = array_map(static function ($p) {
-                return $p->getPropertyName();
-            }, $doc->getProperties());
+            $names = array_map(static fn($p) => $p->getPropertyName(), $doc->getProperties());
 
             self::assertContains('animal_uuid', $names, "Identifier missing for mode: $mode");
         }

@@ -6,10 +6,8 @@ namespace apivalk\apivalk\Http\Request\Pagination;
 
 class OffsetPaginator
 {
-    /** @var int */
-    private $offset;
-    /** @var int */
-    private $limit;
+    private int $offset;
+    private int $limit;
 
     public function __construct(int $offset, int $limit)
     {

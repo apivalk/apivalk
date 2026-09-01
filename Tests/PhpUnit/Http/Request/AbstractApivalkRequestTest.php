@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request;
 
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Method\MethodInterface;
@@ -69,12 +72,12 @@ class AbstractApivalkRequestTest extends TestCase
         $request->populate($route, new ApivalkRequestDocumentation());
 
         $this->assertSame($method, $request->getMethod());
-        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->header());
-        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->query());
-        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->body());
-        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\Parameter\ParameterBag::class, $request->path());
-        $this->assertInstanceOf(\apivalk\apivalk\Http\Request\File\FileBag::class, $request->file());
+        $this->assertInstanceOf(ParameterBag::class, $request->header());
+        $this->assertInstanceOf(ParameterBag::class, $request->query());
+        $this->assertInstanceOf(ParameterBag::class, $request->body());
+        $this->assertInstanceOf(ParameterBag::class, $request->path());
+        $this->assertInstanceOf(FileBag::class, $request->file());
         $this->assertInstanceOf(SortBag::class, $request->sorting());
-        $this->assertInstanceOf(\apivalk\apivalk\Router\Route\Filter\FilterBag::class, $request->filtering());
+        $this->assertInstanceOf(FilterBag::class, $request->filtering());
     }
 }

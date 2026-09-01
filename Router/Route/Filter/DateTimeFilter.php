@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\DateTimeProperty;
 
 class DateTimeFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var DateTimeProperty */
-    private $property;
-    /** @var \DateTime|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?\DateTime $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, DateTimeProperty $property)
     {

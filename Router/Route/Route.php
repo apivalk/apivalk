@@ -20,30 +20,22 @@ use apivalk\apivalk\Security\RouteAuthorization;
 
 class Route
 {
-    /** @var string */
-    private $url;
-    /** @var MethodInterface */
-    private $method;
-    /** @var string|null */
-    private $description;
-    /** @var string|null */
-    private $summary;
-    /** @var RouteAuthorization */
-    private $routeAuthorization;
+    private string $url;
+    private MethodInterface $method;
+    private ?string $description;
+    private ?string $summary;
+    private ?RouteAuthorization $routeAuthorization;
     /** @var TagObject[] */
-    private $tags;
-    /** @var null|RateLimitInterface */
-    private $rateLimit;
+    private array $tags;
+    private ?RateLimitInterface $rateLimit;
     /** @var Sort[] */
-    private $sortings;
+    private array $sortings;
     /** @var FilterInterface[] */
-    private $filters;
-    /** @var Pagination|null */
-    private $pagination;
+    private array $filters;
+    private ?Pagination $pagination;
     /** @var AbstractProperty[] */
-    private $pathProperties = [];
-    /** @var bool */
-    private $excludedFromDocumentation = false;
+    private array $pathProperties = [];
+    private bool $excludedFromDocumentation = false;
 
     /**
      * @param string                  $url

@@ -23,7 +23,7 @@ use apivalk\apivalk\Router\Route\Sort\SortBag;
 class RequestValidationMiddleware implements MiddlewareInterface
 {
     /** @var ValidationErrorObject[] */
-    private $errors = [];
+    private array $errors = [];
 
     public function process(
         ApivalkRequestInterface $request,

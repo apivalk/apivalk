@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
 class FileValidationTest extends TestCase
 {
     /** @var string[] */
-    private $tmpFiles = [];
+    private array $tmpFiles = [];
 
     protected function tearDown(): void
     {
@@ -122,9 +122,7 @@ class FileValidationTest extends TestCase
         $request->method('file')->willReturn($fileBag);
         $request->method('filtering')->willReturn($filterBag);
 
-        $next = function (): AbstractApivalkResponse {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn(): AbstractApivalkResponse => $this->createMock(AbstractApivalkResponse::class));
 
         return (new RequestValidationMiddleware())->process(
             $request,

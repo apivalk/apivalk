@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Http\Request\File;
 class FileBag implements \IteratorAggregate, \Countable
 {
     /** @var File[] */
-    private $files = [];
+    private array $files = [];
 
     /**
      * Files are keyed by the form field they were uploaded with. The explicit key is only needed for a field

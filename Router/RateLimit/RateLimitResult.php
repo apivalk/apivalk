@@ -6,16 +6,11 @@ namespace apivalk\apivalk\Router\RateLimit;
 
 class RateLimitResult
 {
-    /** @var int */
-    private $limit;
-    /** @var int */
-    private $remaining;
-    /** @var int|null */
-    private $resetAt;
-    /** @var string */
-    private $name;
-    /** @var int */
-    private $windowSeconds;
+    private int $limit;
+    private int $remaining;
+    private ?int $resetAt;
+    private string $name;
+    private int $windowSeconds;
 
     public function __construct(
         string $name,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Parameter;
 
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\DateProperty;
 use apivalk\apivalk\Documentation\Property\DateTimeProperty;
@@ -16,9 +17,9 @@ use PHPUnit\Framework\TestCase;
 
 class ParameterBagFactoryTest extends TestCase
 {
-    private $serverBackup;
-    private $getBackup;
-    private $postBackup;
+    private array $serverBackup;
+    private array $getBackup;
+    private array $postBackup;
 
     protected function setUp(): void
     {
@@ -111,7 +112,7 @@ class ParameterBagFactoryTest extends TestCase
         $prop = new IntegerProperty('test', '', IntegerProperty::FORMAT_INT32);
         $this->assertEquals(123, ParameterBagFactory::typeCastValueByProperty('123', $prop));
 
-        $prop = new \apivalk\apivalk\Documentation\Property\BooleanProperty('test', '', false);
+        $prop = new BooleanProperty('test', '', false);
         $this->assertTrue(ParameterBagFactory::typeCastValueByProperty('1', $prop));
         
         $prop = new StringProperty('test');

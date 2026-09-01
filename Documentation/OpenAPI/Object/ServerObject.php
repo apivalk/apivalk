@@ -13,10 +13,8 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class ServerObject implements ObjectInterface
 {
-    /** @var string */
-    private $url;
-    /** @var string|null */
-    private $description;
+    private string $url;
+    private ?string $description;
 
     public function __construct(string $url, ?string $description = null)
     {

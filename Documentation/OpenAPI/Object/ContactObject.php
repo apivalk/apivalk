@@ -13,12 +13,9 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class ContactObject implements ObjectInterface
 {
-    /** @var string */
-    private $name;
-    /** @var string */
-    private $url;
-    /** @var string */
-    private $email;
+    private string $name;
+    private string $url;
+    private string $email;
 
     public function __construct(string $name, string $url, string $email)
     {

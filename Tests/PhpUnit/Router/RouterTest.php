@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
@@ -22,9 +24,9 @@ use PHPUnit\Framework\TestCase;
 
 class RouterTest extends TestCase
 {
-    private $cache;
-    private $classLocator;
-    private $controllerFactory;
+    private MockObject $cache;
+    private MockObject $classLocator;
+    private MockObject $controllerFactory;
 
     protected function setUp(): void
     {
@@ -136,7 +138,7 @@ class RouterTest extends TestCase
         $middlewareStack->method('handle')->willReturn($expectedResponse);
 
         $router = new Router($this->classLocator, $cache, $this->controllerFactory);
-        $router->setApivalk($this->createMock(\apivalk\apivalk\Apivalk::class));
+        $router->setApivalk($this->createMock(Apivalk::class));
         $response = $router->dispatch($middlewareStack);
 
         $this->assertSame($expectedResponse, $response);

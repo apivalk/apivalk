@@ -13,10 +13,8 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class PathsObject implements ObjectInterface
 {
-    /** @var string */
-    private $url;
-    /** @var PathItemObject */
-    private $pathItem;
+    private string $url;
+    private PathItemObject $pathItem;
 
     public function __construct(string $url, PathItemObject $pathItem)
     {

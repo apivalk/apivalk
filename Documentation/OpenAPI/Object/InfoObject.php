@@ -13,20 +13,13 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class InfoObject implements ObjectInterface
 {
-    /** @var string */
-    private $title;
-    /** @var string|null $summary */
-    private $summary;
-    /** @var string|null */
-    private $description;
-    /** @var string|null */
-    private $termsOfService;
-    /** @var ContactObject|null */
-    private $contact = null;
-    /** @var LicenseObject|null */
-    private $license = null;
-    /** @var string */
-    private $version;
+    private string $title;
+    private ?string $summary;
+    private ?string $description;
+    private ?string $termsOfService;
+    private ?ContactObject $contact;
+    private ?LicenseObject $license;
+    private string $version;
 
     public function __construct(
         string $title,

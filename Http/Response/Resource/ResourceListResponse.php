@@ -12,7 +12,7 @@ use apivalk\apivalk\Resource\AbstractResource;
 class ResourceListResponse extends AbstractApivalkResponse
 {
     /** @var AbstractResource[] */
-    private $resources;
+    private array $resources;
 
     /**
      * @param AbstractResource[] $resources

@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Security\AuthIdentity;
 class GuestAuthIdentity extends AbstractAuthIdentity
 {
     /** @var string[] */
-    private $scopes;
+    private array $scopes;
 
     /** @param string[] $scopes */
     public function __construct(array $scopes = [])

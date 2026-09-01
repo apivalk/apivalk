@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ApivalkResponseDocumentationTest extends TestCase
 {
-    private $responseDocumentation;
+    private ApivalkResponseDocumentation $responseDocumentation;
 
     protected function setUp(): void
     {

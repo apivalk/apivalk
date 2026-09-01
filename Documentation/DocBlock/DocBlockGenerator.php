@@ -90,7 +90,7 @@ class DocBlockGenerator
 
         $controllerNamespace = $controllerReflection->getNamespaceName();
         $resourceBaseNamespace = substr($controllerNamespace, 0, strrpos($controllerNamespace, '\\'));
-        $resourceBaseDir = dirname(dirname($controllerFilePath));
+        $resourceBaseDir = dirname($controllerFilePath, 2);
 
         $resource = $className::getEmptyResource();
         $mode = RequestDocumentationFactory::getModeFromController($className);

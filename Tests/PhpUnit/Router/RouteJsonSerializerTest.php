@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Router;
 
+use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Documentation\Property\BinaryProperty;
 use apivalk\apivalk\Documentation\Property\ByteProperty;
 use apivalk\apivalk\Documentation\Property\DateProperty;
@@ -416,7 +417,7 @@ class RouteJsonSerializerTest extends TestCase
         $this->assertCount(1, $filter->getProperty()->getValidators());
 
         // Validator from the deserialized property must reject values outside the enum
-        $parameter = new \apivalk\apivalk\Http\Request\Parameter\Parameter('status', 'archived', 'archived');
+        $parameter = new Parameter('status', 'archived', 'archived');
         foreach ($filter->getProperty()->getValidators() as $validator) {
             $result = $validator->validate($parameter);
             $this->assertFalse($result->isSuccess());

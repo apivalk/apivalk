@@ -14,29 +14,22 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
  */
 class ParameterObject implements ObjectInterface
 {
-    /** @var string */
-    private $name;
+    private string $name;
 
-    /** @var string */
-    private $in;
+    private string $in;
 
-    /** @var string|null */
-    private $description;
+    private string $description;
 
-    /** @var bool */
-    private $required;
+    private bool $required;
 
-    /** @var AbstractProperty */
-    private $property;
+    private AbstractProperty $property;
 
-    /** @var string|null */
-    private $style;
+    private ?string $style = null;
 
-    /** @var bool|null */
-    private $explode;
+    private ?bool $explode = null;
 
     /** @var array<string, mixed>|null */
-    private $rawSchema;
+    private ?array $rawSchema = null;
 
     public function __construct(string $in, AbstractProperty $property)
     {
@@ -113,9 +106,7 @@ class ParameterObject implements ObjectInterface
 
     public function toArray(): array
     {
-        $schema = $this->rawSchema !== null
-            ? $this->rawSchema
-            : $this->property->getDocumentationArray();
+        $schema = $this->rawSchema ?? $this->property->getDocumentationArray();
 
         return array_filter(
             [
@@ -127,9 +118,7 @@ class ParameterObject implements ObjectInterface
                 'explode'     => $this->explode,
                 'schema'      => $schema,
             ],
-            static function ($value) {
-                return $value !== null;
-            }
+            static fn($value) => $value !== null
         );
     }
 }

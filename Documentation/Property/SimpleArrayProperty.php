@@ -42,8 +42,7 @@ class SimpleArrayProperty extends AbstractProperty
         self::TYPE_BOOL => 'bool',
     ];
 
-    /** @var string */
-    private $itemType;
+    private string $itemType;
 
     public function __construct(
         string $propertyName,

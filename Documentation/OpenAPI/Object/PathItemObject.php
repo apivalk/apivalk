@@ -13,28 +13,18 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class PathItemObject implements ObjectInterface
 {
-    /** @var string|null */
-    private $summary;
-    /** @var string|null */
-    private $description;
-    /** @var OperationObject|null */
-    private $get;
-    /** @var OperationObject|null */
-    private $put;
-    /** @var OperationObject|null */
-    private $post;
-    /** @var OperationObject|null */
-    private $delete;
-    /** @var OperationObject|null */
-    private $options;
-    /** @var OperationObject|null */
-    private $head;
-    /** @var OperationObject|null */
-    private $patch;
-    /** @var OperationObject|null */
-    private $trace;
+    private ?string $summary;
+    private ?string $description;
+    private ?OperationObject $get;
+    private ?OperationObject $put;
+    private ?OperationObject $post;
+    private ?OperationObject $delete;
+    private ?OperationObject $options;
+    private ?OperationObject $head;
+    private ?OperationObject $patch;
+    private ?OperationObject $trace;
     /** @var ParameterObject[] */
-    private $parameters;
+    private array $parameters;
 
     public function __construct(
         ?string $summary = null,

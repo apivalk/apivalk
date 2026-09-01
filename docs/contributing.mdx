@@ -41,10 +41,10 @@ git checkout -b docs/add-rate-limit-example   # no issue → description only
 
 ```bash
 docker compose build
-docker compose run --rm php72 composer install
+docker compose run --rm php74 composer install
 ```
 
-**Native PHP 7.2+ / DDEV / Lando** — Docker is optional. Install via `composer install` with your local setup.
+**Native PHP 7.4+ / DDEV / Lando** — Docker is optional. Install via `composer install` with your local setup.
 
 ### 4. Make Your Changes
 
@@ -56,10 +56,10 @@ All of the following must pass before opening a PR:
 
 ```bash
 # Unit tests
-docker compose run --rm php72 composer test
+docker compose run --rm php74 composer test
 
 # Static analysis (PHPStan level 6)
-docker compose run --rm php72 composer phpstan
+docker compose run --rm php74 composer phpstan
 ```
 
 New code must not introduce PHPStan violations. A baseline (`phpstan-baseline.neon`) covers pre-existing issues — do not add to it.
@@ -192,7 +192,7 @@ New endpoints, properties, and response shapes added to examples or how-to guide
 ### Test Coverage
 
 - New features need tests. Follow the existing structure: `Tests/PhpUnit/` mirrors the source tree.
-- Tests must be runnable with `vendor/bin/phpunit` and pass on PHP 7.2.
+- Tests must be runnable with `vendor/bin/phpunit` and pass on PHP 7.4.
 - Unit test individual classes; integration tests go through the full `Apivalk::run()` lifecycle where relevant.
 
 ---

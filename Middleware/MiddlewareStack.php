@@ -11,7 +11,7 @@ use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 class MiddlewareStack
 {
     /** @var MiddlewareInterface[] */
-    private $middlewares = [];
+    private array $middlewares = [];
 
     public function add(MiddlewareInterface $middleware): void
     {
@@ -23,9 +23,7 @@ class MiddlewareStack
         $next = $controller;
 
         foreach (array_reverse($this->middlewares) as $middleware) {
-            $next = static function (ApivalkRequestInterface $request) use ($middleware, $controller, $next) {
-                return $middleware->process($request, $controller, $next);
-            };
+            $next = (static fn(ApivalkRequestInterface $request) => $middleware->process($request, $controller, $next));
         }
 
         $response = $next($request);

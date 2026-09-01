@@ -9,7 +9,7 @@ use apivalk\apivalk\Http\Request\File\FileBagFactory;
 
 class FileBagFactoryTest extends TestCase
 {
-    private $filesBackup;
+    private array $filesBackup;
 
     protected function setUp(): void
     {

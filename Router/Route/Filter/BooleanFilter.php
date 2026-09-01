@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\BooleanProperty;
 
 class BooleanFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var BooleanProperty */
-    private $property;
-    /** @var bool|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?bool $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, BooleanProperty $property)
     {

@@ -6,12 +6,9 @@ namespace apivalk\apivalk\Router\RateLimit;
 
 class IpRateLimit implements RateLimitInterface
 {
-    /** @var string */
-    private $name;
-    /** @var int */
-    private $maxAttempts;
-    /** @var int */
-    private $windowInSeconds;
+    private string $name;
+    private int $maxAttempts;
+    private int $windowInSeconds;
 
     public function __construct(
         string $name,

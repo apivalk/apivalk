@@ -17,8 +17,7 @@ class RouteCacheFactory
      */
     private const ROUTE_CACHE_LIFETIME_BUFFER = 60;
 
-    /** @var AbstractRouter */
-    private $abstractRouter;
+    private AbstractRouter $abstractRouter;
 
     public function __construct(AbstractRouter $abstractRouter)
     {

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class IpResolverTest extends TestCase
 {
-    private $savedServer;
+    private array $savedServer;
 
     protected function setUp(): void
     {

@@ -13,12 +13,9 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class LicenseObject implements ObjectInterface
 {
-    /** @var string */
-    private $name;
-    /** @var string|null */
-    private $identifier;
-    /** @var string|null */
-    private $url;
+    private string $name;
+    private ?string $identifier;
+    private ?string $url;
 
     public function __construct(string $name, ?string $identifier, ?string $url)
     {

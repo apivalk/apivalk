@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Property;
 
+use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Documentation\Property\ArrayProperty;
 use apivalk\apivalk\Documentation\Property\AbstractObjectProperty;
@@ -18,8 +19,8 @@ class ArrayPropertyTest extends TestCase
                 return [];
             }
 
-            public function getPropertyCollection(): \apivalk\apivalk\Documentation\Property\AbstractPropertyCollection {
-                return new class(\apivalk\apivalk\Documentation\Property\AbstractPropertyCollection::MODE_VIEW) extends \apivalk\apivalk\Documentation\Property\AbstractPropertyCollection {
+            public function getPropertyCollection(): AbstractPropertyCollection {
+                return new class(AbstractPropertyCollection::MODE_VIEW) extends AbstractPropertyCollection {
                     public function __construct($mode) {}
                 };
             }

@@ -13,14 +13,11 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class ResponseObject implements ObjectInterface
 {
-    /** @var string|null */
-    private $description;
+    private ?string $description;
     /** @var array<string, HeaderObject> */
-    private $headers;
-    /** @var MediaTypeObject|null */
-    private $content;
-    /** @var int */
-    private $statusCode;
+    private array $headers;
+    private ?MediaTypeObject $content;
+    private int $statusCode;
 
     public function __construct(
         int $statusCode,
@@ -56,9 +53,7 @@ class ResponseObject implements ObjectInterface
 
     public function toArray(): array
     {
-        $headers = array_map(static function ($headerObject) {
-            return $headerObject->toArray();
-        }, $this->headers);
+        $headers = array_map(static fn($headerObject) => $headerObject->toArray(), $this->headers);
 
         $body = array_filter(
             [

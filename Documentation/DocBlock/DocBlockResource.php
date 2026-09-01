@@ -9,7 +9,7 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 class DocBlockResource
 {
     /** @var AbstractProperty[] */
-    private $properties = [];
+    private array $properties = [];
 
     public function addProperty(AbstractProperty $property): void
     {

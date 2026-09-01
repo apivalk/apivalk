@@ -10,7 +10,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 class CustomerUpdatedResponse extends AbstractApivalkResponse
 {
     /** @var array<string, mixed> */
-    private $customer;
+    private array $customer;
 
     /** @param array<string, mixed> $customer */
     public function __construct(array $customer)

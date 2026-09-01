@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
@@ -16,8 +18,8 @@ use PHPUnit\Framework\TestCase;
 
 class RateLimitMiddlewareTest extends TestCase
 {
-    private $cache;
-    private $middleware;
+    private MockObject $cache;
+    private RateLimitMiddleware $middleware;
 
     protected function setUp(): void
     {
@@ -42,9 +44,7 @@ class RateLimitMiddlewareTest extends TestCase
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse { return $this->createMock(AbstractApivalkResponse::class); }
         };
 
-        $next = function ($req) use ($response) {
-            return $response;
-        };
+        $next = (fn($req) => $response);
 
         $result = $this->middleware->process($request, $controller, $next);
 
@@ -75,9 +75,7 @@ class RateLimitMiddlewareTest extends TestCase
 
         $this->cache->method('get')->willReturn(null);
 
-        $next = function ($req) use ($response) {
-            return $response;
-        };
+        $next = (fn($req) => $response);
 
         $result = $this->middleware->process($request, $controller, $next);
 
@@ -106,7 +104,7 @@ class RateLimitMiddlewareTest extends TestCase
         };
 
         // Mock cache to return item that makes value exceed limit
-        $cacheItem = new \apivalk\apivalk\Cache\CacheItem('key', 1, 60);
+        $cacheItem = new CacheItem('key', 1, 60);
         $this->cache->method('get')->willReturn($cacheItem);
 
         $next = function ($req) {

@@ -13,14 +13,11 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class OAuthFlowObject implements ObjectInterface
 {
-    /** @var string */
-    private $authorizationUrl;
-    /** @var string */
-    private $tokenUrl;
-    /** @var string|null */
-    private $refreshUrl;
+    private string $authorizationUrl;
+    private string $tokenUrl;
+    private ?string $refreshUrl;
     /** @var array<string, string> */
-    private $scopes;
+    private array $scopes;
 
     public function __construct(
         string $authorizationUrl,

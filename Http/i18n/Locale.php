@@ -12,8 +12,7 @@ namespace apivalk\apivalk\Http\i18n;
  */
 class Locale
 {
-    /** @var string */
-    private $tag;
+    private string $tag;
 
     public static function de(): self
     {

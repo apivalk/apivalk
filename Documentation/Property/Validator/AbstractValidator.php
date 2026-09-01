@@ -9,8 +9,7 @@ use apivalk\apivalk\Http\Request\Parameter\Parameter;
 
 abstract class AbstractValidator
 {
-    /** @var AbstractProperty */
-    private $property;
+    private AbstractProperty $property;
 
     /**
      * @param Parameter $parameter

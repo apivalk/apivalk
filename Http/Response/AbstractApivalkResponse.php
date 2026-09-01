@@ -100,8 +100,7 @@ abstract class AbstractApivalkResponse
 
     /** @var array */
     private $headers = [];
-    /** @var null|PaginationResponseInterface */
-    private $paginationResponse;
+    private ?PaginationResponseInterface $paginationResponse = null;
 
     abstract public static function getDocumentation(): ApivalkResponseDocumentation;
 

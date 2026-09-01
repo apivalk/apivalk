@@ -29,7 +29,7 @@ class CacheItemTest extends TestCase
     {
         $item = new CacheItem('key', 'value');
         $this->assertNotNull($item->getCreatedAt());
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/',
             $item->getCreatedAt()->format(CacheInterface::CREATED_AT_FORMAT)
         );

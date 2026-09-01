@@ -11,16 +11,11 @@ class IntegerProperty extends AbstractProperty
     /** @var string */
     public const FORMAT_INT64 = 'int64';
 
-    /** @var string */
-    private $format;
-    /** @var int|null */
-    private $minimumValue;
-    /** @var int|null */
-    private $maximumValue;
-    /** @var bool|null */
-    private $exclusiveMinimum;
-    /** @var bool|null */
-    private $exclusiveMaximum;
+    private string $format;
+    private ?int $minimumValue = null;
+    private ?int $maximumValue = null;
+    private ?bool $exclusiveMinimum = null;
+    private ?bool $exclusiveMaximum = null;
 
     public function __construct(
         string $propertyName,

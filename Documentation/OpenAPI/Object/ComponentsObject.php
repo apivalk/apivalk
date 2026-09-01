@@ -14,19 +14,19 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
 class ComponentsObject implements ObjectInterface
 {
     /** @var array<string, SchemaObject> */
-    private $schemas = [];
+    private array $schemas = [];
     /** @var array<string, ResponseObject> */
-    private $responses = [];
+    private array $responses = [];
     /** @var array<string, ParameterObject> */
-    private $parameters = [];
+    private array $parameters = [];
     /** @var array<string, RequestBodyObject> */
-    private $requestBodies = [];
+    private array $requestBodies = [];
     /** @var array<string, HeaderObject> */
-    private $headers = [];
+    private array $headers = [];
     /** @var array<string, SecuritySchemeObject> */
-    private $securitySchemes = [];
+    private array $securitySchemes = [];
     /** @var array<string, PathItemObject> */
-    private $pathItems = [];
+    private array $pathItems = [];
 
     public function getSchemas(): array
     {
@@ -100,34 +100,22 @@ class ComponentsObject implements ObjectInterface
 
     public function toArray(): array
     {
-        $schemas = array_map(static function ($schema) {
-            return array_filter($schema->toArray());
-        }, $this->schemas);
+        $schemas = array_map(static fn($schema) => array_filter($schema->toArray()), $this->schemas);
 
-        $responses = array_map(static function ($response) {
-            return array_filter($response->toArray());
-        }, $this->responses);
+        $responses = array_map(static fn($response) => array_filter($response->toArray()), $this->responses);
 
-        $parameters = array_map(static function ($parameter) {
-            return array_filter($parameter->toArray());
-        }, $this->parameters);
+        $parameters = array_map(static fn($parameter) => array_filter($parameter->toArray()), $this->parameters);
 
-        $requestBodies = array_map(static function ($requestBody) {
-            return array_filter($requestBody->toArray());
-        }, $this->requestBodies);
+        $requestBodies = array_map(static fn($requestBody) => array_filter($requestBody->toArray()), $this->requestBodies);
 
-        $headers = array_map(static function ($header) {
-            return array_filter($header->toArray());
-        }, $this->headers);
+        $headers = array_map(static fn($header) => array_filter($header->toArray()), $this->headers);
 
         $securitySchemes = [];
         foreach ($this->securitySchemes as $securityScheme) {
             $securitySchemes[$securityScheme->getName()] = array_filter($securityScheme->toArray());
         }
 
-        $pathItems = array_map(static function ($pathItem) {
-            return array_filter($pathItem->toArray());
-        }, $this->pathItems);
+        $pathItems = array_map(static fn($pathItem) => array_filter($pathItem->toArray()), $this->pathItems);
 
         return array_filter(
             [

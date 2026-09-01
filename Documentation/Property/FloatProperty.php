@@ -11,16 +11,11 @@ class FloatProperty extends AbstractProperty
     /** @var string */
     public const FORMAT_DOUBLE = 'double';
 
-    /** @var string */
-    private $format;
-    /** @var float|null */
-    private $minimumValue;
-    /** @var float|null */
-    private $maximumValue;
-    /** @var bool|null */
-    private $exclusiveMinimum;
-    /** @var bool|null */
-    private $exclusiveMaximum;
+    private string $format;
+    private ?float $minimumValue = null;
+    private ?float $maximumValue = null;
+    private ?bool $exclusiveMinimum = null;
+    private ?bool $exclusiveMaximum = null;
 
     public function __construct(
         string $propertyName,

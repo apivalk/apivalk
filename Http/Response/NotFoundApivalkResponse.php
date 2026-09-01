@@ -9,8 +9,7 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class NotFoundApivalkResponse extends AbstractApivalkResponse
 {
-    /** @var string */
-    private $errorMessage = 'Not found';
+    private string $errorMessage = 'Not found';
 
     public static function getDocumentation(): ApivalkResponseDocumentation
     {

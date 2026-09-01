@@ -137,7 +137,7 @@ class OperationGeneratorTest extends TestCase
         // status (flat) + Accept-Language — no order_by since no sortings
         $this->assertCount(2, $parameters);
 
-        $names = array_map(static function ($p) { return $p->getName(); }, $parameters);
+        $names = array_map(static fn($p) => $p->getName(), $parameters);
         $this->assertContains('status', $names);
         $this->assertNotContains('filter', $names);
 

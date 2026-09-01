@@ -16,14 +16,10 @@ use apivalk\apivalk\Util\ClassLocator;
 
 abstract class AbstractRouter
 {
-    /** @var ApivalkControllerFactoryInterface */
-    private $controllerFactory;
-    /** @var ClassLocator */
-    private $classLocator;
-    /** @var CacheInterface */
-    private $cache;
-    /** @var Apivalk */
-    private $apivalk;
+    private ApivalkControllerFactoryInterface $controllerFactory;
+    private ClassLocator $classLocator;
+    private CacheInterface $cache;
+    private ?Apivalk $apivalk = null;
 
     public const CACHE_INDEX_KEY = 'apivalk.router.index';
     public const CACHE_ROUTE_KEY = 'apivalk.router.route';
@@ -42,9 +38,7 @@ abstract class AbstractRouter
     ) {
         $this->classLocator = $classLocator;
 
-        if ($controllerFactory === null) {
-            $controllerFactory = new ApivalkControllerFactory();
-        }
+        $controllerFactory ??= new ApivalkControllerFactory();
 
         $this->controllerFactory = $controllerFactory;
         $this->cache = $routerCache;
