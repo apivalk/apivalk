@@ -7,7 +7,10 @@
       "/phpunit.xml",
       "/vendor",
       "/docker",
-      "compose.yml"
+      ".idea",
+      "compose.yml",
+      ".claude",
+      "CLAUDE.md"
     ]
   },
   "description": "A Lightweight, Framework-Agnostic REST API Ecosystem for PHP. Built for speed, precision, and type-safe development.",
