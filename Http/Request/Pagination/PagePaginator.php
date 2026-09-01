@@ -6,10 +6,8 @@ namespace apivalk\apivalk\Http\Request\Pagination;
 
 class PagePaginator
 {
-    /** @var int */
-    private $page;
-    /** @var int */
-    private $limit;
+    private int $page;
+    private int $limit;
 
     public function __construct(int $page, int $limit)
     {

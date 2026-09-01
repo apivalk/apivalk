@@ -7,9 +7,9 @@ namespace apivalk\apivalk\Http\i18n;
 class LocalizationConfiguration
 {
     /** @var Locale */
-    private $defaultLocale;
+    private Locale $defaultLocale;
     /** @var array<string, Locale> */
-    private $supportedLocales = [];
+    private array $supportedLocales = [];
 
     public function __construct(Locale $defaultLocale)
     {

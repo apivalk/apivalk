@@ -18,7 +18,7 @@ abstract class AbstractPropertyCollection implements \IteratorAggregate
     public const MODE_DELETE = 'delete';
 
     /** @var AbstractProperty[] */
-    private $properties = [];
+    private array $properties = [];
 
     abstract public function __construct(string $mode);
 

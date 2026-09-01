@@ -24,8 +24,8 @@ class ApiFactory
         int $rateLimitMax = 1000,
         int $rateLimitWindow = 60
     ): Apivalk {
-        $cache = $cache ?? new InMemoryCache();
-        $authenticator = $authenticator ?? new TestAuthenticator();
+        $cache ??= new InMemoryCache();
+        $authenticator ??= new TestAuthenticator();
 
         $classLocator = new ClassLocator(
             __DIR__ . '/../',

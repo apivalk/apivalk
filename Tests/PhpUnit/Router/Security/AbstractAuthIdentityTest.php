@@ -12,8 +12,8 @@ class AbstractAuthIdentityTest extends TestCase
     public function testAbstractAuthIdentity(): void
     {
         $identity = new class(['read', 'write'], ['perm1']) extends AbstractAuthIdentity {
-            private $scopes;
-            private $perms;
+            private array $scopes;
+            private array $perms;
             public function __construct(array $scopes, array $perms) {
                 $this->scopes = $scopes;
                 $this->perms = $perms;

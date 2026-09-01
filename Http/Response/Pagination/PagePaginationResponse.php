@@ -10,14 +10,10 @@ use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class PagePaginationResponse implements PaginationResponseInterface
 {
-    /** @var int */
-    private $page;
-    /** @var int|null */
-    private $totalPages;
-    /** @var int */
-    private $pageSize;
-    /** @var bool */
-    private $hasMore;
+    private int $page;
+    private ?int $totalPages;
+    private int $pageSize;
+    private bool $hasMore;
 
     public function __construct(int $page, int $pageSize, bool $hasMore, ?int $totalPages = null)
     {

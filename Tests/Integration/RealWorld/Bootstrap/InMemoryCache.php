@@ -10,7 +10,7 @@ use apivalk\apivalk\Cache\CacheItem;
 class InMemoryCache implements CacheInterface
 {
     /** @var array<string, CacheItem> */
-    private $items = [];
+    private array $items = [];
 
     public function get(string $key): ?CacheItem
     {

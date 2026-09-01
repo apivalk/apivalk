@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class ApivalkRequestDocumentationTest extends TestCase
 {
-    private $requestDocumentation;
+    private ApivalkRequestDocumentation $requestDocumentation;
 
     protected function setUp(): void
     {

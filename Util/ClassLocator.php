@@ -6,8 +6,8 @@ namespace apivalk\apivalk\Util;
 
 class ClassLocator
 {
-    private $path;
-    private $namespace;
+    private string $path;
+    private string $namespace;
 
     public function __construct(string $path, string $namespace)
     {
@@ -55,9 +55,7 @@ class ClassLocator
 
         $allClasses = get_declared_classes();
 
-        $filteredClasses = array_filter($allClasses, function ($class) {
-            return strpos($class, $this->getNamespace()) === 0;
-        });
+        $filteredClasses = array_filter($allClasses, fn($class) => strpos($class, $this->getNamespace()) === 0);
 
         $classes = [];
         foreach ($filteredClasses as $class) {

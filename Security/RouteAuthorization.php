@@ -6,12 +6,11 @@ namespace apivalk\apivalk\Security;
 
 class RouteAuthorization
 {
-    /** @var string */
-    private $securitySchemeName;
+    private string $securitySchemeName;
     /** @var string[] */
-    private $requiredScopes;
+    private array $requiredScopes;
     /** @var string[] */
-    private $requiredPermissions;
+    private array $requiredPermissions;
 
     /**
      * @param string        $securitySchemeName

@@ -9,13 +9,11 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 class DocBlockShape
 {
     /** @var AbstractProperty[] */
-    private $properties = [];
+    private array $properties = [];
     /** @var array<string, string> - example: ["status" => array, "message" => string] */
-    private $customFields = [];
-    /** @var string */
-    private $type;
-    /** @var string */
-    private $requestName;
+    private array $customFields = [];
+    private string $type;
+    private string $requestName;
 
     public function __construct(string $requestName, string $type)
     {

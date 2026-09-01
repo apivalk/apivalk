@@ -14,10 +14,9 @@ namespace apivalk\apivalk\Documentation\Property;
  */
 class FileProperty extends AbstractProperty
 {
-    /** @var int|null */
-    private $maxSizeInBytes;
+    private ?int $maxSizeInBytes = null;
     /** @var string[] */
-    private $allowedMediaTypes = [];
+    private array $allowedMediaTypes = [];
 
     public function getType(): string
     {

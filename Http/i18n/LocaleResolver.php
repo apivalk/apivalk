@@ -48,15 +48,7 @@ class LocaleResolver
      */
     private static function matchSupportedLocale(Locale $locale, array $supportedLocales): ?Locale
     {
-        if (isset($supportedLocales[$locale->getTag()])) {
-            return $supportedLocales[$locale->getTag()];
-        }
-
-        if (isset($supportedLocales[$locale->getLanguage()])) {
-            return $supportedLocales[$locale->getLanguage()];
-        }
-
-        return null;
+        return $supportedLocales[$locale->getTag()] ?? $supportedLocales[$locale->getLanguage()] ?? null;
     }
 
     /**
@@ -114,8 +106,6 @@ class LocaleResolver
             return 1;
         });
 
-        return array_map(static function (array $item): string {
-            return $item['tag'];
-        }, $weightedLocales);
+        return array_map(static fn(array $item): string => $item['tag'], $weightedLocales);
     }
 }

@@ -6,10 +6,8 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class EnumProperty extends AbstractProperty
 {
-    /** @var string|null */
-    private $default;
-    /** @var array */
-    private $enums;
+    private ?string $default = null;
+    private array $enums;
 
     /**
      * @param string[] $enums array of valid values, for example ['active', 'inactive']

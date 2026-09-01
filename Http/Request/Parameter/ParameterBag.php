@@ -7,7 +7,7 @@ namespace apivalk\apivalk\Http\Request\Parameter;
 class ParameterBag implements \IteratorAggregate, \Countable
 {
     /** @var Parameter[] */
-    private $parameters = [];
+    private array $parameters = [];
 
     public function set(Parameter $parameter): void
     {

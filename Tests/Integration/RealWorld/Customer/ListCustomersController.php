@@ -75,33 +75,25 @@ class ListCustomersController extends AbstractApivalkController
         $firstNameFilter = $filterBag->get('first_name');
         if ($firstNameFilter !== null && $firstNameFilter->getValue() !== null) {
             $needle = strtolower((string) $firstNameFilter->getValue());
-            $customers = array_values(array_filter($customers, function (array $c) use ($needle): bool {
-                return strpos(strtolower($c['first_name']), $needle) !== false;
-            }));
+            $customers = array_values(array_filter($customers, fn(array $c): bool => strpos(strtolower($c['first_name']), $needle) !== false));
         }
 
         $lastNameFilter = $filterBag->get('last_name');
         if ($lastNameFilter !== null && $lastNameFilter->getValue() !== null) {
             $needle = strtolower((string) $lastNameFilter->getValue());
-            $customers = array_values(array_filter($customers, function (array $c) use ($needle): bool {
-                return strpos(strtolower($c['last_name']), $needle) !== false;
-            }));
+            $customers = array_values(array_filter($customers, fn(array $c): bool => strpos(strtolower($c['last_name']), $needle) !== false));
         }
 
         $emailFilter = $filterBag->get('email');
         if ($emailFilter !== null && $emailFilter->getValue() !== null) {
             $needle = strtolower((string) $emailFilter->getValue());
-            $customers = array_values(array_filter($customers, function (array $c) use ($needle): bool {
-                return strtolower($c['email']) === $needle;
-            }));
+            $customers = array_values(array_filter($customers, fn(array $c): bool => strtolower($c['email']) === $needle));
         }
 
         $statusFilter = $filterBag->get('status');
         if ($statusFilter !== null && $statusFilter->getValue() !== null) {
             $needle = (string) $statusFilter->getValue();
-            $customers = array_values(array_filter($customers, function (array $c) use ($needle): bool {
-                return $c['status'] === $needle;
-            }));
+            $customers = array_values(array_filter($customers, fn(array $c): bool => $c['status'] === $needle));
         }
 
         return $customers;

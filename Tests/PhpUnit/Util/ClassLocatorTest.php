@@ -9,7 +9,7 @@ use apivalk\apivalk\Util\ClassLocator;
 
 class ClassLocatorTest extends TestCase
 {
-    private $tempDir;
+    private string $tempDir;
 
     protected function setUp(): void
     {

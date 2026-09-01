@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 class TestProperty extends AbstractProperty
 {
     /** @var array<string, mixed> */
-    private $documentationArray;
+    private array $documentationArray;
 
     /**
      * @param array<string, mixed> $documentationArray

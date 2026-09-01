@@ -27,7 +27,7 @@ abstract class AbstractResource
     /** @var array<string, mixed> */
     private $data = [];
     /** @var AbstractProperty[] */
-    private $properties = [];
+    private array $properties = [];
 
     /**
      * Never overwrite __construct() in child classes.

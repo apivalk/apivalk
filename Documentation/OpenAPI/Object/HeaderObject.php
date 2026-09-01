@@ -13,12 +13,10 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class HeaderObject implements ObjectInterface
 {
-    /** @var string|null */
-    private $description;
-    /** @var bool */
-    private $required;
+    private ?string $description;
+    private bool $required;
     /** @var array<string, mixed>|null */
-    private $schema;
+    private ?array $schema;
 
     /**
      * @param array<string, mixed>|null $schema

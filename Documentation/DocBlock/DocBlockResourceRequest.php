@@ -10,16 +10,11 @@ use apivalk\apivalk\Router\Route\Sort\SortBag;
 
 class DocBlockResourceRequest
 {
-    /** @var DocBlockShape */
-    private $pathShape;
-    /** @var DocBlockShape */
-    private $sortingShape;
-    /** @var DocBlockShape */
-    private $filteringShape;
-    /** @var string|null */
-    private $paginatorClass;
-    /** @var string */
-    private $baseRequestClass;
+    private DocBlockShape $pathShape;
+    private DocBlockShape $sortingShape;
+    private DocBlockShape $filteringShape;
+    private ?string $paginatorClass;
+    private string $baseRequestClass;
 
     public function __construct(
         DocBlockShape $pathShape,

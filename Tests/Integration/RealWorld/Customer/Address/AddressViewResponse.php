@@ -10,7 +10,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 class AddressViewResponse extends AbstractApivalkResponse
 {
     /** @var array<string, mixed> */
-    private $address;
+    private array $address;
 
     /** @param array<string, mixed> $address */
     public function __construct(array $address)

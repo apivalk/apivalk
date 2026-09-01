@@ -13,12 +13,9 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class RequestBodyObject implements ObjectInterface
 {
-    /** @var string|null */
-    private $description;
-    /** @var MediaTypeObject */
-    private $content;
-    /** @var bool */
-    private $required;
+    private ?string $description;
+    private MediaTypeObject $content;
+    private bool $required;
 
     public function __construct(MediaTypeObject $content, ?string $description = null, bool $required = true)
     {

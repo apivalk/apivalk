@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\DocBlock;
 
+use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Documentation\DocBlock\DocBlockResourceRequest;
 use apivalk\apivalk\Documentation\DocBlock\DocBlockShape;
 use apivalk\apivalk\Documentation\Property\StringProperty;
@@ -27,7 +28,7 @@ class DocBlockResourceRequestTest extends TestCase
     private function makeSortShape(): DocBlockShape
     {
         $shape = new DocBlockShape('AnimalList', 'Sorting');
-        $shape->addCustomField('name', '\\' . \apivalk\apivalk\Router\Route\Sort\Sort::class);
+        $shape->addCustomField('name', '\\' . Sort::class);
 
         return $shape;
     }

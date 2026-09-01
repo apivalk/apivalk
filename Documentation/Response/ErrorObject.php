@@ -9,10 +9,8 @@ use apivalk\apivalk\Documentation\Property\AbstractPropertyCollection;
 
 class ErrorObject extends AbstractObjectProperty
 {
-    /** @var string */
-    private $errorKey;
-    /** @var string */
-    private $message;
+    private ?string $errorKey = null;
+    private ?string $message = null;
 
     final public function __construct()
     {

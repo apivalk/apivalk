@@ -11,8 +11,7 @@ use apivalk\apivalk\Security\Authenticator\AuthenticatorInterface;
 
 class AuthenticationMiddleware implements MiddlewareInterface
 {
-    /** @var AuthenticatorInterface */
-    private $authenticator;
+    private AuthenticatorInterface $authenticator;
 
     public function __construct(AuthenticatorInterface $authenticator)
     {

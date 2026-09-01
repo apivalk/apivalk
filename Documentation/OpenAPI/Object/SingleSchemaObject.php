@@ -13,12 +13,9 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class SingleSchemaObject implements ObjectInterface
 {
-    /** @var string */
-    private $propertyName;
-    /** @var string */
-    private $type;
-    /** @var bool */
-    private $required;
+    private string $propertyName;
+    private string $type;
+    private bool $required;
 
     public function __construct(string $propertyName, string $type, bool $required = true)
     {

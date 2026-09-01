@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-docs.apivalk.com-6366f1)](https://docs.apivalk.com)
 
-**OpenAPI-first PHP framework for type-safe REST APIs.** Framework-agnostic · PSR-7/15/11/3 · PHP 7.2+
+**OpenAPI-first PHP framework for type-safe REST APIs.** Framework-agnostic · PSR-7/15/11/3 · PHP 7.4+
 
 ---
 
@@ -46,7 +46,7 @@ OpenAPI 3.0 generation, and full IDE autocompletion.
 composer require apivalk/apivalk
 ```
 
-> PHP 7.2+, `ext-json`, `ext-mbstring` — [full installation guide →](https://docs.apivalk.com/installation)
+> PHP 7.4+, `ext-json`, `ext-mbstring` — [full installation guide →](https://docs.apivalk.com/installation)
 
 ---
 
@@ -257,13 +257,13 @@ constructor injection. Without a container it falls back to
 
 ```bash
 make build || docker compose build
-make composer || docker compose run --rm php72 composer install
-make test || docker compose run --rm php72 composer test-unit && docker compose run --rm php72 composer test-integration # PHPUnit unit & integration test suite
-make phpstan || docker compose run --rm php72 composer phpstan # PHPStan
+make composer || docker compose run --rm php74 composer install
+make test || docker compose run --rm php74 composer test-unit && docker compose run --rm php74 composer test-integration # PHPUnit unit & integration test suite
+make phpstan || docker compose run --rm php74 composer phpstan # PHPStan
 make ci # will run composer, test and phpstan
 ```
 
-Own PHP 7.2+ setup? Docker is optional — DDEV, Lando, or native all work. PHPStan runs at level 6; new code must not add
+Own PHP 7.4+ setup? Docker is optional — DDEV, Lando, or native all work. PHPStan runs at level 6; new code must not add
 violations (a baseline covers pre-existing issues). → [Contributing guide](https://docs.apivalk.com/contributing)
 
 ---

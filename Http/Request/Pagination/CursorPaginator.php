@@ -6,10 +6,8 @@ namespace apivalk\apivalk\Http\Request\Pagination;
 
 class CursorPaginator
 {
-    /** @var null|string */
-    private $cursor;
-    /** @var int */
-    private $limit;
+    private ?string $cursor;
+    private int $limit;
 
     public function __construct(?string $cursor, int $limit)
     {

@@ -14,8 +14,7 @@ use Psr\Log\LoggerInterface;
 
 class Apivalk
 {
-    /** @var ApivalkConfiguration */
-    private $configuration;
+    private ApivalkConfiguration $configuration;
 
     public function __construct(ApivalkConfiguration $apivalkConfiguration)
     {

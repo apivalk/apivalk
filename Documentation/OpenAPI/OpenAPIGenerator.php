@@ -12,14 +12,10 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 
 class OpenAPIGenerator
 {
-    /** @var Apivalk */
-    private $apivalk;
-    /** @var OpenAPI */
-    private $openApi;
-    /** @var bool */
-    private $documentLocaleHeaders;
-    /** @var bool */
-    private $flatFilters;
+    private Apivalk $apivalk;
+    private OpenAPI $openApi;
+    private bool $documentLocaleHeaders;
+    private bool $flatFilters;
 
     public const FORMAT_JSON = 'json';
 

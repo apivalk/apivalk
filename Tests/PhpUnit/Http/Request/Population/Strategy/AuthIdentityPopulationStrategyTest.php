@@ -29,8 +29,7 @@ class AuthIdentityPopulationStrategyTest extends TestCase
     private function makeRequest(): AbstractApivalkRequest
     {
         return new class extends AbstractApivalkRequest {
-            /** @var AbstractAuthIdentity|null */
-            private $identity;
+            private ?AbstractAuthIdentity $identity = null;
 
             public static function getDocumentation(): ApivalkRequestDocumentation
             {

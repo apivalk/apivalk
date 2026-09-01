@@ -10,7 +10,7 @@ use apivalk\apivalk\Http\Request\File\File;
 class FileTest extends TestCase
 {
     /** @var string[] */
-    private $tmpFiles = [];
+    private array $tmpFiles = [];
 
     protected function tearDown(): void
     {

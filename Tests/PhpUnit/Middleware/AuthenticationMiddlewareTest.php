@@ -39,9 +39,7 @@ class AuthenticationMiddlewareTest extends TestCase
         $middleware = new AuthenticationMiddleware($authenticator);
         
         $response = $this->createMock(AbstractApivalkResponse::class);
-        $next = function ($req) use ($response) {
-            return $response;
-        };
+        $next = (fn($req) => $response);
 
         $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);
@@ -61,9 +59,7 @@ class AuthenticationMiddlewareTest extends TestCase
         $middleware = new AuthenticationMiddleware($authenticator);
         
         $response = $this->createMock(AbstractApivalkResponse::class);
-        $next = function ($req) use ($response) {
-            return $response;
-        };
+        $next = (fn($req) => $response);
 
         $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);
@@ -89,9 +85,7 @@ class AuthenticationMiddlewareTest extends TestCase
         $middleware = new AuthenticationMiddleware($authenticator);
         
         $response = $this->createMock(AbstractApivalkResponse::class);
-        $next = function ($req) use ($response) {
-            return $response;
-        };
+        $next = (fn($req) => $response);
 
         $result = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertSame($response, $result);

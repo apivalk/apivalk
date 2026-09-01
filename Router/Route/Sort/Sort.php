@@ -6,12 +6,9 @@ namespace apivalk\apivalk\Router\Route\Sort;
 
 class Sort
 {
-    /** @var bool */
-    private $asc = true;
-    /** @var string */
-    private $field;
-    /** @var bool */
-    private $requested = false;
+    private bool $asc = true;
+    private string $field;
+    private bool $requested = false;
 
     public function __construct(string $field)
     {

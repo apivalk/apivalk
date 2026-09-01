@@ -23,34 +23,22 @@ use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 
 abstract class AbstractApivalkRequest implements ApivalkRequestInterface
 {
-    /** @var MethodInterface|null */
-    private $method;
-    /** @var ParameterBag|null */
-    private $headerBag;
-    /** @var ParameterBag|null */
-    private $queryParameterBag;
-    /** @var ParameterBag|null */
-    private $bodyParameterBag;
-    /** @var ParameterBag|null */
-    private $pathParameterBag;
-    /** @var FileBag|null */
-    private $fileBag;
+    private ?MethodInterface $method = null;
+    private ?ParameterBag $headerBag = null;
+    private ?ParameterBag $queryParameterBag = null;
+    private ?ParameterBag $bodyParameterBag = null;
+    private ?ParameterBag $pathParameterBag = null;
+    private ?FileBag $fileBag = null;
     /** @var AbstractAuthIdentity|GuestAuthIdentity */
-    private $authIdentity;
-    /** @var string|null */
-    private $ip;
-    /** @var RateLimitResult|null */
-    private $rateLimitResult;
-    /** @var Locale */
-    private $locale;
-    /** @var SortBag */
-    private $sortBag;
-    /** @var FilterBag */
-    private $filterBag;
+    private ?AbstractAuthIdentity $authIdentity = null;
+    private ?string $ip = null;
+    private ?RateLimitResult $rateLimitResult = null;
+    private ?Locale $locale = null;
+    private ?SortBag $sortBag = null;
+    private ?FilterBag $filterBag = null;
     /** @var CursorPaginator|PagePaginator|OffsetPaginator|null */
     private $paginator;
-    /** @var ApivalkRequestDocumentation */
-    private $documentation;
+    private ?ApivalkRequestDocumentation $documentation = null;
 
     public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
     {

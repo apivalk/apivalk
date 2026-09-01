@@ -8,10 +8,9 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 class ApivalkResponseDocumentation
 {
-    /** @var string|null */
-    private $description;
+    private ?string $description = null;
     /** @var AbstractProperty[] */
-    private $properties = [];
+    private array $properties = [];
 
     public function addProperty(AbstractProperty $property): void
     {

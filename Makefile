@@ -1,5 +1,5 @@
 DC = docker compose
-RUN = $(DC) run --rm php72
+RUN = $(DC) run --rm php74
 
 .PHONY: build composer test phpstan ci
 

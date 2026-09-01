@@ -10,12 +10,9 @@ use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 
 class ValidationErrorObject extends AbstractObjectProperty
 {
-    /** @var string */
-    private $errorKey = 'error';
-    /** @var string */
-    private $message = 'Error';
-    /** @var string */
-    private $parameter = 'error';
+    private ?string $errorKey = 'error';
+    private string $message = 'Error';
+    private string $parameter = 'error';
 
     final public function __construct()
     {

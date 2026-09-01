@@ -21,7 +21,7 @@ class FileUploadIntegrationTest extends TestCase
     private const PDF_CONTENTS = '%PDF-1.7 integration test contents';
 
     /** @var string[] */
-    private $tmpFiles = [];
+    private array $tmpFiles = [];
 
     protected function tearDown(): void
     {

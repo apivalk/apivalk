@@ -10,7 +10,7 @@ namespace apivalk\apivalk\Router\Route\Filter;
 class FilterBag implements \IteratorAggregate, \Countable
 {
     /** @var FilterInterface[] */
-    private $filters = [];
+    private array $filters = [];
 
     public function set(FilterInterface $filter): void
     {

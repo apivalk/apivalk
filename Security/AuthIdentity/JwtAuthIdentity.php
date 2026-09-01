@@ -6,16 +6,13 @@ namespace apivalk\apivalk\Security\AuthIdentity;
 
 class JwtAuthIdentity extends AbstractAuthIdentity
 {
-    /** @var string|null */
-    private $username;
-    /** @var string|null */
-    private $email;
-    /** @var string|null */
-    private $sub;
+    private ?string $username;
+    private ?string $email;
+    private ?string $sub;
     /** @var string[] */
-    private $scopes;
+    private array $scopes;
     /** @var string[] */
-    private $permissions;
+    private array $permissions;
 
     /**
      * @param string[] $scopes

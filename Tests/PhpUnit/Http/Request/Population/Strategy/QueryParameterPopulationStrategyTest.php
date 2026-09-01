@@ -71,8 +71,7 @@ class QueryParameterPopulationStrategyTest extends TestCase
     private function makeRequest(): AbstractApivalkRequest
     {
         return new class extends AbstractApivalkRequest {
-            /** @var ParameterBag */
-            private $queryBag;
+            private ParameterBag $queryBag;
 
             public function __construct()
             {

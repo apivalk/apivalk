@@ -11,7 +11,7 @@ use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 class BadValidationApivalkResponse extends AbstractApivalkResponse
 {
     /** @var ValidationErrorObject[] */
-    private $errors;
+    private array $errors;
 
     public function __construct(array $errors = [])
     {

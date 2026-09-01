@@ -6,10 +6,8 @@ namespace apivalk\apivalk\Cache;
 
 class FilesystemCache implements CacheInterface
 {
-    /** @var string */
-    private $cacheDir;
-    /** @var int */
-    private $defaultCacheLifetime;
+    private string $cacheDir;
+    private int $defaultCacheLifetime;
 
     public function __construct(string $cacheDir, int $defaultCacheLifetime = 600)
     {

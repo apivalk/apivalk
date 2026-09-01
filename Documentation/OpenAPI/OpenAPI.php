@@ -20,22 +20,18 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
  */
 class OpenAPI
 {
-    /** @var string */
-    private $openapi = '3.1.1';
-    /** @var InfoObject|null */
-    private $info;
-    /** @var string|null */
-    private $jsonSchemaDialect;
+    private string $openapi = '3.1.1';
+    private ?InfoObject $info = null;
+    private ?string $jsonSchemaDialect = null;
     /** @var ServerObject[] */
-    private $servers = [];
+    private array $servers = [];
     /** @var PathsObject[] */
-    private $paths = [];
+    private array $paths = [];
     /** @var array<string, PathItemObject> */
-    private $webhooks = [];
-    /** @var ComponentsObject */
-    private $components;
+    private array $webhooks = [];
+    private ComponentsObject $components;
     /** @var TagObject[] */
-    private $tags = [];
+    private array $tags = [];
 
     public function __construct()
     {
@@ -134,9 +130,7 @@ class OpenAPI
             $paths += $path->toArray();
         }
 
-        $webhooks = array_map(static function ($path) {
-            return $path->toArray();
-        }, $this->webhooks);
+        $webhooks = array_map(static fn($path) => $path->toArray(), $this->webhooks);
 
         $tags = [];
         foreach ($this->tags as $tag) {

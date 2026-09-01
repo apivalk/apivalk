@@ -19,8 +19,7 @@ use PHPUnit\Framework\TestCase;
 
 class SecurityMiddlewareTest extends TestCase
 {
-    /** @var SecurityMiddleware */
-    private $middleware;
+    private SecurityMiddleware $middleware;
 
     protected function setUp(): void
     {
@@ -37,9 +36,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function (ApivalkRequestInterface $r) use ($expected) {
-                return $expected;
-            }
+            static fn(ApivalkRequestInterface $r) => $expected
         );
 
         self::assertSame($expected, $result);
@@ -56,9 +53,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function () {
-                return new NotFoundApivalkResponse();
-            }
+            static fn() => new NotFoundApivalkResponse()
         );
 
         self::assertInstanceOf(UnauthorizedApivalkResponse::class, $result);
@@ -82,9 +77,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function (ApivalkRequestInterface $r) use ($expected) {
-                return $expected;
-            }
+            static fn(ApivalkRequestInterface $r) => $expected
         );
 
         self::assertSame($expected, $result);
@@ -101,9 +94,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function () {
-                return new NotFoundApivalkResponse();
-            }
+            static fn() => new NotFoundApivalkResponse()
         );
 
         self::assertInstanceOf(UnauthorizedApivalkResponse::class, $result);
@@ -124,9 +115,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function () {
-                return new NotFoundApivalkResponse();
-            }
+            static fn() => new NotFoundApivalkResponse()
         );
 
         self::assertInstanceOf(ForbiddenApivalkResponse::class, $result);
@@ -147,9 +136,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function () {
-                return new NotFoundApivalkResponse();
-            }
+            static fn() => new NotFoundApivalkResponse()
         );
 
         self::assertInstanceOf(ForbiddenApivalkResponse::class, $result);
@@ -166,9 +153,7 @@ class SecurityMiddlewareTest extends TestCase
         $result = $this->middleware->process(
             $request,
             $this->controllerFor($route),
-            static function () {
-                return new NotFoundApivalkResponse();
-            }
+            static fn() => new NotFoundApivalkResponse()
         );
 
         self::assertInstanceOf(UnauthorizedApivalkResponse::class, $result);
@@ -190,8 +175,7 @@ class SecurityMiddlewareTest extends TestCase
     private function controllerFor(Route $route): AbstractApivalkController
     {
         return new class($route) extends AbstractApivalkController {
-            /** @var Route */
-            private static $route;
+            private static Route $route;
 
             public function __construct(Route $route)
             {

@@ -6,12 +6,9 @@ namespace apivalk\apivalk\Http\Request;
 
 class Paginator
 {
-    /** @var ApivalkRequestInterface */
-    private $request;
-    /** @var int */
-    private $pageSize;
-    /** @var int|null */
-    private $totalPages;
+    private ApivalkRequestInterface $request;
+    private int $pageSize;
+    private ?int $totalPages;
 
     public function __construct(ApivalkRequestInterface $request, int $pageSize, ?int $totalEntries)
     {

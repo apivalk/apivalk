@@ -13,10 +13,8 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Object;
  */
 class MediaTypeObject implements ObjectInterface
 {
-    /** @var string */
-    private $mediaType;
-    /** @var SchemaObject */
-    private $schema;
+    private string $mediaType;
+    private SchemaObject $schema;
 
     public function __construct(SchemaObject $schema, string $mediaType = 'application/json')
     {

@@ -6,8 +6,7 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class ArrayProperty extends AbstractProperty
 {
-    /** @var AbstractObjectProperty */
-    private $objectProperty;
+    private AbstractObjectProperty $objectProperty;
 
     public function __construct(
         string $propertyName,

@@ -43,10 +43,8 @@ class ValidatorResult
     /** @var string */
     public const VALUE_IS_SHORTER_THAN_MIN_LENGTH = 'value_is_shorter_than_min_length';
 
-    /** @var bool */
-    private $success;
-    /** @var string|null */
-    private $errorKey;
+    private bool $success;
+    private ?string $errorKey;
 
     public function __construct(bool $success, ?string $errorKey = null)
     {

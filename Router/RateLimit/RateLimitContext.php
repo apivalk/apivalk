@@ -10,14 +10,10 @@ use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 
 class RateLimitContext
 {
-    /** @var string|null */
-    private $ip;
-    /** @var AbstractAuthIdentity */
-    private $authIdentity;
-    /** @var string */
-    private $route;
-    /** @var string */
-    private $method;
+    private ?string $ip;
+    private AbstractAuthIdentity $authIdentity;
+    private string $route;
+    private string $method;
 
     public function __construct(
         ?string $ip,

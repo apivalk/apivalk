@@ -9,14 +9,11 @@ use apivalk\apivalk\Documentation\Property\FloatProperty;
 
 class FloatFilter implements FilterInterface
 {
-    /** @var string */
-    private $type;
+    private string $type;
     /** @var FloatProperty */
-    private $property;
-    /** @var float|null */
-    private $value;
-    /** @var string|null */
-    private $rawValue;
+    private AbstractProperty $property;
+    private ?float $value = null;
+    private ?string $rawValue = null;
 
     public function __construct(string $type, FloatProperty $property)
     {

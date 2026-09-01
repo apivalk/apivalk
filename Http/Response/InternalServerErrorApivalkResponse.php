@@ -9,10 +9,8 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class InternalServerErrorApivalkResponse extends AbstractApivalkResponse
 {
-    /** @var string */
-    private $errorMessage = 'We\'ve run into an unknown error, please try again later.';
-    /** @var array */
-    private $context = [];
+    private string $errorMessage = 'We\'ve run into an unknown error, please try again later.';
+    private array $context = [];
 
     public static function getDocumentation(): ApivalkResponseDocumentation
     {

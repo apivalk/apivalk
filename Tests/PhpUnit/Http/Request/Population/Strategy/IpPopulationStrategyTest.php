@@ -37,8 +37,7 @@ class IpPopulationStrategyTest extends TestCase
     private function makeRequest(): AbstractApivalkRequest
     {
         return new class extends AbstractApivalkRequest {
-            /** @var string */
-            private $ip = '';
+            private string $ip = '';
 
             public static function getDocumentation(): ApivalkRequestDocumentation
             {

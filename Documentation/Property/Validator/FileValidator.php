@@ -16,8 +16,7 @@ use apivalk\apivalk\Http\Request\File\File;
  */
 final class FileValidator
 {
-    /** @var FileProperty */
-    private $property;
+    private FileProperty $property;
 
     public function __construct(FileProperty $property)
     {

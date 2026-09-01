@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class DocBlockGeneratorTest extends TestCase
 {
-    private $tempDir;
+    private string $tempDir;
 
     protected function setUp(): void
     {

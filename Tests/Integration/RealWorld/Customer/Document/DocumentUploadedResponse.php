@@ -10,7 +10,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 class DocumentUploadedResponse extends AbstractApivalkResponse
 {
     /** @var array<string, mixed> */
-    private $document;
+    private array $document;
 
     /** @param array<string, mixed> $document */
     public function __construct(array $document)

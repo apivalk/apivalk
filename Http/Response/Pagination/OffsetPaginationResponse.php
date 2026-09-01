@@ -9,14 +9,10 @@ use apivalk\apivalk\Documentation\Property\IntegerProperty;
 
 class OffsetPaginationResponse implements PaginationResponseInterface
 {
-    /** @var int */
-    private $limit;
-    /** @var int */
-    private $offset;
-    /** @var int|null */
-    private $total;
-    /** @var bool */
-    private $hasMore;
+    private int $limit;
+    private int $offset;
+    private ?int $total;
+    private bool $hasMore;
 
     public function __construct(int $limit, int $offset, bool $hasMore, ?int $total = null)
     {

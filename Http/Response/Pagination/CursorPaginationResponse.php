@@ -10,14 +10,10 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 
 class CursorPaginationResponse implements PaginationResponseInterface
 {
-    /** @var int */
-    private $limit;
-    /** @var string */
-    private $currentCursor;
-    /** @var string */
-    private $nextCursor;
-    /** @var bool */
-    private $hasMore;
+    private int $limit;
+    private string $currentCursor;
+    private string $nextCursor;
+    private bool $hasMore;
 
     public function __construct(
         int $limit,

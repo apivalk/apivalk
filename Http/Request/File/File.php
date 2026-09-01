@@ -6,18 +6,14 @@ namespace apivalk\apivalk\Http\Request\File;
 
 class File
 {
-    /** @var string */
-    private $name;
-    /** @var string */
-    private $type;
-    /** @var string */
-    private $tmpName;
+    private string $name;
+    private string $type;
+    private string $tmpName;
     /** @var int - See: UPLOAD_ERR_* PHP constants */
-    private $error;
-    /** @var int */
-    private $size;
+    private int $error;
+    private int $size;
     /** @var string|null - Name of the form field the file was uploaded with */
-    private $fieldName;
+    private ?string $fieldName;
 
     public function __construct(
         string $name,

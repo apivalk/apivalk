@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\Request;
 
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+use apivalk\apivalk\Router\RateLimit\RateLimitResult;
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Router\Route\Sort\SortBag;
+use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Request\RequestDocumentationFactory;
@@ -27,21 +36,21 @@ class FactoryTestRequest implements ApivalkRequestInterface
 
     public function populate(Route $route, ApivalkRequestDocumentation $documentation): void {}
     public function getRuntimeDocumentation(): ApivalkRequestDocumentation { return self::getDocumentation(); }
-    public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface { return new GetMethod(); }
-    public function header(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
-    public function query(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
-    public function body(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
-    public function path(): \apivalk\apivalk\Http\Request\Parameter\ParameterBag { return new \apivalk\apivalk\Http\Request\Parameter\ParameterBag(); }
-    public function file(): \apivalk\apivalk\Http\Request\File\FileBag { return new \apivalk\apivalk\Http\Request\File\FileBag(); }
-    public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity { return new \apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity([]); }
-    public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity): void {}
+    public function getMethod(): MethodInterface { return new GetMethod(); }
+    public function header(): ParameterBag { return new ParameterBag(); }
+    public function query(): ParameterBag { return new ParameterBag(); }
+    public function body(): ParameterBag { return new ParameterBag(); }
+    public function path(): ParameterBag { return new ParameterBag(); }
+    public function file(): FileBag { return new FileBag(); }
+    public function getAuthIdentity(): AbstractAuthIdentity { return new GuestAuthIdentity([]); }
+    public function setAuthIdentity(AbstractAuthIdentity $authIdentity): void {}
     public function getIp(): ?string { return null; }
-    public function getRateLimitResult(): ?\apivalk\apivalk\Router\RateLimit\RateLimitResult { return null; }
-    public function setRateLimitResult(\apivalk\apivalk\Router\RateLimit\RateLimitResult $rateLimitResult): void {}
-    public function getLocale(): \apivalk\apivalk\Http\i18n\Locale { return \apivalk\apivalk\Http\i18n\Locale::en(); }
-    public function setLocale(\apivalk\apivalk\Http\i18n\Locale $locale): void {}
-    public function sorting(): \apivalk\apivalk\Router\Route\Sort\SortBag { return new \apivalk\apivalk\Router\Route\Sort\SortBag(); }
-    public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag { return new \apivalk\apivalk\Router\Route\Filter\FilterBag(); }
+    public function getRateLimitResult(): ?RateLimitResult { return null; }
+    public function setRateLimitResult(RateLimitResult $rateLimitResult): void {}
+    public function getLocale(): Locale { return Locale::en(); }
+    public function setLocale(Locale $locale): void {}
+    public function sorting(): SortBag { return new SortBag(); }
+    public function filtering(): FilterBag { return new FilterBag(); }
     public function paginator() { return null; }
     public function setIp(?string $ip): void {}
 }

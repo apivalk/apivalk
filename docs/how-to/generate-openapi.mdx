@@ -88,7 +88,7 @@ Make it executable and run it:
 
 ```bash
 chmod +x bin/generate-openapi
-docker compose run --rm php72 php bin/generate-openapi
+docker compose run --rm php74 php bin/generate-openapi
 ```
 
 ## 3. Regenerate docblocks
@@ -131,8 +131,8 @@ What you get:
 Run both scripts together as a single build step:
 
 ```bash
-docker compose run --rm php72 php bin/generate-docblocks && \
-docker compose run --rm php72 php bin/generate-openapi
+docker compose run --rm php74 php bin/generate-docblocks && \
+docker compose run --rm php74 php bin/generate-openapi
 ```
 
 ## 4. Wiring into CI
@@ -148,8 +148,8 @@ Sketch:
 # .github/workflows/openapi.yml
 - name: Regenerate OpenAPI + docblocks
   run: |
-    docker compose run --rm php72 php bin/generate-docblocks
-    docker compose run --rm php72 php bin/generate-openapi
+    docker compose run --rm php74 php bin/generate-docblocks
+    docker compose run --rm php74 php bin/generate-openapi
     git diff --exit-code public/openapi.json src/
 ```
 

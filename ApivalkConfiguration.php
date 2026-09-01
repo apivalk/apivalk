@@ -16,20 +16,14 @@ use Psr\Log\NullLogger;
 
 class ApivalkConfiguration
 {
-    /** @var AbstractRouter */
-    private $router;
-    /** @var RendererInterface */
-    private $renderer;
-    /** @var MiddlewareStack */
-    private $middlewareStack;
+    private AbstractRouter $router;
+    private RendererInterface $renderer;
+    private MiddlewareStack $middlewareStack;
     /** @var callable|null */
     private $exceptionHandler;
-    /** @var ContainerInterface|null */
-    private $container;
-    /** @var LoggerInterface */
-    private $logger;
-    /** @var LocalizationConfiguration */
-    private $localizationConfiguration;
+    private ?ContainerInterface $container;
+    private LoggerInterface $logger;
+    private LocalizationConfiguration $localizationConfiguration;
 
     public function __construct(
         AbstractRouter $router,

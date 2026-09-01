@@ -6,20 +6,13 @@ namespace apivalk\apivalk\Documentation\DocBlock;
 
 class DocBlockRequest
 {
-    /** @var DocBlockShape */
-    private $bodyShape;
-    /** @var DocBlockShape */
-    private $pathShape;
-    /** @var DocBlockShape */
-    private $queryShape;
-    /** @var DocBlockShape */
-    private $sortingShape;
-    /** @var DocBlockShape */
-    private $filteringShape;
-    /** @var string|null */
-    private $paginatorClass;
-    /** @var DocBlockShape|null */
-    private $fileShape;
+    private DocBlockShape $bodyShape;
+    private DocBlockShape $pathShape;
+    private DocBlockShape $queryShape;
+    private DocBlockShape $sortingShape;
+    private DocBlockShape $filteringShape;
+    private ?string $paginatorClass;
+    private ?DocBlockShape $fileShape;
 
     public function __construct(
         DocBlockShape $bodyShape,

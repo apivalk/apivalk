@@ -44,9 +44,7 @@ class UpdateContractController extends AbstractUpdateResourceController
 
         $resource = $this->getResource($request);
 
-        if ($resource->contract_uuid === null) {
-            $resource->contract_uuid = $contractUuid ?? '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-        }
+        $resource->contract_uuid ??= $contractUuid ?? '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
         return new ResourceUpdatedResponse($resource);
     }

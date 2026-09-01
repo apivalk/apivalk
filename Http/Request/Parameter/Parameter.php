@@ -6,8 +6,7 @@ namespace apivalk\apivalk\Http\Request\Parameter;
 
 class Parameter
 {
-    /** @var string */
-    private $name;
+    private string $name;
     /** @var string|int|float|bool|array|\DateTime|null */
     private $value;
     /** @var string|int|float|bool|array|null */

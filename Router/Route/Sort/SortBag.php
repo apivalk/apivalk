@@ -10,9 +10,9 @@ namespace apivalk\apivalk\Router\Route\Sort;
 class SortBag implements \IteratorAggregate, \Countable
 {
     /** @var Sort[] */
-    private $sorts = [];
+    private array $sorts = [];
     /** @var null|Sort[] */
-    private $requested = null;
+    private ?array $requested = null;
 
     public function set(Sort $sort): void
     {

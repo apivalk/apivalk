@@ -20,9 +20,7 @@ class RequestDocumentationFactoryTest extends TestCase
             AbstractResource::MODE_VIEW
         );
 
-        $propertyNames = array_map(function ($p) {
-            return $p->getPropertyName();
-        }, $doc->getProperties());
+        $propertyNames = array_map(fn($p) => $p->getPropertyName(), $doc->getProperties());
 
         // identifier + view properties (name, type, weight)
         $this->assertContains('animal_uuid', $propertyNames);
@@ -39,9 +37,7 @@ class RequestDocumentationFactoryTest extends TestCase
             AbstractResource::MODE_LIST
         );
 
-        $propertyNames = array_map(function ($p) {
-            return $p->getPropertyName();
-        }, $doc->getProperties());
+        $propertyNames = array_map(fn($p) => $p->getPropertyName(), $doc->getProperties());
 
         // weight is excluded from list mode
         $this->assertContains('animal_uuid', $propertyNames);

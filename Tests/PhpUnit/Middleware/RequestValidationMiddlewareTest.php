@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Middleware;
 
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Http\Method\MethodInterface;
+use apivalk\apivalk\Http\Request\File\FileBag;
+use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\BinaryProperty;
@@ -82,7 +86,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
+            public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
             {
             }
 
@@ -91,9 +95,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
+            public function getMethod(): MethodInterface
             {
-                return $this->createMock(\apivalk\apivalk\Http\Method\MethodInterface::class);
+                return $this->createMock(MethodInterface::class);
             }
 
             public function header(): ParameterBag
@@ -118,17 +122,17 @@ class RequestValidationMiddlewareTest extends TestCase
                 return new ParameterBag();
             }
 
-            public function file(): \apivalk\apivalk\Http\Request\File\FileBag
+            public function file(): FileBag
             {
-                return new \apivalk\apivalk\Http\Request\File\FileBag();
+                return new FileBag();
             }
 
-            public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity
+            public function getAuthIdentity(): AbstractAuthIdentity
             {
                 return new GuestAuthIdentity([]);
             }
 
-            public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity
+            public function setAuthIdentity(AbstractAuthIdentity $authIdentity
             ): void {
             }
 
@@ -160,9 +164,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return new SortBag();
             }
 
-            public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+            public function filtering(): FilterBag
             {
-                return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
+                return new FilterBag();
             }
 
             public function paginator()
@@ -171,9 +175,7 @@ class RequestValidationMiddlewareTest extends TestCase
             }
         };
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -221,7 +223,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
+            public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
             {
             }
 
@@ -230,9 +232,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
+            public function getMethod(): MethodInterface
             {
-                return $this->createMock(\apivalk\apivalk\Http\Method\MethodInterface::class);
+                return $this->createMock(MethodInterface::class);
             }
 
             public function header(): ParameterBag
@@ -257,17 +259,17 @@ class RequestValidationMiddlewareTest extends TestCase
                 return new ParameterBag();
             }
 
-            public function file(): \apivalk\apivalk\Http\Request\File\FileBag
+            public function file(): FileBag
             {
-                return new \apivalk\apivalk\Http\Request\File\FileBag();
+                return new FileBag();
             }
 
-            public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity
+            public function getAuthIdentity(): AbstractAuthIdentity
             {
                 return new GuestAuthIdentity([]);
             }
 
-            public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity
+            public function setAuthIdentity(AbstractAuthIdentity $authIdentity
             ): void {
             }
 
@@ -299,9 +301,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return new SortBag();
             }
 
-            public function filtering(): \apivalk\apivalk\Router\Route\Filter\FilterBag
+            public function filtering(): FilterBag
             {
-                return new \apivalk\apivalk\Router\Route\Filter\FilterBag();
+                return new FilterBag();
             }
 
             public function paginator()
@@ -310,9 +312,7 @@ class RequestValidationMiddlewareTest extends TestCase
             }
         };
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -335,9 +335,7 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -362,9 +360,7 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -390,9 +386,7 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -412,9 +406,7 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         $response = $middleware->process($request, $this->createMock(AbstractApivalkController::class), $next);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -659,9 +651,7 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $request = $this->createRequest(new ApivalkRequestDocumentation(), $filterBag);
 
-        $next = function ($req) {
-            return $this->createMock(AbstractApivalkResponse::class);
-        };
+        $next = (fn($req) => $this->createMock(AbstractApivalkResponse::class));
 
         return (new RequestValidationMiddleware())->process(
             $request,
@@ -691,7 +681,7 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function populate(\apivalk\apivalk\Router\Route\Route $route, ApivalkRequestDocumentation $documentation): void
+            public function populate(Route $route, ApivalkRequestDocumentation $documentation): void
             {
             }
 
@@ -700,9 +690,9 @@ class RequestValidationMiddlewareTest extends TestCase
                 return self::$d;
             }
 
-            public function getMethod(): \apivalk\apivalk\Http\Method\MethodInterface
+            public function getMethod(): MethodInterface
             {
-                return new class implements \apivalk\apivalk\Http\Method\MethodInterface {
+                return new class implements MethodInterface {
                     public function getMethod(): string
                     {
                         return 'GET';
@@ -730,17 +720,17 @@ class RequestValidationMiddlewareTest extends TestCase
                 return new ParameterBag();
             }
 
-            public function file(): \apivalk\apivalk\Http\Request\File\FileBag
+            public function file(): FileBag
             {
-                return new \apivalk\apivalk\Http\Request\File\FileBag();
+                return new FileBag();
             }
 
-            public function getAuthIdentity(): \apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity
+            public function getAuthIdentity(): AbstractAuthIdentity
             {
                 return new GuestAuthIdentity([]);
             }
 
-            public function setAuthIdentity(\apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity $authIdentity
+            public function setAuthIdentity(AbstractAuthIdentity $authIdentity
             ): void {
             }
 

@@ -6,14 +6,10 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class StringProperty extends AbstractProperty
 {
-    /** @var string|null */
-    private $default;
-    /** @var int|null */
-    private $minLength;
-    /** @var int|null */
-    private $maxLength;
-    /** @var string|null */
-    private $pattern;
+    private ?string $default = null;
+    private ?int $minLength = null;
+    private ?int $maxLength = null;
+    private ?string $pattern = null;
 
     public function getType(): string
     {

@@ -20,7 +20,7 @@ use apivalk\apivalk\Http\Request\Population\Strategy\SortingPopulationStrategy;
 class RequestPopulationStrategyCollection
 {
     /** @var PopulationStrategyInterface[] */
-    private $strategies = [];
+    private array $strategies = [];
 
     public function __construct()
     {

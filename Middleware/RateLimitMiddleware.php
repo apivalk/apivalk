@@ -15,8 +15,7 @@ use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
 
 class RateLimitMiddleware implements MiddlewareInterface
 {
-    /** @var CacheInterface */
-    private $cache;
+    private CacheInterface $cache;
 
     public function __construct(CacheInterface $cache)
     {

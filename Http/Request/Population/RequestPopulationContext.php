@@ -9,10 +9,8 @@ use apivalk\apivalk\Router\Route\Route;
 
 class RequestPopulationContext
 {
-    /** @var Route */
-    private $route;
-    /** @var ApivalkRequestDocumentation */
-    private $documentation;
+    private Route $route;
+    private ApivalkRequestDocumentation $documentation;
 
     public function __construct(Route $route, ApivalkRequestDocumentation $documentation)
     {

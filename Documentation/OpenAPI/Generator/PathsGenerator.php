@@ -9,11 +9,9 @@ use apivalk\apivalk\Router\Route\Route;
 
 class PathsGenerator
 {
-    /** @var bool */
-    private $documentLocaleHeaders;
+    private bool $documentLocaleHeaders;
 
-    /** @var bool */
-    private $flatFilters;
+    private bool $flatFilters;
 
     public function __construct(bool $documentLocaleHeaders = true, bool $flatFilters = false)
     {

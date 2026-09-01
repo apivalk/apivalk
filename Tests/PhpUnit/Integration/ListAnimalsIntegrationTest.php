@@ -32,9 +32,9 @@ use PHPUnit\Framework\TestCase;
 class ListAnimalsIntegrationTest extends TestCase
 {
     /** @var array<string, mixed> */
-    private $serverBackup = [];
+    private array $serverBackup = [];
     /** @var array<string, mixed> */
-    private $getBackup = [];
+    private array $getBackup = [];
 
     public static function setUpBeforeClass(): void
     {
@@ -303,9 +303,7 @@ PHP
 
         $controllerFactory = $this->createMock(ApivalkControllerFactoryInterface::class);
         $controllerFactory->method('create')
-            ->willReturnCallback(static function () {
-                return new \ListAnimalsIntegrationTestController();
-            });
+            ->willReturnCallback(static fn() => new \ListAnimalsIntegrationTestController());
 
         $router = new Router($this->createMock(ClassLocator::class), $cache, $controllerFactory);
         $apivalk = new Apivalk(new ApivalkConfiguration($router));

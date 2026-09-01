@@ -8,8 +8,7 @@ use Psr\Container\ContainerInterface;
 
 class ApivalkControllerFactory implements ApivalkControllerFactoryInterface
 {
-    /** @var ContainerInterface|null */
-    private $container;
+    private ?ContainerInterface $container;
 
     public function __construct(?ContainerInterface $container = null)
     {

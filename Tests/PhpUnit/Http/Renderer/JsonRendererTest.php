@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Renderer;
 
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use PHPUnit\Framework\TestCase;
 use apivalk\apivalk\Http\Renderer\JsonRenderer;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
@@ -14,7 +15,7 @@ class JsonRendererTest extends TestCase
     public function testRender(): void
     {
         $response = new class extends AbstractApivalkResponse {
-            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation { return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation(); }
+            public static function getDocumentation(): ApivalkResponseDocumentation { return new ApivalkResponseDocumentation(); }
             public static function getStatusCode(): int { return 200; }
             public function toArray(): array { return ['data' => 'test']; }
             public function getHeaders(): array { return ['X-Custom' => 'Value']; }
@@ -37,7 +38,7 @@ class JsonRendererTest extends TestCase
         $response = new class($pagination) extends AbstractApivalkResponse {
             private $pagination;
             public function __construct($pagination) { $this->pagination = $pagination; }
-            public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation { return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation(); }
+            public static function getDocumentation(): ApivalkResponseDocumentation { return new ApivalkResponseDocumentation(); }
             public static function getStatusCode(): int { return 200; }
             public function toArray(): array { return ['data' => []]; }
             public function getHeaders(): array { return []; }
