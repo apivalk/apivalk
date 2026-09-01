@@ -26,6 +26,7 @@ final class DocBlockResourceRequestGenerator
         $mode = RequestDocumentationFactory::getModeFromController($controllerClass);
         $requestName = \ucfirst($resource->getName()) . \ucfirst($mode);
 
+        $filterFieldShapes = [];
         $pathShape = new DocBlockShape($requestName, 'Path');
         $sortingShape = new DocBlockShape($requestName, 'Sorting');
         $filteringShape = new DocBlockShape($requestName, 'Filtering');
@@ -41,8 +42,12 @@ final class DocBlockResourceRequestGenerator
 
             /** @var FilterInterface $filter */
             foreach ($resource->availableFilters() as $filter) {
-                $filteringShape->addCustomField($filter->getField(), '\\' . \get_class($filter));
+                $fieldShape = FilterShapeFactory::build($requestName, $filter);
+                $filterFieldShapes[] = $fieldShape;
+                $filteringShape->addCustomField($filter->getField(), $fieldShape->getClassName());
             }
+
+            FilterShapeFactory::decorateBagShape($filteringShape);
         }
 
         $paginatorClass = null;
@@ -67,7 +72,8 @@ final class DocBlockResourceRequestGenerator
             $sortingShape,
             $filteringShape,
             $paginatorClass,
-            $controllerClass::getRequestClass()
+            $controllerClass::getRequestClass(),
+            $filterFieldShapes
         );
     }
 }

@@ -9,11 +9,11 @@ use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
@@ -22,6 +22,9 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Address\Request\AddressListRequest;
 
+/**
+ * @extends AbstractApivalkController<AddressListRequest>
+ */
 class ListAddressesController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -32,10 +35,10 @@ class ListAddressesController extends AbstractApivalkController
             )
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers:address'], ['api:customers:address:read']))
             ->filtering([
-                StringFilter::like(new StringProperty('city', 'City')),
-                StringFilter::equals(new StringProperty('country', 'Country')),
-                EnumFilter::equals(new EnumProperty('type', 'Type', ['billing', 'shipping', 'both'])),
-                BooleanFilter::equals(new BooleanProperty('is_primary', 'Is primary', false)),
+                new StringFilter(new StringProperty('city', 'City'), Operator::LIKE),
+                new StringFilter(new StringProperty('country', 'Country'), Operator::EQ),
+                new EnumFilter(new EnumProperty('type', 'Type', ['billing', 'shipping', 'both']), Operator::EQ),
+                new BooleanFilter(new BooleanProperty('is_primary', 'Is primary', false), Operator::EQ),
             ])
             ->sorting([
                 Sort::asc('city'),
@@ -57,7 +60,7 @@ class ListAddressesController extends AbstractApivalkController
         return [AddressListResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(AddressListRequest $request): AbstractApivalkResponse
     {
         $customerId = $request->path()->has('customer_id')
             ? (int) $request->path()->get('customer_id')->getValue()

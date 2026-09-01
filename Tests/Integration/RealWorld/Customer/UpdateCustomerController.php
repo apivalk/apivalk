@@ -6,18 +6,20 @@ namespace Tests\Integration\RealWorld\Customer;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerUpdateRequest;
 
+/**
+ * @extends AbstractApivalkController<CustomerUpdateRequest>
+ */
 class UpdateCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
     {
-        return Route::patch('/v1/api/customers/{customer_id}')
+        return Route::put('/v1/api/customers/{customer_id}')
             ->pathProperty(
                 (new IntegerProperty('customer_id', 'Customer integer ID'))->setMinimumValue(1)
             )
@@ -34,7 +36,7 @@ class UpdateCustomerController extends AbstractApivalkController
         return [CustomerUpdatedResponse::class, NotFoundApivalkResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CustomerUpdateRequest $request): AbstractApivalkResponse
     {
         $customerId = $request->path()->has('customer_id')
             ? (int) $request->path()->get('customer_id')->getValue()

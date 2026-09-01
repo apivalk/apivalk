@@ -6,13 +6,15 @@ namespace Tests\Integration\RealWorld\Customer;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerViewRequest;
 
+/**
+ * @extends AbstractApivalkController<CustomerViewRequest>
+ */
 class ViewCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -34,7 +36,7 @@ class ViewCustomerController extends AbstractApivalkController
         return [CustomerViewResponse::class, NotFoundApivalkResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CustomerViewRequest $request): AbstractApivalkResponse
     {
         $customerId = $request->path()->has('customer_id')
             ? (int) $request->path()->get('customer_id')->getValue()

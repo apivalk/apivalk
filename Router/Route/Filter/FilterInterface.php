@@ -8,42 +8,70 @@ use apivalk\apivalk\Documentation\Property\AbstractProperty;
 
 interface FilterInterface
 {
-    public const TYPE_EQUALS = 'equals';
-    public const TYPE_IN = 'in';
-    public const TYPE_LIKE = 'like';
-    public const TYPE_GREATER_THAN = 'greater_than';
-    public const TYPE_LESS_THAN = 'less_than';
-    public const TYPE_CONTAINS = 'contains';
-
     public function getField(): string;
 
-    public function getType(): string;
-
+    /** @internal */
     public function getProperty(): AbstractProperty;
 
     /**
-     * @param mixed $value
+     * Operators this filter class can express at all, regardless of what a route allows.
+     *
+     * @internal
+     *
+     * @return string[]
      */
-    public function setValue($value): void;
+    public static function supportedOperators(): array;
 
     /**
-     * @return mixed
+     * Operators allowed on this field, in declaration order.
+     *
+     * @internal
+     *
+     * @return string[]
      */
-    public function getValue();
+    public function getAllowedOperators(): array;
 
-    public function setRawValue(?string $rawValue): void;
+    /**
+     * The operator flat notation resolves to: `?status=active` means `status[eq]=active`
+     * when EQ is declared first.
+     *
+     * @internal
+     */
+    public function getDefaultOperator(): string;
 
-    public function getRawValue(): ?string;
+    /**
+     * @internal
+     *
+     * @param Operator::* $operator
+     */
+    public function allows(string $operator): bool;
 
-    public function isTypeEquals(): bool;
+    /**
+     * True when the client supplied this operator.
+     *
+     * @param Operator::* $operator
+     */
+    public function has(string $operator): bool;
 
-    public function isTypeIn(): bool;
+    /**
+     * The value the client sent, verbatim.
+     *
+     * @param Operator::* $operator
+     */
+    public function raw(string $operator): ?string;
 
-    public function isTypeLike(): bool;
+    /**
+     * @internal
+     *
+     * @param Operator::* $operator
+     * @param mixed       $value
+     */
+    public function setCondition(string $operator, $value, ?string $rawValue): void;
 
-    public function isTypeContains(): bool;
-
-    public function isTypeGreaterThan(): bool;
-
-    public function isTypeLessThan(): bool;
+    /**
+     * Supplied conditions as operator => cast value, in wire order.
+     *
+     * @return array<string, mixed>
+     */
+    public function conditions(): array;
 }

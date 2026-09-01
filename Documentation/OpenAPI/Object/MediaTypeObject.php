@@ -36,7 +36,12 @@ class MediaTypeObject implements ObjectInterface
     {
         return [
             $this->mediaType => [
-                'schema' => array_filter($this->schema->toArray())
+                // Only null is dropped: a plain array_filter would also swallow
+                // `additionalProperties: false` and any `0` default.
+                'schema' => array_filter(
+                    $this->schema->toArray(),
+                    static fn($value) => $value !== null
+                ),
             ]
         ];
     }

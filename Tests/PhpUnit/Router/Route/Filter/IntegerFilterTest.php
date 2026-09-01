@@ -5,66 +5,122 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Router\Route\Filter;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
-use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use PHPUnit\Framework\TestCase;
 
 class IntegerFilterTest extends TestCase
 {
-    private function prop(string $name = 'count'): IntegerProperty
+    private function property(string $name = 'field'): IntegerProperty
     {
-        return new IntegerProperty($name);
+        return new IntegerProperty($name, 'Description');
     }
 
-    public function testFactories(): void
+    public function testSupportedOperators(): void
     {
-        $this->assertSame(FilterInterface::TYPE_EQUALS, IntegerFilter::equals($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_IN, IntegerFilter::in($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_GREATER_THAN, IntegerFilter::greaterThan($this->prop())->getType());
-        $this->assertSame(FilterInterface::TYPE_LESS_THAN, IntegerFilter::lessThan($this->prop())->getType());
+        $this->assertSame([Operator::EQ, Operator::NEQ, Operator::IN, Operator::GT, Operator::GTE, Operator::LT, Operator::LTE, Operator::NULL], IntegerFilter::supportedOperators());
     }
 
-    public function testGetters(): void
+    public function testDeclaredOperatorsAreKeptInOrder(): void
     {
-        $prop = $this->prop('age');
-        $filter = IntegerFilter::equals($prop);
+        $filter = new IntegerFilter($this->property(), Operator::NEQ, Operator::EQ);
 
-        $this->assertSame('age', $filter->getField());
-        $this->assertSame(FilterInterface::TYPE_EQUALS, $filter->getType());
-        $this->assertInstanceOf(IntegerProperty::class, $filter->getProperty());
-        $this->assertSame($prop, $filter->getProperty());
+        $this->assertSame([Operator::NEQ, Operator::EQ], $filter->getAllowedOperators());
+        $this->assertSame(Operator::NEQ, $filter->getDefaultOperator());
+        $this->assertTrue($filter->allows(Operator::EQ));
     }
 
-    public function testTypeChecks(): void
+    public function testRejectsAnEmptyOperatorList(): void
     {
-        $this->assertTrue(IntegerFilter::equals($this->prop())->isTypeEquals());
-        $this->assertFalse(IntegerFilter::equals($this->prop())->isTypeIn());
-        $this->assertFalse(IntegerFilter::equals($this->prop())->isTypeLike());
-        $this->assertFalse(IntegerFilter::equals($this->prop())->isTypeContains());
-        $this->assertFalse(IntegerFilter::equals($this->prop())->isTypeGreaterThan());
-        $this->assertFalse(IntegerFilter::equals($this->prop())->isTypeLessThan());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('declares no operator');
 
-        $this->assertTrue(IntegerFilter::in($this->prop())->isTypeIn());
-        $this->assertTrue(IntegerFilter::greaterThan($this->prop())->isTypeGreaterThan());
-        $this->assertTrue(IntegerFilter::lessThan($this->prop())->isTypeLessThan());
+        new IntegerFilter($this->property());
     }
 
-    public function testValueCasting(): void
+    public function testRejectsAnUnsupportedOperator(): void
     {
-        $filter = IntegerFilter::equals($this->prop());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not supported by');
 
-        $this->assertNull($filter->getValue());
+        new IntegerFilter($this->property(), Operator::LIKE);
+    }
 
-        $filter->setValue(10);
-        $this->assertSame(10, $filter->getValue());
+    public function testRejectsADuplicateOperator(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('duplicate operator');
 
-        $filter->setValue('42');
-        $this->assertSame(42, $filter->getValue());
+        new IntegerFilter($this->property(), Operator::EQ, Operator::EQ);
+    }
 
-        $filter->setValue(3.9);
-        $this->assertSame(3, $filter->getValue());
+    public function testConditionRoundTrip(): void
+    {
+        $filter = new IntegerFilter($this->property('created'), Operator::EQ);
 
-        $filter->setValue(null);
-        $this->assertNull($filter->getValue());
+        $this->assertFalse($filter->has(Operator::EQ));
+        $this->assertNull($filter->raw(Operator::EQ));
+
+        $filter->setCondition(Operator::EQ, 42, '42');
+
+        $this->assertTrue($filter->has(Operator::EQ));
+        $this->assertSame(42, $filter->equal);
+        $this->assertSame('42', $filter->raw(Operator::EQ));
+        $this->assertSame('created', $filter->getField());
+    }
+
+    public function testSetConditionRejectsAnUndeclaredOperator(): void
+    {
+        $filter = new IntegerFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is not allowed on field');
+
+        $filter->setCondition(Operator::NEQ, 42, '42');
+    }
+
+    public function testReadingAnUndeclaredOperatorThrows(): void
+    {
+        $filter = new IntegerFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('is not declared on field');
+
+        $filter->notEqual;
+    }
+
+    public function testReadingAnUnknownAccessorThrows(): void
+    {
+        $filter = new IntegerFilter($this->property(), Operator::EQ);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Unknown filter accessor');
+
+        $filter->nonsense;
+    }
+
+    public function testIssetReflectsTheDeclaredOperators(): void
+    {
+        $filter = new IntegerFilter($this->property(), Operator::EQ);
+
+        $this->assertTrue(isset($filter->equal));
+        $this->assertFalse(isset($filter->notEqual));
+    }
+
+    public function testGetPropertyKeepsTheDeclaredProperty(): void
+    {
+        $property = $this->property();
+        $filter = new IntegerFilter($property, Operator::EQ);
+
+        $this->assertSame($property, $filter->getProperty());
+    }
+
+    public function testInIsAList(): void
+    {
+        $filter = new IntegerFilter($this->property(), Operator::IN);
+        $this->assertSame([], $filter->in);
+
+        $filter->setCondition(Operator::IN, [42], '42');
+        $this->assertSame([42], $filter->in);
     }
 }

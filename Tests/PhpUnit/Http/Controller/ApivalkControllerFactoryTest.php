@@ -17,7 +17,10 @@ class ApivalkControllerFactoryTest extends TestCase
 {
     public function testCreateWithContainer(): void
     {
-        $controller = $this->createMock(AbstractApivalkController::class);
+        $controller = $this->getMockBuilder(AbstractApivalkController::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['__invoke'])
+            ->getMockForAbstractClass();
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->with('MyController')->willReturn(true);
         $container->method('get')->with('MyController')->willReturn($controller);
@@ -26,6 +29,21 @@ class ApivalkControllerFactoryTest extends TestCase
         $result = $factory->create('MyController');
 
         $this->assertSame($controller, $result);
+    }
+
+    public function testCreateRejectsAControllerWithoutInvoke(): void
+    {
+        $controller = $this->getMockForAbstractClass(AbstractApivalkController::class);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->with('NoInvokeController')->willReturn(true);
+        $container->method('get')->with('NoInvokeController')->willReturn($controller);
+
+        $factory = new ApivalkControllerFactory($container);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('has no __invoke() method');
+
+        $factory->create('NoInvokeController');
     }
 
     public function testCreateWithoutContainer(): void

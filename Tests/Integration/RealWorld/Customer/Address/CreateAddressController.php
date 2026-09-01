@@ -6,13 +6,15 @@ namespace Tests\Integration\RealWorld\Customer\Address;
 
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Address\Request\AddressCreateRequest;
 
+/**
+ * @extends AbstractApivalkController<AddressCreateRequest>
+ */
 class CreateAddressController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -35,7 +37,7 @@ class CreateAddressController extends AbstractApivalkController
         return [AddressCreatedResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(AddressCreateRequest $request): AbstractApivalkResponse
     {
         $customerId = $request->path()->has('customer_id')
             ? (int) $request->path()->get('customer_id')->getValue()

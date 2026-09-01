@@ -188,6 +188,10 @@ class DocBlockGenerator
             $shapes['file'] = [$docBlockRequest->getFileShape(), $shapeNamespace];
         }
 
+        foreach ($docBlockRequest->getFilterFieldShapes() as $fieldShape) {
+            $shapes[$fieldShape->getClassName()] = [$fieldShape, $shapeNamespace];
+        }
+
         foreach ($shapes as $key => [$shape, $ns]) {
             if (file_put_contents($filenames[$key], $shape->toString($ns)) === false) {
                 throw new \RuntimeException(\sprintf('Failed to write %s shape file', $key));
@@ -250,6 +254,14 @@ PHP;
 
         if (file_put_contents($filenames['path'], $docBlockResourceRequest->getPathShape()->toString($shapeNamespace)) === false) {
             throw new \RuntimeException('Failed to write path shape file');
+        }
+
+        foreach ($docBlockResourceRequest->getFilterFieldShapes() as $fieldShape) {
+            $fieldFile = $filenames[$fieldShape->getClassName()];
+
+            if (file_put_contents($fieldFile, $fieldShape->toString($shapeNamespace)) === false) {
+                throw new \RuntimeException(\sprintf('Could not write shape file "%s"', $fieldFile));
+            }
         }
     }
 

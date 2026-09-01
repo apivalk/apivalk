@@ -41,7 +41,7 @@ Route::get('/api/v1/animals')
 ### Page
 
 ```php
-public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+public function __invoke(ResourceRequest $request): AbstractApivalkResponse
 {
     $paginator = $request->paginator(); // PagePaginator
 

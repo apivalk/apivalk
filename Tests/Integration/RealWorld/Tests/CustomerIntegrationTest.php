@@ -264,7 +264,7 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_bracketFilterByStatus_returns200WithMatchingData(): void
     {
         $response =
-            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['status' => 'active']], [], 'admin-token');
+            $this->makeRequest('GET', '/v1/api/customers', ['status' => ['eq' => 'active']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(3, $items);
@@ -276,7 +276,7 @@ class CustomerIntegrationTest extends TestCase
     public function testListCustomers_bracketFilterByFirstNameLike_returnsMatch(): void
     {
         $response =
-            $this->makeRequest('GET', '/v1/api/customers', ['filter' => ['first_name' => 'ali']], [], 'admin-token');
+            $this->makeRequest('GET', '/v1/api/customers', ['first_name' => ['like' => 'ali']], [], 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $items = $response->toArray()['data'];
         $this->assertCount(1, $items);
@@ -285,11 +285,11 @@ class CustomerIntegrationTest extends TestCase
 
     public function testListCustomers_mixedFlatAndBracketFilters_intersectsCorrectly(): void
     {
-        // first_name flat + status bracket — Alice is the only active customer whose name contains 'ali'
+        // first_name flat + status bracket, Alice is the only active customer whose name contains 'ali'
         $response = $this->makeRequest(
             'GET',
             '/v1/api/customers',
-            ['first_name' => 'ali', 'filter' => ['status' => 'active']],
+            ['first_name' => 'ali', 'status' => ['eq' => 'active']],
             [],
             'admin-token'
         );
@@ -300,17 +300,110 @@ class CustomerIntegrationTest extends TestCase
         $this->assertSame('active', $items[0]['status']);
     }
 
-    public function testListCustomers_bracketFilterNonScalarValueIsIgnored_returnsAllItems(): void
+    public function testListCustomers_unknownBracketOperator_returns422(): void
     {
         $response = $this->makeRequest(
             'GET',
             '/v1/api/customers',
-            ['filter' => ['status' => ['active', 'pending']]],
+            ['status' => ['active', 'pending']],
+            [],
+            'admin-token'
+        );
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testListCustomers_operatorNotAllowedOnField_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['status' => ['like' => 'act']],
+            [],
+            'admin-token'
+        );
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testListCustomers_legacyFilterWrapperIsGone_returnsAllItems(): void
+    {
+        $response = $this->makeRequest(
+            'GET',
+            '/v1/api/customers',
+            ['filter' => ['status' => 'active']],
             [],
             'admin-token'
         );
         $this->assertSame(200, $response->getStatusCode());
         $this->assertCount(5, $response->toArray()['data']);
+    }
+
+    // --- QUERY transport (RFC 10008) ---
+
+    public function testQueryCustomers_filterInBody_returnsMatchingData(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $items = $response->toArray()['data'];
+        $this->assertCount(3, $items);
+        foreach ($items as $item) {
+            $this->assertSame('active', $item['status']);
+        }
+    }
+
+    public function testQueryCustomers_severalFieldsInBody_intersectsCorrectly(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['first_name' => ['like' => 'ali'], 'status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $items = $response->toArray()['data'];
+        $this->assertCount(1, $items);
+        $this->assertSame('Alice', $items[0]['first_name']);
+    }
+
+    public function testQueryCustomers_bodyAndQueryStringTogether_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            ['status' => 'active'],
+            ['status' => ['eq' => 'active']],
+            'admin-token'
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testQueryCustomers_operatorNotAllowed_returns422(): void
+    {
+        $response = $this->makeRequest(
+            'QUERY',
+            '/v1/api/customers',
+            [],
+            ['status' => ['like' => 'act']],
+            'admin-token'
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+    }
+
+    public function testQueryOnARouteWithoutEnableQuery_returns405(): void
+    {
+        $response = $this->makeRequest('QUERY', '/v1/api/contracts', [], [], 'admin-token');
+
+        $this->assertSame(405, $response->getStatusCode());
     }
 
     // --- Sorting: data correctness ---
@@ -586,47 +679,47 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_validBody_returns200(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_withoutToken_returns401(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY);
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY);
         $this->assertSame(401, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_withReadOnlyToken_returns403(): void
     {
         $response =
-            $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
+            $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
         $this->assertSame(403, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_missingRequiredField_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['first_name' => '']);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_firstNameTooLong_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['first_name' => str_repeat('a', 101)]);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_emptyLastName_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['last_name' => '']);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_pathCustomerIdPropagated(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $data = $response->toArray();
         $this->assertSame(42, $data['data']['customer_id']);
@@ -634,20 +727,20 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_customerIdZero_returns422(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/0', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/0', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_customerIdNonInteger_returns422(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/abc', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/abc', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_unknownCustomerId_returns404(): void
     {
         $response =
-            $this->makeRequest('PATCH', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+            $this->makeRequest('PUT', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(404, $response->getStatusCode());
     }
 

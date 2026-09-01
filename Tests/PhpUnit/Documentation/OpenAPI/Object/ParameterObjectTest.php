@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
@@ -100,18 +102,13 @@ class ParameterObjectTest extends TestCase
 
         $this->assertEquals($expected, $parameter->toArray());
     }
-
-    public function testForFilterGroupProducesDeepObjectParameter(): void
+    public function testForFilterProducesADeepObjectPerField(): void
     {
-        $statusProp = new StringProperty('status', 'Filter by status');
-        $statusProp->setIsRequired(false);
+        $filter = new IntegerFilter(new IntegerProperty('price', 'Filter by price'), Operator::GT, Operator::LTE);
 
-        $idProp = new IntegerProperty('customer_id', 'Filter by customer ID');
-        $idProp->setIsRequired(false);
+        $parameter = ParameterObject::forFilter($filter);
 
-        $parameter = ParameterObject::forFilterGroup([$statusProp, $idProp]);
-
-        $this->assertEquals('filter', $parameter->getName());
+        $this->assertEquals('price', $parameter->getName());
         $this->assertEquals('query', $parameter->getIn());
         $this->assertFalse($parameter->isRequired());
         $this->assertEquals('deepObject', $parameter->getStyle());
@@ -120,20 +117,20 @@ class ParameterObjectTest extends TestCase
         $this->assertEquals('deepObject', $array['style']);
         $this->assertTrue($array['explode']);
         $this->assertEquals('object', $array['schema']['type']);
-        $this->assertArrayHasKey('status', $array['schema']['properties']);
-        $this->assertArrayHasKey('customer_id', $array['schema']['properties']);
-        $this->assertEquals('string', $array['schema']['properties']['status']['type']);
-        $this->assertEquals('integer', $array['schema']['properties']['customer_id']['type']);
+        $this->assertFalse($array['schema']['additionalProperties']);
+        $this->assertSame(['gt', 'lte'], array_keys($array['schema']['properties']));
+        $this->assertEquals('integer', $array['schema']['properties']['gt']['type']);
     }
 
-    public function testForFilterGroupDescriptionMentionsBracketNotation(): void
+    public function testForFilterDocumentsInAsACommaSeparatedStringAndNullAsBoolean(): void
     {
-        $prop = new StringProperty('status', 'Filter by status');
-        $prop->setIsRequired(false);
+        $filter = new IntegerFilter(new IntegerProperty('price', 'Filter by price'), Operator::IN, Operator::NULL);
 
-        $parameter = ParameterObject::forFilterGroup([$prop]);
+        $properties = ParameterObject::forFilter($filter)->toArray()['schema']['properties'];
 
-        $this->assertStringContainsString('filter[', $parameter->getDescription() ?? '');
+        $this->assertEquals('string', $properties['in']['type']);
+        $this->assertStringContainsString('Comma-separated', $properties['in']['description']);
+        $this->assertEquals('boolean', $properties['null']['type']);
     }
 
     public function testRegularParameterHasNoStyleOrExplode(): void

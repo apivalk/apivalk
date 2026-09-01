@@ -25,6 +25,23 @@ class SchemaObject implements ObjectInterface
     private array $properties;
     private ?Pagination $pagination;
 
+    /** @var array<string, mixed>|null */
+    private ?array $rawSchema = null;
+
+    /**
+     * A schema the generator assembles itself rather than deriving from properties, used
+     * for the operator maps of the QUERY filter body.
+     *
+     * @param array<string, mixed> $schema
+     */
+    public static function raw(array $schema): self
+    {
+        $instance = new self('object', false);
+        $instance->rawSchema = $schema;
+
+        return $instance;
+    }
+
     public function __construct(
         string $type,
         bool $required = true,
@@ -59,6 +76,10 @@ class SchemaObject implements ObjectInterface
 
     public function toArray(): array
     {
+        if ($this->rawSchema !== null) {
+            return $this->rawSchema;
+        }
+
         $requiredPropertyNames = [];
         $properties = [];
         foreach ($this->properties as $property) {
@@ -98,10 +119,18 @@ class SchemaObject implements ObjectInterface
             ];
         }
 
-        return [
-            'type' => $this->type,
-            'required' => $requiredPropertyNames,
-            'properties' => $properties
-        ];
+        $schema = ['type' => $this->type];
+
+        // An empty PHP array serialises to `[]`, but both keywords must be objects in JSON
+        // Schema, and an empty `required` carries no meaning either. Omit them instead.
+        if ($requiredPropertyNames !== []) {
+            $schema['required'] = $requiredPropertyNames;
+        }
+
+        if ($properties !== []) {
+            $schema['properties'] = $properties;
+        }
+
+        return $schema;
     }
 }

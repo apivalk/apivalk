@@ -31,6 +31,7 @@ use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 use apivalk\apivalk\Router\RateLimit\RateLimitResult;
 use apivalk\apivalk\Router\Route\Filter\BinaryFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
 use apivalk\apivalk\Router\Route\Filter\ByteFilter;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
@@ -327,8 +328,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property = new StringProperty('status');
         $property->setIsRequired(false);
 
-        $filter = StringFilter::equals($property);
-        $filter->setValue('active');
+        $filter = new StringFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'active', null);
 
         $filterBag = new FilterBag();
         $filterBag->set($filter);
@@ -352,8 +353,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $validator->method('validate')->willReturn(new ValidatorResult(false, 'Invalid value'));
         $property->addValidator($validator);
 
-        $filter = StringFilter::equals($property);
-        $filter->setValue('invalid');
+        $filter = new StringFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'invalid', null);
 
         $filterBag = new FilterBag();
         $filterBag->set($filter);
@@ -379,7 +380,7 @@ class RequestValidationMiddlewareTest extends TestCase
         $validator->method('validate')->willReturn(new ValidatorResult(false, 'Invalid value'));
         $property->addValidator($validator);
 
-        $filter = StringFilter::equals($property);
+        $filter = new StringFilter($property, Operator::EQ);
 
         $filterBag = new FilterBag();
         $filterBag->set($filter);
@@ -399,7 +400,7 @@ class RequestValidationMiddlewareTest extends TestCase
         $property = new StringProperty('status');
         $property->setIsRequired(true);
 
-        $filter = StringFilter::equals($property);
+        $filter = new StringFilter($property, Operator::EQ);
 
         $filterBag = new FilterBag();
         $filterBag->set($filter);
@@ -420,9 +421,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = DateTimeFilter::greaterThan($property);
-        $filter->setValue(new \DateTime('2024-01-15T14:30:00+00:00'));
-        $filter->setRawValue('2024-01-15T14:30:00+00:00');
+        $filter = new DateTimeFilter($property, Operator::GT);
+        $filter->setCondition(Operator::GT, new \DateTime('2024-01-15T14:30:00+00:00'), '2024-01-15T14:30:00+00:00');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -434,8 +434,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = DateTimeFilter::greaterThan($property);
-        $filter->setRawValue('not-a-datetime');
+        $filter = new DateTimeFilter($property, Operator::GT);
+        $filter->setCondition(Operator::GT, null, 'not-a-datetime');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -449,9 +449,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = DateFilter::equals($property);
-        $filter->setValue(new \DateTime('2024-01-15'));
-        $filter->setRawValue('2024-01-15');
+        $filter = new DateFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, new \DateTime('2024-01-15'), '2024-01-15');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -463,8 +462,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = DateFilter::equals($property);
-        $filter->setRawValue('15/01/2024');
+        $filter = new DateFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, null, '15/01/2024');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -476,9 +475,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = IntegerFilter::equals($property);
-        $filter->setValue(42);
-        $filter->setRawValue('42');
+        $filter = new IntegerFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 42, '42');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -490,9 +488,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = FloatFilter::equals($property);
-        $filter->setValue(4.5);
-        $filter->setRawValue('4.5');
+        $filter = new FloatFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 4.5, '4.5');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -504,9 +501,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = BooleanFilter::equals($property);
-        $filter->setValue(true);
-        $filter->setRawValue('true');
+        $filter = new BooleanFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, true, 'true');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -518,9 +514,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = EnumFilter::equals($property);
-        $filter->setValue('active');
-        $filter->setRawValue('active');
+        $filter = new EnumFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'active', 'active');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -532,9 +527,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = EnumFilter::equals($property);
-        $filter->setValue('archived');
-        $filter->setRawValue('archived');
+        $filter = new EnumFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'archived', 'archived');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -546,9 +540,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = BinaryFilter::equals($property);
-        $filter->setValue('payload');
-        $filter->setRawValue('payload');
+        $filter = new BinaryFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'payload', 'payload');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -560,10 +553,9 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->init();
         $property->setIsRequired(false);
 
-        $filter = ByteFilter::equals($property);
+        $filter = new ByteFilter($property, Operator::EQ);
         $base64 = base64_encode('payload');
-        $filter->setValue($base64);
-        $filter->setRawValue($base64);
+        $filter->setCondition(Operator::EQ, $base64, $base64);
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertNotInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -578,8 +570,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $validator->method('validate')->willReturn(new ValidatorResult(false, 'Invalid value'));
         $property->addValidator($validator);
 
-        $filter = StringFilter::equals($property);
-        $filter->setRawValue('something');
+        $filter = new StringFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, null, 'something');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -591,9 +583,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->setIsRequired(false);
         // no $property->init() — the filter constructor must register the validator
 
-        $filter = EnumFilter::equals($property);
-        $filter->setValue('archived');
-        $filter->setRawValue('archived');
+        $filter = new EnumFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'archived', 'archived');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -608,9 +599,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->setIsRequired(false);
         // no $property->init()
 
-        $filter = IntegerFilter::greaterThan($property);
-        $filter->setValue(-1);
-        $filter->setRawValue('-1');
+        $filter = new IntegerFilter($property, Operator::GT);
+        $filter->setCondition(Operator::GT, -1, '-1');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -623,9 +613,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->setIsRequired(false);
         // no $property->init()
 
-        $filter = StringFilter::equals($property);
-        $filter->setValue('toolongvalue');
-        $filter->setRawValue('toolongvalue');
+        $filter = new StringFilter($property, Operator::EQ);
+        $filter->setCondition(Operator::EQ, 'toolongvalue', 'toolongvalue');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
@@ -637,8 +626,8 @@ class RequestValidationMiddlewareTest extends TestCase
         $property->setIsRequired(false);
         // no $property->init()
 
-        $filter = DateTimeFilter::greaterThan($property);
-        $filter->setRawValue('not-a-datetime');
+        $filter = new DateTimeFilter($property, Operator::GT);
+        $filter->setCondition(Operator::GT, null, 'not-a-datetime');
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);

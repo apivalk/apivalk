@@ -4,91 +4,24 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Router\Route\Filter;
 
-use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\BooleanProperty;
 
-class BooleanFilter implements FilterInterface
+class BooleanFilter extends AbstractFilter
 {
-    private string $type;
-    /** @var BooleanProperty */
-    private AbstractProperty $property;
-    private ?bool $value = null;
-    private ?string $rawValue = null;
-
-    public function __construct(string $type, BooleanProperty $property)
+    /**
+     * @param Operator::* ...$operators
+     */
+    public function __construct(BooleanProperty $property, string ...$operators)
     {
-        $this->type = $type;
-        $this->property = $property->init();
+        parent::__construct($property, ...$operators);
     }
 
-    public static function equals(BooleanProperty $property): self
+    /** @return string[] */
+    public static function supportedOperators(): array
     {
-        return new self(self::TYPE_EQUALS, $property);
-    }
-
-    public function getField(): string
-    {
-        return $this->property->getPropertyName();
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /** @return BooleanProperty */
-    public function getProperty(): AbstractProperty
-    {
-        return $this->property;
-    }
-
-    public function setValue($value): void
-    {
-        $this->value = $value !== null ? (bool) $value : null;
-    }
-
-    public function getValue(): ?bool
-    {
-        return $this->value;
-    }
-
-    public function setRawValue(?string $rawValue): void
-    {
-        $this->rawValue = $rawValue;
-    }
-
-    public function getRawValue(): ?string
-    {
-        return $this->rawValue;
-    }
-
-    public function isTypeEquals(): bool
-    {
-        return $this->type === self::TYPE_EQUALS;
-    }
-
-    public function isTypeIn(): bool
-    {
-        return $this->type === self::TYPE_IN;
-    }
-
-    public function isTypeLike(): bool
-    {
-        return $this->type === self::TYPE_LIKE;
-    }
-
-    public function isTypeContains(): bool
-    {
-        return $this->type === self::TYPE_CONTAINS;
-    }
-
-    public function isTypeGreaterThan(): bool
-    {
-        return $this->type === self::TYPE_GREATER_THAN;
-    }
-
-    public function isTypeLessThan(): bool
-    {
-        return $this->type === self::TYPE_LESS_THAN;
+        return [
+            Operator::EQ,
+            Operator::NULL,
+        ];
     }
 }

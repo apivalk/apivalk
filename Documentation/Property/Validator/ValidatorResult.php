@@ -9,6 +9,12 @@ class ValidatorResult
     /** @var string */
     public const FIELD_IS_REQUIRED = 'field_is_required';
     /** @var string */
+    public const FILTER_OPERATOR_IS_NOT_ALLOWED = 'filter_operator_is_not_allowed';
+
+    public const FILTER_RANGE_IS_EMPTY = 'filter_range_is_empty';
+
+    public const FILTER_SENT_TWICE = 'filter_sent_twice';
+
     public const FILE_IS_LARGER_THAN_MAX_SIZE = 'file_is_larger_than_max_size';
     /** @var string */
     public const FILE_MEDIA_TYPE_IS_NOT_ALLOWED = 'file_media_type_is_not_allowed';
@@ -67,6 +73,15 @@ class ValidatorResult
         switch ($this->errorKey) {
             case self::FIELD_IS_REQUIRED:
                 return 'This field is required.';
+
+            case self::FILTER_OPERATOR_IS_NOT_ALLOWED:
+                return 'This filter operator is not allowed on this field.';
+
+            case self::FILTER_RANGE_IS_EMPTY:
+                return 'These filter conditions can never match at the same time.';
+
+            case self::FILTER_SENT_TWICE:
+                return 'This filter was sent both in the request body and in the query string.';
 
             case self::FILE_IS_LARGER_THAN_MAX_SIZE:
                 return 'This file is larger than the maximum allowed size.';

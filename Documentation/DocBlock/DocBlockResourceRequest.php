@@ -15,19 +15,32 @@ class DocBlockResourceRequest
     private DocBlockShape $filteringShape;
     private ?string $paginatorClass;
     private string $baseRequestClass;
+    /** @var DocBlockShape[] */
+    private array $filterFieldShapes;
 
+    /**
+     * @param DocBlockShape[] $filterFieldShapes
+     */
     public function __construct(
         DocBlockShape $pathShape,
         DocBlockShape $sortingShape,
         DocBlockShape $filteringShape,
         ?string $paginatorClass,
-        string $baseRequestClass
+        string $baseRequestClass,
+        array $filterFieldShapes = []
     ) {
+        $this->filterFieldShapes = $filterFieldShapes;
         $this->pathShape = $pathShape;
         $this->sortingShape = $sortingShape;
         $this->filteringShape = $filteringShape;
         $this->paginatorClass = $paginatorClass;
         $this->baseRequestClass = $baseRequestClass;
+    }
+
+    /** @return DocBlockShape[] */
+    public function getFilterFieldShapes(): array
+    {
+        return $this->filterFieldShapes;
     }
 
     public function getPathShape(): DocBlockShape
@@ -58,11 +71,18 @@ class DocBlockResourceRequest
     /** @return array<string, string> */
     public function getShapeFilenames(string $requestFolder): array
     {
-        return [
+        $filenames = [
             'path'      => \sprintf('%s/Shape/%s.php', $requestFolder, $this->pathShape->getClassName()),
             'sorting'   => \sprintf('%s/Shape/%s.php', $requestFolder, $this->sortingShape->getClassName()),
             'filtering' => \sprintf('%s/Shape/%s.php', $requestFolder, $this->filteringShape->getClassName()),
         ];
+
+        foreach ($this->filterFieldShapes as $shape) {
+            $filenames[$shape->getClassName()] =
+                \sprintf('%s/Shape/%s.php', $requestFolder, $shape->getClassName());
+        }
+
+        return $filenames;
     }
 
     public function getDocBlockOnly(string $shapeNamespace): string
@@ -78,7 +98,7 @@ class DocBlockResourceRequest
         }
 
         if ($this->filteringShape->hasProperties()) {
-            $lines[] = ' * @method \\' . FilterBag::class . '|\\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()';
+            $lines[] = ' * @method \\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()';
         }
 
         if ($this->paginatorClass !== null) {

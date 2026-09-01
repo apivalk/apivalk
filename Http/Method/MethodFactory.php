@@ -19,6 +19,8 @@ final class MethodFactory
                 return new PatchMethod();
             case MethodInterface::METHOD_PUT:
                 return new PutMethod();
+            case MethodInterface::METHOD_QUERY:
+                return new QueryMethod();
         }
 
         throw new \InvalidArgumentException(\sprintf('Method "%s" is not supported', $methodName));

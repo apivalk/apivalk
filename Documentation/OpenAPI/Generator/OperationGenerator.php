@@ -8,6 +8,10 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\HeaderObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\MediaTypeObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\RequestBodyObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SchemaObject;
+use apivalk\apivalk\Http\Method\QueryMethod;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
@@ -36,7 +40,8 @@ class OperationGenerator
     public function generate(
         Route $route,
         ApivalkRequestDocumentation $requestDocumentation,
-        array $responseClasses
+        array $responseClasses,
+        bool $asQueryOperation = false
     ): OperationObject {
         $responseHeaders = $this->getResponseHeaders($route);
 
@@ -54,7 +59,8 @@ class OperationGenerator
             $route,
             $requestDocumentation,
             $responseDocumentations,
-            $responseHeaders
+            $responseHeaders,
+            $asQueryOperation
         );
     }
 
@@ -70,7 +76,8 @@ class OperationGenerator
     public function generateFromDocumentation(
         Route $route,
         ApivalkRequestDocumentation $requestDocumentation,
-        array $responseDocumentations
+        array $responseDocumentations,
+        bool $asQueryOperation = false
     ): OperationObject {
         $responseHeaders = $this->getResponseHeaders($route);
 
@@ -78,7 +85,8 @@ class OperationGenerator
             $route,
             $requestDocumentation,
             $responseDocumentations,
-            $responseHeaders
+            $responseHeaders,
+            $asQueryOperation
         );
     }
 
@@ -94,7 +102,8 @@ class OperationGenerator
         Route $route,
         ApivalkRequestDocumentation $requestDocumentation,
         array $responseDocumentations,
-        array $responseHeaders
+        array $responseHeaders,
+        bool $asQueryOperation = false
     ): OperationObject {
         $parameterGenerator = new ParameterGenerator();
         $requestBodyGenerator = new RequestBodyGenerator();
@@ -118,14 +127,15 @@ class OperationGenerator
             $parameters[] = $parameterGenerator->generate($paginationProperty, 'query');
         }
 
-        if ($this->flatFilters) {
+        if ($asQueryOperation) {
+            // The filters travel in the body of a QUERY request, not in the query string.
+        } elseif ($this->flatFilters) {
             foreach (self::getFilterProperties($route) as $filterProperty) {
                 $parameters[] = $parameterGenerator->generate($filterProperty, 'query');
             }
         } else {
-            $filterParameter = self::getFilterParameter($route);
-            if ($filterParameter !== null) {
-                $parameters[] = $filterParameter;
+            foreach ($route->getFilters() as $filter) {
+                $parameters[] = ParameterObject::forFilter($filter);
             }
         }
 
@@ -185,16 +195,48 @@ class OperationGenerator
             $responseHeaders
         );
 
+        $method = $asQueryOperation ? new QueryMethod() : $route->getMethod();
+        $requestBody = $asQueryOperation
+            ? self::getFilterRequestBody($route)
+            : $requestBodyGenerator->generate($requestDocumentation, $route);
+
         return new OperationObject(
-            $route->getMethod(),
+            $method,
             $route->getTags(),
             $route->getSummary(),
             $route->getDescription(),
-            \sprintf('%s_%s', $route->getUrl(), $route->getMethod()->getName()),
+            \sprintf('%s_%s', $route->getUrl(), $method->getName()),
             $parameters,
-            $requestBodyGenerator->generate($requestDocumentation, $route),
+            $requestBody,
             $responses,
             $route->getRouteAuthorization()
+        );
+    }
+
+    /**
+     * The QUERY body mirrors the deepObject parameters: one object per field, whose
+     * properties are the operators that field allows.
+     */
+    private static function getFilterRequestBody(Route $route): ?RequestBodyObject
+    {
+        $properties = [];
+
+        foreach ($route->getFilters() as $filter) {
+            $properties[$filter->getField()] = ParameterObject::forFilter($filter)->toArray()['schema'];
+        }
+
+        if ($properties === []) {
+            return null;
+        }
+
+        return new RequestBodyObject(
+            new MediaTypeObject(SchemaObject::raw([
+                'type' => 'object',
+                'properties' => $properties,
+                'additionalProperties' => false,
+            ])),
+            'Filter conditions, one object per field.',
+            false
         );
     }
 
@@ -338,17 +380,6 @@ class OperationGenerator
         return $properties;
     }
 
-    private static function getFilterParameter(Route $route): ?ParameterObject
-    {
-        $properties = self::getFilterProperties($route);
-
-        if (\count($properties) === 0) {
-            return null;
-        }
-
-        return ParameterObject::forFilterGroup($properties);
-    }
-
     /**
      * @return array<string, HeaderObject>
      */
@@ -369,16 +400,24 @@ class OperationGenerator
                 \sprintf(
                     'The maximum number of requests allowed within the time window (%d seconds).',
                     $route->getRateLimit()->getWindowInSeconds()
-                )
+                ),
+                false,
+                ['type' => 'integer', 'example' => $route->getRateLimit()->getMaxAttempts()]
             );
             $headers['X-RateLimit-Remaining'] = new HeaderObject(
-                'The number of requests remaining in the current time window.'
+                'The number of requests remaining in the current time window.',
+                false,
+                ['type' => 'integer', 'minimum' => 0]
             );
             $headers['X-RateLimit-Reset'] = new HeaderObject(
-                'The UTC epoch timestamp (in seconds) when the rate limit window resets.'
+                'The UTC epoch timestamp (in seconds) when the rate limit window resets.',
+                false,
+                ['type' => 'integer', 'format' => 'int64']
             );
             $headers['Retry-After'] = new HeaderObject(
-                'The UTC epoch timestamp (in seconds) after which the client may retry. Present only when the rate limit has been exceeded.'
+                'The UTC epoch timestamp (in seconds) after which the client may retry. Present only when the rate limit has been exceeded.',
+                false,
+                ['type' => 'integer', 'format' => 'int64']
             );
         }
 

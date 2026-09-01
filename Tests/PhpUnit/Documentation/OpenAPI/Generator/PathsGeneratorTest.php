@@ -26,6 +26,9 @@ use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @extends AbstractApivalkController<PathsTestRequest>
+ */
 class PathsTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -43,7 +46,7 @@ class PathsTestController extends AbstractApivalkController
         return [];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(PathsTestRequest $request): AbstractApivalkResponse
     {
         return new class extends AbstractApivalkResponse {
             public static function getDocumentation(): ApivalkResponseDocumentation

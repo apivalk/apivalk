@@ -8,11 +8,11 @@ use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Pagination\PagePaginationResponse;
 use apivalk\apivalk\Router\RateLimit\IpRateLimit;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
 use apivalk\apivalk\Router\Route\Route;
@@ -20,6 +20,9 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerListRequest;
 
+/**
+ * @extends AbstractApivalkController<CustomerListRequest>
+ */
 class ListCustomersController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -27,10 +30,10 @@ class ListCustomersController extends AbstractApivalkController
         return Route::get('/v1/api/customers')
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers'], ['api:customers:read']))
             ->filtering([
-                StringFilter::like(new StringProperty('first_name', 'First name')),
-                StringFilter::like(new StringProperty('last_name', 'Last name')),
-                StringFilter::equals(new StringProperty('email', 'Email address')),
-                EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'inactive', 'pending'])),
+                new StringFilter(new StringProperty('first_name', 'First name'), Operator::LIKE),
+                new StringFilter(new StringProperty('last_name', 'Last name'), Operator::LIKE),
+                new StringFilter(new StringProperty('email', 'Email address'), Operator::EQ),
+                new EnumFilter(new EnumProperty('status', 'Status', ['active', 'inactive', 'pending']), Operator::EQ),
             ])
             ->sorting([
                 Sort::asc('last_name'),
@@ -39,7 +42,8 @@ class ListCustomersController extends AbstractApivalkController
                 Sort::asc('email'),
             ])
             ->pagination(Pagination::page()->setMaxLimit(100))
-            ->rateLimit(new IpRateLimit('list-customers', 60, 60));
+            ->rateLimit(new IpRateLimit('list-customers', 60, 60))
+            ->enableQuery();
     }
 
     public static function getRequestClass(): string
@@ -52,7 +56,7 @@ class ListCustomersController extends AbstractApivalkController
         return [CustomerListResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(CustomerListRequest $request): AbstractApivalkResponse
     {
         $customers = self::fixtures();
         $customers = $this->applyFilters($customers, $request);
@@ -66,34 +70,34 @@ class ListCustomersController extends AbstractApivalkController
 
     /**
      * @param array<int, array<string, mixed>> $customers
+     *
      * @return array<int, array<string, mixed>>
      */
-    private function applyFilters(array $customers, ApivalkRequestInterface $request): array
+    private function applyFilters(array $customers, CustomerListRequest $request): array
     {
-        $filterBag = $request->filtering();
+        $filters = $request->filtering();
 
-        $firstNameFilter = $filterBag->get('first_name');
-        if ($firstNameFilter !== null && $firstNameFilter->getValue() !== null) {
-            $needle = strtolower((string) $firstNameFilter->getValue());
+        $firstName = $filters->first_name->like;
+        if ($firstName !== null) {
+            $needle = strtolower($firstName);
             $customers = array_values(array_filter($customers, fn(array $c): bool => strpos(strtolower($c['first_name']), $needle) !== false));
         }
 
-        $lastNameFilter = $filterBag->get('last_name');
-        if ($lastNameFilter !== null && $lastNameFilter->getValue() !== null) {
-            $needle = strtolower((string) $lastNameFilter->getValue());
+        $lastName = $filters->last_name->like;
+        if ($lastName !== null) {
+            $needle = strtolower($lastName);
             $customers = array_values(array_filter($customers, fn(array $c): bool => strpos(strtolower($c['last_name']), $needle) !== false));
         }
 
-        $emailFilter = $filterBag->get('email');
-        if ($emailFilter !== null && $emailFilter->getValue() !== null) {
-            $needle = strtolower((string) $emailFilter->getValue());
+        $email = $filters->email->equal;
+        if ($email !== null) {
+            $needle = strtolower($email);
             $customers = array_values(array_filter($customers, fn(array $c): bool => strtolower($c['email']) === $needle));
         }
 
-        $statusFilter = $filterBag->get('status');
-        if ($statusFilter !== null && $statusFilter->getValue() !== null) {
-            $needle = (string) $statusFilter->getValue();
-            $customers = array_values(array_filter($customers, fn(array $c): bool => $c['status'] === $needle));
+        $status = $filters->status->equal;
+        if ($status !== null) {
+            $customers = array_values(array_filter($customers, fn(array $c): bool => $c['status'] === $status));
         }
 
         return $customers;
@@ -103,7 +107,7 @@ class ListCustomersController extends AbstractApivalkController
      * @param array<int, array<string, mixed>> $customers
      * @return array<int, array<string, mixed>>
      */
-    private function applySorts(array $customers, ApivalkRequestInterface $request): array
+    private function applySorts(array $customers, CustomerListRequest $request): array
     {
         $sorts = $request->sorting()->getRequested();
         if (empty($sorts)) {

@@ -17,5 +17,8 @@ interface MethodInterface
     /** @var string */
     public const METHOD_PATCH = 'PATCH';
 
+    /** @var string */
+    public const METHOD_QUERY = 'QUERY';
+
     public function getName(): string;
 }

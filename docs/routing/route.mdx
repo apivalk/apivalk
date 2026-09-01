@@ -237,20 +237,35 @@ use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 
 public static function getRoute(): Route
 {
     return Route::get('/v1/users')
                   ->description('List users')
                   ->filtering([
-                      EnumFilter::equals(new EnumProperty('status', 'Filter by status', ['active', 'inactive'])),
-                      StringFilter::in(new StringProperty('type', 'Filter by type (in)')),
-                      DateFilter::greaterThan(new DateProperty('created_at', 'Filter by creation date (greater than)'))
+                      new EnumFilter(new EnumProperty('status', 'Status', ['active', 'inactive']), Operator::EQ),
+                      new StringFilter(new StringProperty('type', 'Type'), Operator::IN),
+                      new DateFilter(new DateProperty('created_at', 'Creation date'), Operator::GT, Operator::LT)
                   ]);
 }
 ```
 
-The `filtering()` method also defines the **allowed filters** for the route. Only configured filters will be automatically resolved from the query string and documented in OpenAPI. See the [Filtering](/http/filtering) guide for more details.
+One filter per field, with the operators that field accepts. Only configured fields are resolved from the request and documented in OpenAPI, and a field name that collides with `order_by`, `offset`, `cursor`, `page` or `limit` is rejected when the route is built. See the [Filtering](/http/filtering) guide for more details.
+
+## QUERY Requests
+
+`enableQuery()` makes a filtered route additionally reachable as an [RFC 10008](https://datatracker.ietf.org/doc/rfc10008/) `QUERY` request, where the filters arrive as a JSON body instead of a query string:
+
+```php
+return Route::get('/v1/users')
+              ->filtering([...])
+              ->enableQuery();
+```
+
+The route stays a `GET` route with the same controller; it is simply indexed under both methods. The generated spec gains a `query` operation whose `requestBody` mirrors the filter schemas.
+
+It is opt-in because gateways that do not know the method drop such requests before they reach your application, and because SDK generators would otherwise emit two calls for the same read.
 
 ## Excluding a Route from Documentation
 

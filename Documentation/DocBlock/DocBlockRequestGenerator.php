@@ -57,8 +57,15 @@ final class DocBlockRequestGenerator
             $sortingShape->addCustomField($ordering->getField(), '\\' . Sort::class);
         }
 
+        $filterFieldShapes = [];
         foreach ($route->getFilters() as $filter) {
-            $filteringShape->addCustomField($filter->getField(), '\\' . \get_class($filter));
+            $fieldShape = FilterShapeFactory::build($requestName, $filter);
+            $filterFieldShapes[] = $fieldShape;
+            $filteringShape->addCustomField($filter->getField(), $fieldShape->getClassName());
+        }
+
+        if ($filterFieldShapes !== []) {
+            FilterShapeFactory::decorateBagShape($filteringShape);
         }
 
         $paginatorClass = null;
@@ -76,7 +83,7 @@ final class DocBlockRequestGenerator
             }
         }
 
-        return new DocBlockRequest(
+        $docBlockRequest = new DocBlockRequest(
             $bodyShape,
             $pathShape,
             $queryShape,
@@ -85,5 +92,8 @@ final class DocBlockRequestGenerator
             $paginatorClass,
             $fileShape
         );
+        $docBlockRequest->setFilterFieldShapes($filterFieldShapes);
+
+        return $docBlockRequest;
     }
 }

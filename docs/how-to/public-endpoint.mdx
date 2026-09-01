@@ -132,7 +132,7 @@ class GetHealthController extends AbstractApivalkController
         return [GetHealthResponse::class];
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(GetHealthRequest $request): AbstractApivalkResponse
     {
         return new GetHealthResponse();
     }

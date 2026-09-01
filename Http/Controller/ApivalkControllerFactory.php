@@ -25,6 +25,8 @@ class ApivalkControllerFactory implements ApivalkControllerFactoryInterface
                 );
             }
 
+            self::assertInvokable($controller, $controllerClass);
+
             return $controller;
         }
 
@@ -39,6 +41,24 @@ class ApivalkControllerFactory implements ApivalkControllerFactoryInterface
             );
         }
 
+        self::assertInvokable($controller, $controllerClass);
+
         return $controller;
+    }
+
+    /**
+     * AbstractApivalkController cannot declare __invoke() abstractly without pinning every
+     * controller to the interface parameter, so the contract is checked here as well as in
+     * RouteCacheFactory. Without it a missing __invoke() surfaces as "object is not callable"
+     * from inside the middleware stack.
+     */
+    private static function assertInvokable(AbstractApivalkController $controller, string $controllerClass): void
+    {
+        if (!\is_callable($controller)) {
+            throw new \LogicException(\sprintf(
+                'Controller "%s" has no __invoke() method.',
+                $controllerClass
+            ));
+        }
     }
 }

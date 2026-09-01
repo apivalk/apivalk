@@ -1,9 +1,9 @@
 ---
 title: "Add filtering to a list endpoint"
-description: "Declare typed filters on a route, validate client input automatically, and read the resolved values with the right PHP type inside your controller."
+description: "Declare which operators a field accepts, let the framework validate and resolve them, and read typed values in your controller."
 ---
 
-Filtering in Apivalk is route-level: you tell the route which filters it accepts, the framework validates and resolves them, and your controller reads typed values from `$request->filtering()`.
+Filtering in Apivalk is route-level: you tell the route which fields are filterable and which operators each one accepts, the framework validates and resolves what the client sends, and your controller reads typed values from `$request->filtering()`.
 
 ## 1. Declare filters on the route
 
@@ -15,6 +15,7 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
 use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Route;
 
@@ -22,106 +23,127 @@ public static function getRoute(): Route
 {
     return Route::get('/api/v1/animals')
         ->filtering([
-            EnumFilter::equals(new EnumProperty('status', 'Lifecycle status', ['active', 'archived'])),
-            StringFilter::contains(new StringProperty('name', 'Name contains')),
-            IntegerFilter::greaterThan(new IntegerProperty('age', 'Minimum age (years)')),
-            DateFilter::greaterThan(new DateProperty('born_after', 'Born on or after')),
+            new EnumFilter(new EnumProperty('status', 'Lifecycle status', ['active', 'archived']), Operator::EQ, Operator::IN),
+            new StringFilter(new StringProperty('name', 'Name'), Operator::CONTAINS),
+            new IntegerFilter(new IntegerProperty('age', 'Age in years'), Operator::GTE, Operator::LTE),
+            new DateFilter(new DateProperty('born_at', 'Date of birth'), Operator::GT, Operator::LT, Operator::NULL),
         ]);
 }
 ```
 
-Each factory (`::equals`, `::in`, `::like`, `::contains`, `::greaterThan`, `::lessThan`) binds a filter operator to a property. Not all filters support all operators — match them by type:
+One filter per field, however many operators that field should accept. The first operator is also the one flat notation resolves to, so `?status=active` means `status[eq]=active` above.
+
+A filter class only accepts operators that make sense for its type. `new StringFilter($property, Operator::GTE)` throws when the route is built, listing what is supported:
 
 | Filter class | Operators |
 |---|---|
-| `StringFilter` | `equals`, `in`, `like`, `contains` |
-| `EnumFilter` | `equals`, `in` |
-| `IntegerFilter`, `FloatFilter`, `DateFilter`, `DateTimeFilter` | `equals`, `in`, `greaterThan`, `lessThan` |
-| `ByteFilter`, `BinaryFilter` | `equals`, `in` |
-| `BooleanFilter` | `equals` |
+| `IntegerFilter`, `FloatFilter`, `DateFilter`, `DateTimeFilter` | `EQ`, `NEQ`, `IN`, `GT`, `GTE`, `LT`, `LTE`, `NULL` |
+| `StringFilter` | `EQ`, `NEQ`, `IN`, `LIKE`, `CONTAINS`, `NULL` |
+| `EnumFilter`, `ByteFilter`, `BinaryFilter` | `EQ`, `NEQ`, `IN`, `NULL` |
+| `BooleanFilter` | `EQ`, `NULL` |
 
-## 2. Clients send filters in the query string
+## 2. Clients pick the operator
 
-Two formats are supported — both work identically on the server.
-
-**Flat** — each filter is a top-level parameter:
 ```
-GET /api/v1/animals?status=active&name=leo&age=3&born_after=2020-01-01
-```
-
-**Bracket** — filters are nested under a `filter` key:
-```
-GET /api/v1/animals?filter[status]=active&filter[name]=leo
+GET /api/v1/animals?age[gte]=3&age[lte]=10
+GET /api/v1/animals?status[in]=active,archived
+GET /api/v1/animals?born_at[null]=true
+GET /api/v1/animals?status=active
 ```
 
-Both formats produce the same `FilterBag`. If the same field is present in both (e.g. `?status=flat&filter[status]=bracket`), the flat value wins.
+The last one is flat notation, a shortcut for the first declared operator. `IN` takes a comma-separated list. `NULL` takes a boolean: `true` matches null values, `false` matches non-null ones.
 
-`RequestValidationMiddleware` rejects anything you didn't declare. Wrong type (`age=not-an-integer`) → `422`. Unknown filter (`?foo=bar` where `foo` isn't declared) is silently ignored.
+`RequestValidationMiddleware` rejects with `422` when the client sends an operator the field does not declare, a value of the wrong type, or a combination that can never match such as `age[gte]=10&age[lte]=3`. A parameter you never declared as a filter is ignored.
 
 ## 3. Read values in the controller
 
-`$request->filtering()` returns a `FilterBag`. Each filter exposes its operator via the `isType*()` methods and its value via `getValue()`, already cast to the correct PHP type.
+Every operator you declared is a typed property on the filter. Name your own request class in `__invoke()`, otherwise the generated shapes cannot resolve (see [Typing `$request`](/http/controller)):
 
 ```php
-public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+public function __invoke(ListAnimalsRequest $request): AbstractApivalkResponse
 {
     $filters = $request->filtering();
 
     $qb = $this->animals->query();
 
-    if ($filters->has('status')) {
-        $qb->where('status', '=', $filters->status->getValue()); // string
+    if ($filters->status->has(Operator::EQ)) {
+        $qb->where('status', '=', $filters->status->equal);         // string
     }
 
-    if ($filters->has('name')) {
-        $qb->where('name', 'LIKE', '%' . $filters->name->getValue() . '%'); // string
+    foreach ($filters->status->in as $status) {                     // string[]
+        $qb->orWhere('status', '=', $status);
     }
 
-    if ($filters->has('age')) {
-        $qb->where('age', '>', $filters->age->getValue()); // int
+    if ($filters->age->greaterThanOrEqual !== null) {
+        $qb->where('age', '>=', $filters->age->greaterThanOrEqual); // int
     }
 
-    if ($filters->has('born_after')) {
-        $qb->where('born_at', '>=', $filters->born_after->getValue()); // \DateTime
+    if ($filters->born_at->isNull === true) {
+        $qb->whereNull('born_at');
     }
 
     // ...
 }
 ```
 
-If the client didn't send a filter, `$filters->has('name')` returns `false` and `$filters->name` returns `null` — the bag is not populated with defaults for filters (unlike sorting).
+| Operator | Property |
+|---|---|
+| `Operator::EQ` | `equal` |
+| `Operator::NEQ` | `notEqual` |
+| `Operator::IN` | `in` |
+| `Operator::GT` | `greaterThan` |
+| `Operator::GTE` | `greaterThanOrEqual` |
+| `Operator::LT` | `lessThan` |
+| `Operator::LTE` | `lessThanOrEqual` |
+| `Operator::LIKE` | `like` |
+| `Operator::CONTAINS` | `contains` |
+| `Operator::NULL` | `isNull` |
+
+`has(Operator::EQ)` answers whether the client supplied that operator, which is what you want for boolean and integer filters where `false` and `0` are legitimate values. `raw(Operator::EQ)` returns the literal string the client sent, useful for audit logs.
+
+Reading an operator the field does not declare throws a `LogicException`. That is a mistake in your code, not client input, so it fails loudly on the first run.
 
 ## 4. Iterate when you want to apply them generically
 
 ```php
 foreach ($filters as $field => $filter) {
-    $operator = $filter->getType();        // 'equals' | 'in' | 'contains' | ...
-    $value    = $filter->getValue();       // already typed
-
-    // fan out to your query builder
+    foreach ($filter->conditions() as $operator => $value) {
+        // $operator is 'eq' | 'gte' | 'in' | …, $value is already typed
+        $qb->where($field, $this->toSqlOperator($operator), $value);
+    }
 }
 ```
 
 ## Inside a resource
 
-Resources expose `availableFilters()`:
+Resources expose `availableFilters()`, and `AbstractListResourceController` wires them into the route:
 
 ```php
 public function availableFilters(): array
 {
     return [
-        EnumFilter::equals(new EnumProperty('status', 'Status', ['active', 'archived'])),
-        StringFilter::contains(new StringProperty('name', 'Name contains')),
+        new EnumFilter(new EnumProperty('status', 'Status', ['active', 'archived']), Operator::EQ),
+        new StringFilter(new StringProperty('name', 'Name'), Operator::CONTAINS),
     ];
 }
 ```
 
-`AbstractListResourceController` wires them into the route for you — the controller reads from `$request->filtering()` exactly the same way. See [the resource CRUD how-to](/how-to/resource-crud).
+See [the resource CRUD how-to](/how-to/resource-crud).
 
-## OpenAPI side effects
+## Filters as a request body
 
-Apivalk generates a single `filter` parameter of type `object` with `style: deepObject`. Each declared filter becomes a named property inside that object. Swagger UI renders each property as a separate input labelled `filter[field]` — matching the bracket notation clients should use. Both flat (`?status=active`) and bracket (`?filter[status]=active`) notation work at runtime; bracket is the documented canonical form.
+Add `->enableQuery()` to the route to also accept it as an [RFC 10008](https://datatracker.ietf.org/doc/rfc10008/) `QUERY` request, where the filters arrive as JSON:
+
+```
+QUERY /api/v1/animals
+
+{"age": {"gte": 3, "lte": 10}, "status": {"in": ["active", "archived"]}}
+```
+
+Same declaration, same `FilterBag`, same validation. Sending both a body and query-string filters on one request is a `422`.
+
+It is opt-in because a gateway that does not know the method drops the request before it reaches you, and because generated SDKs would otherwise expose two calls for the same read.
 
 ## Reference
 
-Full operator / property matrix lives at [HTTP / Filtering](/http/filtering).
+Full matrix at [HTTP / Filtering](/http/filtering).

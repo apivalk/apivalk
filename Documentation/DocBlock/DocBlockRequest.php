@@ -13,6 +13,8 @@ class DocBlockRequest
     private DocBlockShape $filteringShape;
     private ?string $paginatorClass;
     private ?DocBlockShape $fileShape;
+    /** @var DocBlockShape[] */
+    private array $filterFieldShapes = [];
 
     public function __construct(
         DocBlockShape $bodyShape,
@@ -30,6 +32,20 @@ class DocBlockRequest
         $this->filteringShape = $filteringShape;
         $this->paginatorClass = $paginatorClass;
         $this->fileShape = $fileShape;
+    }
+
+    /**
+     * @param DocBlockShape[] $shapes
+     */
+    public function setFilterFieldShapes(array $shapes): void
+    {
+        $this->filterFieldShapes = $shapes;
+    }
+
+    /** @return DocBlockShape[] */
+    public function getFilterFieldShapes(): array
+    {
+        return $this->filterFieldShapes;
     }
 
     public function getBodyShape(): DocBlockShape
@@ -71,7 +87,7 @@ class DocBlockRequest
             ' * @method \\apivalk\\apivalk\\Http\\Request\\Parameter\\ParameterBag|\\' . $shapeNamespace . '\\' . $this->pathShape->getClassName() . ' path()',
             ' * @method \\apivalk\\apivalk\\Http\\Request\\Parameter\\ParameterBag|\\' . $shapeNamespace . '\\' . $this->bodyShape->getClassName() . ' body()',
             ' * @method \\apivalk\\apivalk\\Router\\Route\\Sort\\SortBag|\\' . $shapeNamespace . '\\' . $this->sortingShape->getClassName() . ' sorting()',
-            ' * @method \\apivalk\\apivalk\\Router\\Route\\Filter\\FilterBag|\\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()',
+            ' * @method \\' . $shapeNamespace . '\\' . $this->filteringShape->getClassName() . ' filtering()',
         ];
 
         if ($this->hasFileShape()) {
@@ -103,6 +119,11 @@ class DocBlockRequest
         // Requests without uploads must not get an empty file shape written next to them.
         if ($this->hasFileShape()) {
             $filenames['file'] = \sprintf('%s/Shape/%s.php', $requestFolder, $this->fileShape->getClassName());
+        }
+
+        foreach ($this->filterFieldShapes as $shape) {
+            $filenames[$shape->getClassName()] =
+                \sprintf('%s/Shape/%s.php', $requestFolder, $shape->getClassName());
         }
 
         return $filenames;

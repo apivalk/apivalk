@@ -38,6 +38,12 @@ final class ParameterBagFactory
                 continue;
             }
 
+            if (\is_array($value) && self::isFilterField($route, (string)$key)) {
+                // Bracket notation (`field[gte]=…`). FilteringPopulationStrategy owns it,
+                // and the scalar cast below has no meaning for it.
+                continue;
+            }
+
             if (isset($queryProperties[$key])) {
                 $queryBag->set(
                     new Parameter(
@@ -66,6 +72,17 @@ final class ParameterBagFactory
         }
 
         return $queryBag;
+    }
+
+    private static function isFilterField(Route $route, string $key): bool
+    {
+        foreach ($route->getFilters() as $filter) {
+            if ($filter->getField() === $key) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

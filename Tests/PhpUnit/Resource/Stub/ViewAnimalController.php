@@ -6,7 +6,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Resource\Stub;
 
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\Resource\ResourceViewResponse;
 use apivalk\apivalk\Router\Route\Route;
@@ -25,7 +25,7 @@ class ViewAnimalController extends AbstractViewResourceController
         return AnimalResource::class;
     }
 
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         $animal = AnimalResource::byArray([
             'animal_uuid' => $request->path()->animal_uuid,

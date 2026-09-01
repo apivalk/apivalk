@@ -14,6 +14,8 @@ The `DocBlockGenerator` automates the creation of this metadata. It performs the
 1. **Discovery**: Scans your API directories for classes extending `AbstractApivalkController`.
 2. **Extraction**: Executes the `getRequestClass()` and `getRoute()` methods on the Controller to find the associated Request class and its properties.
 3. **Shape Generation**: Creates "Shape" classes (e.g., `GetUserBodyShape`, `GetUserSortingShape`, `GetUserFilteringShape`) in a `Shape/` subdirectory. These classes contain public properties representing your documentation and route-defined sorting/filtering.
+
+   Filtering gets one extra interface per field (`GetUserFilterStatusShape`), listing only the operators that field declares, so `$request->filtering()->status->` offers `equal` but not `like` when the route only allows `EQ`. The filtering shape names those field shapes and carries the `FilterBag` API itself, which is why its `@method` entry has no `FilterBag|` union: a union would resolve every field through `FilterBag::__get()` as well and report `FilterInterface|null` next to the field shape.
 4. **Rewrite**: Updates the original Request class file with `@method` tags pointing to these Shape classes.
 
 ## Example Result
@@ -34,7 +36,7 @@ After running `DocBlockGenerator`, it is automatically updated to:
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserPathShape path()
  * @method \apivalk\apivalk\Http\Request\Parameter\ParameterBag|Shape\GetUserBodyShape body()
  * @method \apivalk\apivalk\Router\Route\Sort\SortBag|Shape\GetUserSortingShape sorting()
- * @method \apivalk\apivalk\Router\Route\Filter\FilterBag|Shape\GetUserFilteringShape filtering()
+ * @method Shape\GetUserFilteringShape filtering()
  * @method \apivalk\apivalk\Router\Route\Pagination\Paginator|null paginator()
  */
 class GetUserRequest extends AbstractApivalkRequest {
