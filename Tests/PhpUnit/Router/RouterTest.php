@@ -126,10 +126,7 @@ class RouterTest extends TestCase
             return null;
         });
 
-        $controller = $this->getMockBuilder($controllerClass)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->controllerFactory->method('create')->with($controllerClass)->willReturn($controller);
+        $this->controllerFactory->method('create')->with($controllerClass)->willReturn(new $controllerClass());
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/test';

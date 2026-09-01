@@ -75,6 +75,12 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('user', $route2->getPathProperties());
     }
 
+    public function testExcludeFromDocumentation(): void
+    {
+        $this->assertFalse(Route::get('/users')->isExcludedFromDocumentation());
+        $this->assertTrue(Route::get('/internal')->excludeFromDocumentation()->isExcludedFromDocumentation());
+    }
+
     public function testPathPropertyJsonRoundTrip(): void
     {
         $route = Route::get('/sessions/{session_uuid}')

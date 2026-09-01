@@ -78,6 +78,10 @@ class OpenAPIGenerator
         $routeMapping = [];
 
         foreach ($this->apivalk->getRouter()->getRoutes() as $route) {
+            if ($route['route']->isExcludedFromDocumentation()) {
+                continue;
+            }
+
             $routeMapping[$route['route']->getUrl()][] =
                 ['route' => $route['route'], 'controllerClass' => $route['controllerClass']];
         }

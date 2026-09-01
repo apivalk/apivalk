@@ -423,6 +423,27 @@ class RouteJsonSerializerTest extends TestCase
         }
     }
 
+    public function testExcludedFromDocumentationRoundTrip(): void
+    {
+        $route = Route::get('/internal')->excludeFromDocumentation();
+
+        $serialized = RouteJsonSerializer::serialize($route);
+        $this->assertTrue($serialized['excludedFromDocumentation']);
+
+        $this->assertTrue($this->serializeAndDeserialize($route)->isExcludedFromDocumentation());
+        $this->assertFalse($this->serializeAndDeserialize(Route::get('/users'))->isExcludedFromDocumentation());
+    }
+
+    public function testDeserializeCacheEntryWithoutExclusionFlag(): void
+    {
+        $serialized = RouteJsonSerializer::serialize(Route::get('/users'));
+        unset($serialized['excludedFromDocumentation']);
+
+        $deserialized = RouteJsonSerializer::deserialize(json_encode($serialized));
+
+        $this->assertFalse($deserialized->isExcludedFromDocumentation());
+    }
+
     /**
      * @param FilterInterface[] $filters
      */

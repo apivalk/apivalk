@@ -58,7 +58,8 @@ class RouteJsonSerializer
      *          class: class-string<AbstractProperty>,
      *          name: string,
      *          description: string
-     *     }>|null
+     *     }>|null,
+     *     excludedFromDocumentation: bool
      * }
      */
     public static function serialize(Route $route): array
@@ -132,6 +133,7 @@ class RouteJsonSerializer
             'pagination' => $paginationData ?? null,
             'filters' => $filtersData ?? null,
             'pathProperties' => $pathPropertiesData ?? null,
+            'excludedFromDocumentation' => $route->isExcludedFromDocumentation(),
         ];
     }
 
@@ -221,6 +223,10 @@ class RouteJsonSerializer
             foreach ($pathPropertiesData as $data) {
                 $route->pathProperty(PropertySerializer::deserialize($data));
             }
+        }
+
+        if ($jsonArray['excludedFromDocumentation'] ?? false) {
+            $route->excludeFromDocumentation();
         }
 
         return $route;
