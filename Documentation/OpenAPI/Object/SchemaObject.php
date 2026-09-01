@@ -119,10 +119,18 @@ class SchemaObject implements ObjectInterface
             ];
         }
 
-        return [
-            'type' => $this->type,
-            'required' => $requiredPropertyNames,
-            'properties' => $properties
-        ];
+        $schema = ['type' => $this->type];
+
+        // An empty PHP array serialises to `[]`, but both keywords must be objects in JSON
+        // Schema, and an empty `required` carries no meaning either. Omit them instead.
+        if ($requiredPropertyNames !== []) {
+            $schema['required'] = $requiredPropertyNames;
+        }
+
+        if ($properties !== []) {
+            $schema['properties'] = $properties;
+        }
+
+        return $schema;
     }
 }

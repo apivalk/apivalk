@@ -262,7 +262,7 @@ class ValidationIntegrationTest extends TestCase
     public function testBody_nonResourceUpdateRequiresExplicitFields_returns422WithEmptyBody(): void
     {
         // Non-resource controllers (CustomerUpdateRequest) define required fields explicitly → empty body fails
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], [], 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], [], 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 

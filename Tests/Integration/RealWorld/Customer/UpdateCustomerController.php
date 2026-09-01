@@ -19,7 +19,7 @@ class UpdateCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
     {
-        return Route::patch('/v1/api/customers/{customer_id}')
+        return Route::put('/v1/api/customers/{customer_id}')
             ->pathProperty(
                 (new IntegerProperty('customer_id', 'Customer integer ID'))->setMinimumValue(1)
             )

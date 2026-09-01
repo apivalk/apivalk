@@ -400,16 +400,24 @@ class OperationGenerator
                 \sprintf(
                     'The maximum number of requests allowed within the time window (%d seconds).',
                     $route->getRateLimit()->getWindowInSeconds()
-                )
+                ),
+                false,
+                ['type' => 'integer', 'example' => $route->getRateLimit()->getMaxAttempts()]
             );
             $headers['X-RateLimit-Remaining'] = new HeaderObject(
-                'The number of requests remaining in the current time window.'
+                'The number of requests remaining in the current time window.',
+                false,
+                ['type' => 'integer', 'minimum' => 0]
             );
             $headers['X-RateLimit-Reset'] = new HeaderObject(
-                'The UTC epoch timestamp (in seconds) when the rate limit window resets.'
+                'The UTC epoch timestamp (in seconds) when the rate limit window resets.',
+                false,
+                ['type' => 'integer', 'format' => 'int64']
             );
             $headers['Retry-After'] = new HeaderObject(
-                'The UTC epoch timestamp (in seconds) after which the client may retry. Present only when the rate limit has been exceeded.'
+                'The UTC epoch timestamp (in seconds) after which the client may retry. Present only when the rate limit has been exceeded.',
+                false,
+                ['type' => 'integer', 'format' => 'int64']
             );
         }
 

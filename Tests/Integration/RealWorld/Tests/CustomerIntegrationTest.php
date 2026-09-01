@@ -679,47 +679,47 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_validBody_returns200(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_withoutToken_returns401(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY);
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY);
         $this->assertSame(401, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_withReadOnlyToken_returns403(): void
     {
         $response =
-            $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
+            $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'read-only-token');
         $this->assertSame(403, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_missingRequiredField_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['first_name' => '']);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_firstNameTooLong_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['first_name' => str_repeat('a', 101)]);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_emptyLastName_returns422(): void
     {
         $body = array_merge(self::VALID_CUSTOMER_BODY, ['last_name' => '']);
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], $body, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], $body, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_pathCustomerIdPropagated(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/42', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(200, $response->getStatusCode());
         $data = $response->toArray();
         $this->assertSame(42, $data['data']['customer_id']);
@@ -727,20 +727,20 @@ class CustomerIntegrationTest extends TestCase
 
     public function testUpdateCustomer_customerIdZero_returns422(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/0', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/0', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_customerIdNonInteger_returns422(): void
     {
-        $response = $this->makeRequest('PATCH', '/v1/api/customers/abc', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+        $response = $this->makeRequest('PUT', '/v1/api/customers/abc', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(422, $response->getStatusCode());
     }
 
     public function testUpdateCustomer_unknownCustomerId_returns404(): void
     {
         $response =
-            $this->makeRequest('PATCH', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
+            $this->makeRequest('PUT', '/v1/api/customers/99999', [], self::VALID_CUSTOMER_BODY, 'admin-token');
         $this->assertSame(404, $response->getStatusCode());
     }
 
