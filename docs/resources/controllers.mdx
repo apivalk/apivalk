@@ -7,13 +7,23 @@ description: "Five abstract controllers — Create, View, Update, Delete, List �
 
 | Base class | HTTP | Default response |
 |---|---|---|
-| `AbstractCreateResourceController` | `POST` | `ResourceCreatedResponse` (201) |
+| `AbstractCreateResourceController` | `POST` or `PUT` | `ResourceCreatedResponse` (201) |
 | `AbstractViewResourceController` | `GET` | `ResourceViewResponse` (200) |
 | `AbstractUpdateResourceController` | `PATCH` | `ResourceUpdatedResponse` (200) |
 | `AbstractDeleteResourceController` | `DELETE` | `DeletedApivalkResponse` (200) |
 | `AbstractListResourceController` | `GET` | `ResourceListResponse` (200) |
 
 All five are generic over the resource type: `@template TResource of AbstractResource`. Declare the concrete type via the `@extends` annotation so static analysis and IDE autocompletion work.
+
+**The HTTP column is enforced, not a convention.** Each controller derives its request and response documentation from the method it is built for, so a mismatch would publish a contract the controller does not implement. A `buildRoute()` returning the wrong method throws an `InvalidArgumentException` while the route cache is built, meaning at boot rather than at request time:
+
+```
+InvalidArgumentException: Controller "App\Http\Controller\Animal\UpdateAnimalController" must return
+a PATCH route from buildRoute(), got "PUT" for "/api/v1/animals/{animal_uuid}". Update resource
+controllers apply partial-update semantics.
+```
+
+Create accepts both `POST` and `PUT` because it keeps the resource's required properties required, which is correct for a create *and* for a full replace. See [Partial vs full update](#partial-vs-full-update-patch-vs-put).
 
 ## What You Write
 
@@ -27,7 +37,7 @@ The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmp
 
 ### Route declaration: `buildRoute()`
 
-All five resource controllers use `buildRoute()` — never implement `getRoute()` directly. The base class provides a final `getRoute()` that calls your `buildRoute()` and auto-injects extras:
+All five resource controllers use `buildRoute()` — never implement `getRoute()` directly. The base class provides a `getRoute()` that calls your `buildRoute()` and auto-injects extras:
 
 | Controller | Auto-injected into your `buildRoute()` result |
 |---|---|
@@ -319,6 +329,97 @@ final class ListAnimalController extends AbstractListResourceController
     }
 }
 ```
+
+## Partial vs Full Update (PATCH vs PUT)
+
+`AbstractUpdateResourceController` documents **every body property as optional**, so a client may send only the fields it wants to change. That is PATCH semantics ([RFC 5789](https://www.rfc-editor.org/rfc/rfc5789)), and it is only correct for PATCH. A PUT route on the same controller would advertise a full replace while accepting a partial body.
+
+To keep the two from drifting apart, `getRoute()` rejects anything but PATCH:
+
+```php
+protected static function buildRoute(): Route
+{
+    return Route::put('/api/v1/animals/{animal_uuid}'); // throws
+}
+```
+
+Path parameters stay required in both cases — `pathProperty()` always enforces `isRequired(true)`, because the route only matches when the segment is present.
+
+### Building a PUT endpoint
+
+There is no dedicated PUT resource controller, because full replace and upsert are per-API decisions rather than framework defaults. Build one on `AbstractCreateResourceController`: it resolves to `MODE_CREATE`, which leaves the resource's required properties required — exactly the full-replace semantics PUT needs, and its method guard accepts `PUT` for that reason.
+
+Two things need handling that Create does not do for you:
+
+1. **Exclude the identifier from the body.** The identifier arrives in the path, so `excludeFromMode()` must drop it for `MODE_CREATE` — otherwise it is documented as required in *both* the body and the path, and clients have to send it twice.
+2. **Copy path parameters onto the resource yourself.** `AbstractCreateResourceController::getResource()` deliberately ignores path parameters (on a plain create the identifier does not exist yet). `AbstractUpdateResourceController` does copy them; Create does not.
+
+```php
+/**
+ * @extends AbstractCreateResourceController<AnimalResource>
+ */
+final class PutAnimalController extends AbstractCreateResourceController
+{
+    /** @var AnimalRepository */
+    private $repository;
+
+    public function __construct(AnimalRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public static function getResourceClass(): string
+    {
+        return AnimalResource::class;
+    }
+
+    protected static function buildRoute(): Route
+    {
+        return Route::put('/api/v1/animals/{animal_uuid}')
+            ->pathProperty(new StringProperty('animal_uuid', 'Animal UUID'))
+            ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
+    }
+
+    /** Declare both outcomes so the spec documents 200 and 201. */
+    public static function getResponseClasses(): array
+    {
+        return array_merge(parent::getResponseClasses(), [ResourceUpdatedResponse::class]);
+    }
+
+    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    {
+        $animal = $this->getResource($request);
+        $animal->animal_uuid = $request->path()->get('animal_uuid')->getValue();
+
+        if ($this->repository->exists($animal->animal_uuid)) {
+            $this->repository->replace($animal);
+
+            return new ResourceUpdatedResponse($animal);
+        }
+
+        $this->repository->create($animal);
+
+        return new ResourceCreatedResponse($animal);
+    }
+}
+```
+
+And in the resource:
+
+```php
+public function excludeFromMode(string $mode): array
+{
+    if ($mode === self::MODE_CREATE) {
+        return ['animal_uuid', 'created_at', 'updated_at'];
+    }
+
+    return [];
+}
+```
+
+<Note>
+Weigh whether you need PUT at all. Full replace is rarely what a client wants on a resource with server-generated fields, and the upsert half requires the client to pick the identifier. PATCH via `AbstractUpdateResourceController` covers most update endpoints.
+</Note>
 
 ## Nested Resources
 
