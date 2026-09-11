@@ -78,6 +78,21 @@ class ParameterBagFactoryTest extends TestCase
         $this->assertIsInt($bag->id);
     }
 
+    public function testCreatePathBagWithDotInValue(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addPathProperty(new StringProperty('key', ''));
+
+        $route = $this->createMock(Route::class);
+        $route->method('getUrl')->willReturn('/users/{key}');
+
+        $_SERVER['REQUEST_URI'] = '/users/foo.bar.foo';
+
+        $bag = ParameterBagFactory::createPathBag($route, $doc->getPathProperties());
+        $this->assertEquals('foo.bar.foo', $bag->key);
+        $this->assertIsString($bag->key);
+    }
+
     public function testCreateBodyBag(): void
     {
         $doc = new ApivalkRequestDocumentation();
