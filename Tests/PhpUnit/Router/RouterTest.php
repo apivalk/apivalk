@@ -144,6 +144,66 @@ class RouterTest extends TestCase
         $this->assertSame($expectedResponse, $response);
     }
 
+    public function testDispatchSuccessWithDotInPathProperty(): void
+    {
+        $route = new Route('/test/{path_property}', new GetMethod());
+
+        // Use a concrete controller class for mocking since static methods are hard to mock in PHPUnit 7
+        if (!class_exists('TestControllerForRouterTest')) {
+            eval(
+            '
+                class TestRequestForRouterTest extends apivalk\apivalk\Http\Request\AbstractApivalkRequest {
+                    public static function getDocumentation(): apivalk\apivalk\Documentation\ApivalkRequestDocumentation {
+                        return new apivalk\apivalk\Documentation\ApivalkRequestDocumentation();
+                    }
+                }
+
+                class TestControllerForRouterTest extends apivalk\apivalk\Http\Controller\AbstractApivalkController {
+                public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return new apivalk\apivalk\Http\Response\NotFoundApivalkResponse(); }
+                public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/", new \apivalk\apivalk\Http\Method\GetMethod()); }
+                public static function getRequestClass(): string { return "TestRequestForRouterTest"; }
+                public static function getResponseClasses(): array { return []; }
+            }'
+            );
+        }
+        $controllerClass = 'TestControllerForRouterTest';
+
+        $indexData = [
+            [
+                'regex' => RouteRegexFactory::build($route),
+                'method' => 'GET',
+                'key' => 'route_key',
+                'controllerClass' => $controllerClass
+            ]
+        ];
+
+        $cache = $this->createMock(CacheInterface::class);
+        $cache->method('get')->willReturnCallback(function ($key) use ($indexData, $route) {
+            if ($key === AbstractRouter::CACHE_INDEX_KEY) {
+                return new CacheItem(AbstractRouter::CACHE_INDEX_KEY, json_encode($indexData));
+            }
+            if ($key === 'route_key') {
+                return new CacheItem('route_key', json_encode(RouteJsonSerializer::serialize($route)));
+            }
+            return null;
+        });
+
+        $this->controllerFactory->method('create')->with($controllerClass)->willReturn(new $controllerClass());
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/test/foo.bar.foo';
+
+        $expectedResponse = $this->createMock(AbstractApivalkResponse::class);
+        $middlewareStack = $this->createMock(MiddlewareStack::class);
+        $middlewareStack->method('handle')->willReturn($expectedResponse);
+
+        $router = new Router($this->classLocator, $cache, $this->controllerFactory);
+        $router->setApivalk($this->createMock(Apivalk::class));
+        $response = $router->dispatch($middlewareStack);
+
+        $this->assertSame($expectedResponse, $response);
+    }
+
     public function testGetRoutes(): void
     {
         $route = new Route('/test', new GetMethod());

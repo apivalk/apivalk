@@ -100,7 +100,7 @@ final class ParameterBagFactory
             '/(\{[a-zA-Z0-9_]+\})|([^{]+)/',
             static function ($matches) {
                 if (!empty($matches[1])) {
-                    return '([a-zA-Z0-9-_]+)';
+                    return '([a-zA-Z0-9-_\.]+)';
                 }
 
                 return preg_quote($matches[2], '#');

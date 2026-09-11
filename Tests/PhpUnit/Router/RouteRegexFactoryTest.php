@@ -19,10 +19,10 @@ class RouteRegexFactoryTest extends TestCase
         $this->assertEquals('#^\/users$#', RouteRegexFactory::build($route));
 
         $route = new Route('/users/{id}', $method);
-        $this->assertEquals('#^\/users\/([a-zA-Z0-9_-]+)$#', RouteRegexFactory::build($route));
+        $this->assertEquals('#^\/users\/([a-zA-Z0-9_\-\.]+)$#', RouteRegexFactory::build($route));
 
         $route = new Route('/users/{id}/profile/{type}', $method);
-        $this->assertEquals('#^\/users\/([a-zA-Z0-9_-]+)\/profile\/([a-zA-Z0-9_-]+)$#', RouteRegexFactory::build($route));
+        $this->assertEquals('#^\/users\/([a-zA-Z0-9_\-\.]+)\/profile\/([a-zA-Z0-9_\-\.]+)$#', RouteRegexFactory::build($route));
     }
 
     public function testUnderscoreInParamNames(): void
@@ -30,6 +30,6 @@ class RouteRegexFactoryTest extends TestCase
         $method = new GetMethod();
 
         $route = new Route('/animals/{animal_uuid}', $method);
-        $this->assertEquals('#^\/animals\/([a-zA-Z0-9_-]+)$#', RouteRegexFactory::build($route));
+        $this->assertEquals('#^\/animals\/([a-zA-Z0-9_\-\.]+)$#', RouteRegexFactory::build($route));
     }
 }
