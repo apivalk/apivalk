@@ -78,7 +78,11 @@ This section contains upgrade guides between major versions.
 
   Delete both methods, and the `@extends AbstractApivalkController<GetPetRequest>` annotation with them, the template is gone. The same applies to the five resource controller bases, which no longer declare either.
 
-  One thing to check while migrating: a response the endpoint can answer with has to be returned somewhere in `__invoke()`, a listed-but-never-returned class is no longer documented. A controller whose body yields no response class at all fails generation with a `LogicException` naming it, rather than publishing a spec that is quietly wrong. See [Documented Responses](/http/controller).
+  Check every migrated controller against this, it is where the migration silently loses documentation: the scan is syntactic, so a response only stays documented if it is constructed with a literal `new` **inside `__invoke()` itself**. `return $this->buildResponse($pet);` and `$response = $this->service->list(); return $response;` both documented fine while `getResponseClasses()` listed them by hand, and both document nothing now. Neither fails, the endpoint simply loses that response from its spec, and a success response built in a helper leaves the operation with no `2xx` at all.
+
+  Only two mistakes are loud, both a `LogicException` naming the controller: returning an anonymous class, and an `__invoke()` that yields no response class whatsoever. A controller that builds *some* of its responses in helpers passes and ships an incomplete document.
+
+  Worth doing once across the codebase before you publish the new spec: run `ControllerResponseScanner::scan()` over every controller and compare the result against the `getResponseClasses()` list you are deleting. The diff is exactly the set of responses you are about to lose, minus the framework error responses that now come from the route instead. See [Documented Responses](/http/controller).
 
 - **Framework error responses follow the route.** `401`, `404`, `422` and `429` were appended to every operation; each is now documented only where the route can produce it, and `403` is documented wherever an authorization declares scopes or permissions. Generated specs change accordingly: authorized routes gain `403`, and routes without a rate limit, path parameter or anything to validate lose `429`, `404` and `422`. See [Automated Error Responses](/documentation/openapi-generator).
 

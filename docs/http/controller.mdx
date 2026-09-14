@@ -10,7 +10,7 @@ Every controller must extend `AbstractApivalkController` and implement two metho
 1. `getRoute()`: Defines the path and HTTP method.
 2. `__invoke()`: The main execution logic.
 
-`__invoke()` carries the documentation as well. The request class is read from its parameter, the response classes from what its body returns, so neither is declared a second time.
+`__invoke()` carries the documentation as well. The request class is read from its parameter, the response classes from the `new` expressions its body returns, so neither is declared a second time.
 
 ### Example
 
@@ -92,7 +92,17 @@ Three signatures are rejected instead, each with a `LogicException` naming the c
 
 ## Documented Responses
 
-`ControllerResponseScanner` reads the response classes out of the `__invoke()` body while the OpenAPI document is generated, never per request. It follows what the method returns:
+`ControllerResponseScanner` reads the response classes out of the `__invoke()` body while the OpenAPI document is generated, never per request.
+
+The scan is **syntactic**. It reads the source of `__invoke()` and looks for `new` expressions. It does not follow method calls, does not resolve return types, and does not run anything.
+
+<Warning>
+Every response an endpoint documents has to be constructed with a literal `new` **inside `__invoke()` itself**.
+
+A response built anywhere else, in a private helper, in a service, in a factory, is invisible to the scanner. The endpoint keeps answering with it at runtime, but the generated document no longer mentions it, and nothing warns you.
+</Warning>
+
+### What the scanner finds
 
 ```php
 return new GetPetResponse($pet);         // documented
@@ -110,9 +120,51 @@ return $pet ? new GetPetResponse($pet) : new NotFoundApivalkResponse(); // both 
 
 A response that is constructed but never returned stays out of the spec. Aliased imports, group imports, fully qualified names and classes from the controller's own namespace all resolve.
 
-Tracing a variable back only happens when it is the whole returned expression. As an argument it says nothing about what the surrounding call returns, so `return $this->decorate($response);` documents nothing about `$response`.
+### What it misses
 
-Two cases throw a `LogicException` naming the controller rather than publishing a spec that is quietly wrong: returning an anonymous class, which has no name to document, and an `__invoke()` that returns no response class at all.
+Each of these is valid PHP, answers the client correctly, and documents nothing:
+
+```php
+// A helper builds it. The scanner sees a method call, not a `new`.
+return $this->buildPetResponse($pet);
+
+// Assigned from a call rather than from `new`. There is no `new` to trace the variable back to.
+$response = $this->petService->list($filters);
+return $response;
+
+// A variable only counts as the whole returned expression, never as an argument.
+return $this->decorate($response);
+```
+
+The first two are the ones that bite in practice, and they usually hit the success response, because that is the one worth building somewhere reusable. The endpoint is then published with no `2xx` at all, carrying only the error responses [derived from its route](/documentation/openapi-generator#automated-error-responses).
+
+Move the construction into `__invoke()`. Where a collaborator assembles the data, let it return the data and build the response at the exit:
+
+```php
+$page = $this->petService->list($filters);   // returns a page of data, not a response
+
+$response = new ListPetsResponse($page->getPets());
+$response->setPaginationResponse($page->getPagination());
+
+return $response;
+```
+
+Only one thing throws: an `__invoke()` the scan finds no response class in at all. That is a `LogicException` naming the controller, rather than publishing a spec that is quietly wrong. An anonymous class has no name to put in a document and is skipped, so returning one is caught by the same rule, but only when it was the sole response.
+
+Note how little that catches. A controller that builds *every* response through a helper fails loudly. One that builds *some* of them that way, typically the success response with the error branches returned inline, scans clean and ships an incomplete document.
+
+<Tip>
+`ControllerResponseScanner::scan()` returns exactly what the generator will document, so a controller test can pin it:
+
+```php
+$this->assertContains(
+    GetPetResponse::class,
+    ControllerResponseScanner::scan(GetPetController::class)
+);
+```
+
+Worth doing for every endpoint whose success response is not a plain `return new …`.
+</Tip>
 
 The error responses the framework produces around your controller are added on top of these, derived from the route. See [OpenAPI Generator](/documentation/openapi-generator).
 

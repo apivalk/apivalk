@@ -35,7 +35,7 @@ Every resource controller implements three things:
 
 The base class provides `getEmptyResource()`. Create and Update also expose a `getResource()` helper — see below.
 
-`ResourceRequest` in the `__invoke()` signature is what makes it the request class, and the responses your `__invoke()` returns are the ones that end up in the spec. Neither is declared anywhere else.
+`ResourceRequest` in the `__invoke()` signature is what makes it the request class, and the responses your `__invoke()` constructs with `new` are the ones that end up in the spec. Neither is declared anywhere else, and a response built outside the method is [not documented](/http/controller#documented-responses).
 
 ### Route declaration: `buildRoute()`
 
@@ -477,7 +477,7 @@ If you need the raw path value directly without the helper, `$request->path()->k
 
 - `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `buildRoute()`.
 
-It does not provide a request or response class. `ResourceRequest` is the request class because your `__invoke()` names it, and the responses in the spec are the ones your `__invoke()` returns, plus the error responses the route itself can produce. See [OpenAPI Generator](/documentation/openapi-generator).
+It does not provide a request or response class. `ResourceRequest` is the request class because your `__invoke()` names it, and the responses in the spec are the ones your `__invoke()` [constructs with `new`](/http/controller#documented-responses), plus the error responses the route itself can produce. See [OpenAPI Generator](/documentation/openapi-generator).
 
 ## IDE Autocomplete via the DocBlock Generator
 

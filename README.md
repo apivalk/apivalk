@@ -103,7 +103,7 @@ final class ReadPetController extends AbstractApivalkController
         return Route::get('/v1/pets/{id}')->description('Get a pet by ID');
     }
 
-    // The parameter names the request class, the returns name the documented responses
+    // The parameter names the request class, the `new` responses it returns are the documented ones
     public function __invoke(ReadPetRequest $request): AbstractApivalkResponse
     {
         $pet = $this->petRepo->find($request->path()->id); // id is cast to int automatically
