@@ -29,6 +29,33 @@ public static function getRoute(): Route
 
 The exclusion is documentation-only. The endpoint stays reachable at runtime, so use `routeAuthorization()` to actually protect it. See [Route](/routing/route) for details.
 
+`forceIncludeExcludedRoutes()` opts back in, so the same route definitions can produce a public and an internal document:
+
+```php
+$public = (new OpenAPIGenerator($apivalk, $info))->generate();
+
+$internal = (new OpenAPIGenerator($apivalk, $info))
+    ->forceIncludeExcludedRoutes()
+    ->generate();
+```
+
+It takes an optional boolean (`forceIncludeExcludedRoutes($isInternalBuild)`) if the decision comes from a CLI flag or env var.
+
+## Filtering by Tag
+
+`onlyWithTags()` restricts the document to routes carrying at least one of the given tag names. The default, an empty list, documents every route.
+
+```php
+$json = (new OpenAPIGenerator($apivalk, $info))
+    ->onlyWithTags(['Animals', 'Contracts'])
+    ->generate();
+```
+
+- Tag names are matched exactly and case sensitively against the `TagObject` names set via `Route::tags()`.
+- A route without tags never matches a non-empty list and drops out. Resource controllers take their tags from `AbstractResource::tags()`, which returns `[]` unless you override it.
+- A tag name that no documented route carries throws an `InvalidArgumentException` naming the known tags. Without that check a typo would silently produce a document without `paths`, which is not a valid OpenAPI document.
+- A matching tag never brings an excluded route back on its own. It still needs `forceIncludeExcludedRoutes()`, and a tag that only excluded routes carry counts as unknown until that option is on.
+
 ## Core Logic
 
 ### The `OpenAPI` Object

@@ -283,3 +283,5 @@ public static function getRoute(): Route
 <Warning>
 This only affects documentation. Routing, authentication, authorization and rate limiting are untouched, the endpoint stays fully reachable at runtime. Protect internal endpoints with `routeAuthorization()`, not by hiding them from the spec.
 </Warning>
+
+The generator can opt back in via `forceIncludeExcludedRoutes()`, for an internal spec generated next to the public one. See [OpenAPI Generator](/documentation/openapi-generator).
