@@ -25,6 +25,25 @@ use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
 
+class FactoryTestResponse extends AbstractApivalkResponse
+{
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        return new ApivalkResponseDocumentation();
+    }
+
+    public static function getStatusCode(): int
+    {
+        return 200;
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+
+
 class FactoryTestRequest implements ApivalkRequestInterface
 {
     public static function getDocumentation(): ApivalkRequestDocumentation
@@ -55,9 +74,6 @@ class FactoryTestRequest implements ApivalkRequestInterface
     public function setIp(?string $ip): void {}
 }
 
-/**
- * @extends AbstractApivalkController<FactoryTestRequest>
- */
 class FactoryTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -65,23 +81,11 @@ class FactoryTestController extends AbstractApivalkController
         return Route::get('/items/{id}')->pathProperty(new IntegerProperty('id', 'ID'));
     }
 
-    public static function getRequestClass(): string
-    {
-        return FactoryTestRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [];
-    }
 
     public function __invoke(FactoryTestRequest $request): AbstractApivalkResponse
     {
-        return new class extends AbstractApivalkResponse {
-            public static function getDocumentation(): ApivalkResponseDocumentation { return new ApivalkResponseDocumentation(); }
-            public static function getStatusCode(): int { return 200; }
-            public function toArray(): array { return []; }
-        };
+        return new FactoryTestResponse();
     }
 }
 

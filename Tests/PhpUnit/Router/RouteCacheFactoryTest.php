@@ -32,8 +32,6 @@ class RouteCacheFactoryTest extends TestCase
         
         $controllerClass = get_class(new class extends AbstractApivalkController {
             public static function getRoute(): Route { return new Route('/test', new GetMethod()); }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse {
                 return $this->createMock(AbstractApivalkResponse::class);
             }
@@ -69,8 +67,6 @@ class RouteCacheFactoryTest extends TestCase
 
         $controllerClass = get_class(new class extends AbstractApivalkController {
             public static function getRoute(): Route { return new Route('/test', new GetMethod()); }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse {
                 return $this->createMock(AbstractApivalkResponse::class);
             }

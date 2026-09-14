@@ -10,7 +10,7 @@ description: "The `OpenAPIGenerator` is the component responsible for converting
 The generator leverages the existing framework infrastructure to discover and process your API metadata:
 
 1. **Route Discovery**: It uses the `Router` to find all registered routes and their corresponding controller classes.
-2. **Metadata Extraction**: For each route, it resolves the associated request and response classes via `AbstractApivalkController::getRequestClass()` and `::getResponseClasses()`, then calls `getDocumentation()` on those classes to obtain the declared `ApivalkRequestDocumentation` / `ApivalkResponseDocumentation`. Route-level metadata (filters, sortings, pagination, rate limit, authorization) is merged in from the `Route` object itself.
+2. **Metadata Extraction**: For each route, it takes the request class from the controller's `__invoke()` parameter and the response classes from what its body returns, then calls `getDocumentation()` on those classes to obtain the declared `ApivalkRequestDocumentation` / `ApivalkResponseDocumentation`. Route-level metadata (filters, sortings, pagination, rate limit, authorization) is merged in from the `Route` object itself. See [Controller](/http/controller) for how both are derived, and for the two cases that abort generation with a `LogicException`.
 3. **Object Mapping**: It maps the Apivalk `Property` system to OpenAPI objects (Schemas, Parameters, RequestBodies, Responses).
 4. **Serialization**: It assembles these objects into a final `OpenAPI` object and serializes it to JSON.
 
@@ -428,6 +428,21 @@ This fallback exists as a convenience, but **it is recommended to define your sc
 
 > Keep in mind: Future Auto-Discovery. Apivalk is moving towards full auto-discovery of security schemes. In the future, it will be able to automatically detect and document your security configuration (including names and versions) directly from your middleware and authenticators.
 
+## Automated Error Responses
+
+On top of what your controller returns, the generator documents the errors the framework itself produces. Each one is added only where the route can actually answer with it:
+
+| Code | Documented when |
+|---|---|
+| `405` | Always. |
+| `401` | The route has a `routeAuthorization(...)`. |
+| `403` | That authorization declares scopes or permissions, so `SecurityMiddleware` has something to reject. |
+| `429` | The route has a `rateLimit(...)`. |
+| `422` | There is something to validate: body, query, path or file properties, or declared pagination, sorting or filtering. |
+| `404` | The route declares path properties, or your controller returns a `NotFoundApivalkResponse` itself. |
+
+A response your controller returns wins over the framework entry for the same status code, so a custom `404` body is documented instead of the generic one.
+
 ## Automated Headers
 
 ### Locale Headers (Accept-Language / Content-Language)
@@ -535,3 +550,5 @@ The header descriptions include the configured window duration from the `RateLim
 ## Automated Pagination Envelope
 
 When a route has a pagination strategy attached via `Route::pagination(...)`, the generator automatically wraps the matching list response's schema in the standard pagination envelope (`data`, plus a `pagination` object whose shape matches the chosen strategy — `page`/`page_size`/`total_pages` for `Pagination::page()`, `limit`/`offset`/`total` for `Pagination::offset()`, `limit`/`current_cursor`/`next_cursor` for `Pagination::cursor()`). At runtime, attach the matching `PaginationResponseInterface` to your response via `setPaginationResponse(...)` — see [pagination](/http/pagination) for the end-to-end flow.
+
+Only `2xx` responses are wrapped. An error schema describes an error, never a page of results.

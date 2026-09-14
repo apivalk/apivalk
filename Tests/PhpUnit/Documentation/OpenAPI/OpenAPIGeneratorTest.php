@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI;
 
 use apivalk\apivalk\Apivalk;
+use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
+use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
@@ -253,31 +258,47 @@ class OpenAPIGeneratorTest extends TestCase
 
     private function defineTestController(): string
     {
-        if (!class_exists('TestControllerForOpenAPI')) {
-            eval(
-            '
-                class TestRequestForOpenAPI extends apivalk\apivalk\Http\Request\AbstractApivalkRequest {
-                    public static function getDocumentation(): apivalk\apivalk\Documentation\ApivalkRequestDocumentation {
-                        return new apivalk\apivalk\Documentation\ApivalkRequestDocumentation();
-                    }
-                }
+        return OpenApiTestController::class;
+    }
+}
 
-                class TestControllerForOpenAPI extends apivalk\apivalk\Http\Controller\AbstractApivalkController {
-                public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
-                    $response = new class extends \apivalk\apivalk\Http\Response\AbstractApivalkResponse {
-                        public static function getDocumentation(): \apivalk\apivalk\Documentation\ApivalkResponseDocumentation { return new \apivalk\apivalk\Documentation\ApivalkResponseDocumentation(); }
-                        public static function getStatusCode(): int { return 200; }
-                        public function toArray(): array { return []; }
-                    };
-                    return $response;
-                }
-                public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/test", new \apivalk\apivalk\Http\Method\GetMethod()); }
-                public static function getRequestClass(): string { return "TestRequestForOpenAPI"; }
-                public static function getResponseClasses(): array { return []; }
-            }'
-            );
-        }
+class OpenApiTestRequest extends AbstractApivalkRequest
+{
+    public static function getDocumentation(): ApivalkRequestDocumentation
+    {
+        return new ApivalkRequestDocumentation();
+    }
+}
 
-        return 'TestControllerForOpenAPI';
+class OpenApiTestResponse extends AbstractApivalkResponse
+{
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        return new ApivalkResponseDocumentation();
+    }
+
+    public static function getStatusCode(): int
+    {
+        return 200;
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+
+class OpenApiTestController extends AbstractApivalkController
+{
+    public static function getRoute(): Route
+    {
+        return new Route('/test', new GetMethod());
+    }
+
+    public function __invoke(OpenApiTestRequest $request): AbstractApivalkResponse
+    {
+        $response = new OpenApiTestResponse();
+
+        return $response;
     }
 }

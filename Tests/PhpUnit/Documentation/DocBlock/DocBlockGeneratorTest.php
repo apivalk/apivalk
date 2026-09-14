@@ -75,9 +75,7 @@ use TestNamespace\Request\\{$uniqueRequestClassName};
 class {$uniqueControllerClassName} extends AbstractApivalkController
 {
     public static function getRoute(): Route { return new Route('', new GetMethod(), ''); }
-    public static function getRequestClass(): string { return {$uniqueRequestClassName}::class; }
-    public static function getResponseClasses(): array { return []; }
-    public function __invoke(ApivalkRequestInterface \$request): AbstractApivalkResponse { throw new \Exception(); }
+    public function __invoke({$uniqueRequestClassName} \$request): AbstractApivalkResponse { throw new \Exception(); }
 }
 PHP;
         file_put_contents($controllerFile, $controllerContent);

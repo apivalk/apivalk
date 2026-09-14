@@ -31,17 +31,4 @@ abstract class AbstractDeleteResourceController extends AbstractResourceControll
         return $route;
     }
 
-    public static function getRequestClass(): string
-    {
-        return ResourceRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            DeletedApivalkResponse::class,
-            BadRequestApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
-    }
 }

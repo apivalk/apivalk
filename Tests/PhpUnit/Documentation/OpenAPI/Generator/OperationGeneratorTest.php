@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\OperationGenerator;
+use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Method\GetMethod;
@@ -17,6 +18,7 @@ use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Router\Route\Sort\Sort;
+use apivalk\apivalk\Security\RouteAuthorization;
 use PHPUnit\Framework\TestCase;
 
 class TestResponse extends AbstractApivalkResponse
@@ -57,6 +59,7 @@ class OperationGeneratorTest extends TestCase
         $route->method('getPagination')->willReturn($overrides['pagination'] ?? null);
         $route->method('getRateLimit')->willReturn($overrides['rateLimit'] ?? null);
         $route->method('getSummary')->willReturn($overrides['summary'] ?? null);
+        $route->method('getPathProperties')->willReturn($overrides['pathProperties'] ?? []);
 
         return $route;
     }
@@ -84,7 +87,8 @@ class OperationGeneratorTest extends TestCase
 
         $this->assertEquals('Route desc', $operation->getDescription());
         $this->assertNull($operation->getSummary());
-        $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
+        // 200 from the controller, 405 always, 422 because the route declares sortings and filters
+        $this->assertCount(3, $operation->getResponses());
 
         $parameters = $operation->getParameters();
         // order_by + filter + Accept-Language
@@ -201,7 +205,8 @@ class OperationGeneratorTest extends TestCase
 
         $this->assertEquals('Route desc', $operation->getDescription());
         $this->assertNull($operation->getSummary());
-        $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
+        // 200 from the controller plus 405; a bare route switches nothing else on
+        $this->assertCount(2, $operation->getResponses());
 
         // Only Accept-Language header parameter
         $this->assertCount(1, $operation->getParameters());
@@ -409,7 +414,7 @@ class OperationGeneratorTest extends TestCase
         );
 
         $this->assertEquals('Route desc', $operation->getDescription());
-        $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
+        $this->assertCount(2, $operation->getResponses());
     }
 
     public function testGenerateFromDocumentationSupportsMultipleResponseDocumentations(): void
@@ -462,7 +467,7 @@ class OperationGeneratorTest extends TestCase
         $this->assertContains('Accept-Language', $names);
     }
 
-    public function testGenerateFromDocumentationWithoutCustomResponsesStillIncludesDefaults(): void
+    public function testWithoutCustomResponsesOnlyMethodNotAllowedRemains(): void
     {
         $generator = new OperationGenerator();
         $route = $this->createRouteMock();
@@ -473,7 +478,61 @@ class OperationGeneratorTest extends TestCase
             []
         );
 
-        // 0 custom + 5 default
-        $this->assertCount(5, $operation->getResponses());
+        $this->assertSame([405], $this->getStatusCodes($operation));
+    }
+
+    /**
+     * The framework responses are not a fixed list any more. Each one is documented only where the
+     * route can actually produce it, so an endpoint without a rate limit never promises a 429.
+     */
+    public function testFrameworkResponsesFollowWhatTheRouteSwitchesOn(): void
+    {
+        $generator = new OperationGenerator();
+
+        $bare = $generator->generateFromDocumentation($this->createRouteMock(), $this->createRequestDocMock(), []);
+        $this->assertSame([405], $this->getStatusCodes($bare));
+
+        $rateLimited = $generator->generateFromDocumentation(
+            $this->createRouteMock(['rateLimit' => $this->createMock(RateLimitInterface::class)]),
+            $this->createRequestDocMock(),
+            []
+        );
+        $this->assertSame([405, 429], $this->getStatusCodes($rateLimited));
+
+        $authenticated = $generator->generateFromDocumentation(
+            $this->createRouteMock(['routeAuthorization' => new RouteAuthorization('bearer')]),
+            $this->createRequestDocMock(),
+            []
+        );
+        $this->assertSame([401, 405], $this->getStatusCodes($authenticated));
+
+        // Scopes give SecurityMiddleware something to reject with a 403.
+        $authorized = $generator->generateFromDocumentation(
+            $this->createRouteMock(['routeAuthorization' => new RouteAuthorization('bearer', ['read'])]),
+            $this->createRequestDocMock(),
+            []
+        );
+        $this->assertSame([401, 403, 405], $this->getStatusCodes($authorized));
+
+        $withPathProperty = $generator->generateFromDocumentation(
+            $this->createRouteMock(['pathProperties' => [new IntegerProperty('id', 'ID')]]),
+            $this->createRequestDocMock(),
+            []
+        );
+        $this->assertSame([404, 405, 422], $this->getStatusCodes($withPathProperty));
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function getStatusCodes(OperationObject $operation): array
+    {
+        $codes = [];
+        foreach ($operation->getResponses() as $response) {
+            $codes[] = $response->getStatusCode();
+        }
+        \sort($codes);
+
+        return $codes;
     }
 }

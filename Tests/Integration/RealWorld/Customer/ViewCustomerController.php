@@ -12,9 +12,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerViewRequest;
 
-/**
- * @extends AbstractApivalkController<CustomerViewRequest>
- */
 class ViewCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -26,15 +23,7 @@ class ViewCustomerController extends AbstractApivalkController
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers'], ['api:customers:read']));
     }
 
-    public static function getRequestClass(): string
-    {
-        return CustomerViewRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [CustomerViewResponse::class, NotFoundApivalkResponse::class];
-    }
 
     public function __invoke(CustomerViewRequest $request): AbstractApivalkResponse
     {

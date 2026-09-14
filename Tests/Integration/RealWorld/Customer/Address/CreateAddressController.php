@@ -12,9 +12,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Address\Request\AddressCreateRequest;
 
-/**
- * @extends AbstractApivalkController<AddressCreateRequest>
- */
 class CreateAddressController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -27,15 +24,7 @@ class CreateAddressController extends AbstractApivalkController
             ->rateLimit(new IpRateLimit('create-address', 60, 60));
     }
 
-    public static function getRequestClass(): string
-    {
-        return AddressCreateRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [AddressCreatedResponse::class];
-    }
 
     public function __invoke(AddressCreateRequest $request): AbstractApivalkResponse
     {

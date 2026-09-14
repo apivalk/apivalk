@@ -10,6 +10,7 @@ use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\i18n\LocaleResolver;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\RequestClassResolver;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
@@ -81,8 +82,7 @@ class Router extends AbstractRouter
 
     private function buildRequestByRoute(AbstractApivalkController $controller, Route $route): ApivalkRequestInterface
     {
-        /** @var class-string<ApivalkRequestInterface> $requestClass */
-        $requestClass = $controller::getRequestClass();
+        $requestClass = RequestClassResolver::resolve(\get_class($controller));
 
         $documentation = RequestDocumentationFactory::buildRuntimeDocumentation($route, \get_class($controller));
 

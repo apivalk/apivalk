@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\OperationObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
 use apivalk\apivalk\Documentation\Request\RequestDocumentationFactory;
+use apivalk\apivalk\Documentation\Response\ControllerResponseScanner;
 use apivalk\apivalk\Documentation\Response\ResponseDocumentationFactory;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractDeleteResourceController;
@@ -17,7 +18,7 @@ use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Method\PatchMethod;
 use apivalk\apivalk\Http\Method\PostMethod;
 use apivalk\apivalk\Http\Method\PutMethod;
-use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\RequestClassResolver;
 use apivalk\apivalk\Router\Route\Route;
 
 class PathItemGenerator
@@ -121,9 +122,8 @@ class PathItemGenerator
             );
         }
 
-        /** @var class-string<ApivalkRequestInterface> $requestClass */
-        $requestClass = $controllerClass::getRequestClass();
-        $responseClasses = $controllerClass::getResponseClasses();
+        $requestClass = RequestClassResolver::resolve($controllerClass);
+        $responseClasses = ControllerResponseScanner::scan($controllerClass);
 
         $requestDocumentation = $requestClass::getDocumentation();
         foreach ($route->getPathProperties() as $property) {
@@ -164,7 +164,7 @@ class PathItemGenerator
 
         $isDeleteMode = \is_subclass_of($controllerClass, AbstractDeleteResourceController::class);
 
-        foreach ($controllerClass::getResponseClasses() as $responseClass) {
+        foreach (ControllerResponseScanner::scan($controllerClass) as $responseClass) {
             $statusCode = (int)$responseClass::getStatusCode();
             $isSuccessResponse = $statusCode >= 200 && $statusCode < 300;
 

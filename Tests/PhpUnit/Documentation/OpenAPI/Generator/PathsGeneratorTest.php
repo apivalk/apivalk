@@ -26,9 +26,25 @@ use apivalk\apivalk\Router\Route\Sort\SortBag;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @extends AbstractApivalkController<PathsTestRequest>
- */
+class PathsTestResponse extends AbstractApivalkResponse
+{
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        return new ApivalkResponseDocumentation();
+    }
+
+    public static function getStatusCode(): int
+    {
+        return 200;
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+
+
 class PathsTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -36,34 +52,11 @@ class PathsTestController extends AbstractApivalkController
         return new Route('/test', new GetMethod());
     }
 
-    public static function getRequestClass(): string
-    {
-        return PathsTestRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [];
-    }
 
     public function __invoke(PathsTestRequest $request): AbstractApivalkResponse
     {
-        return new class extends AbstractApivalkResponse {
-            public static function getDocumentation(): ApivalkResponseDocumentation
-            {
-                return new ApivalkResponseDocumentation();
-            }
-
-            public static function getStatusCode(): int
-            {
-                return 200;
-            }
-
-            public function toArray(): array
-            {
-                return [];
-            }
-        };
+        return new PathsTestResponse();
     }
 }
 

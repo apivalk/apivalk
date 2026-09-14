@@ -32,9 +32,25 @@ use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\UpdateAnimalController;
 use apivalk\apivalk\Tests\PhpUnit\Resource\Stub\ViewAnimalController;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @extends AbstractApivalkController<PathItemTestRequest>
- */
+class PathItemTestResponse extends AbstractApivalkResponse
+{
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        return new ApivalkResponseDocumentation();
+    }
+
+    public static function getStatusCode(): int
+    {
+        return 200;
+    }
+
+    public function toArray(): array
+    {
+        return [];
+    }
+}
+
+
 class PathItemTestController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -42,34 +58,11 @@ class PathItemTestController extends AbstractApivalkController
         return new Route('/test', new GetMethod());
     }
 
-    public static function getRequestClass(): string
-    {
-        return PathItemTestRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [];
-    }
 
     public function __invoke(PathItemTestRequest $request): AbstractApivalkResponse
     {
-        return new class extends AbstractApivalkResponse {
-            public static function getDocumentation(): ApivalkResponseDocumentation
-            {
-                return new ApivalkResponseDocumentation();
-            }
-
-            public static function getStatusCode(): int
-            {
-                return 200;
-            }
-
-            public function toArray(): array
-            {
-                return [];
-            }
-        };
+        return new PathItemTestResponse();
     }
 }
 
@@ -175,9 +168,6 @@ class PathItemTestRequest implements ApivalkRequestInterface
     }
 }
 
-/**
- * @extends AbstractApivalkController<PathItemTestRequest>
- */
 class PathItemWithRoutePathPropertyController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -185,34 +175,11 @@ class PathItemWithRoutePathPropertyController extends AbstractApivalkController
         return Route::get('/items/{item_id}')->pathProperty(new IntegerProperty('item_id', 'Item ID'));
     }
 
-    public static function getRequestClass(): string
-    {
-        return PathItemTestRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [];
-    }
 
     public function __invoke(PathItemTestRequest $request): AbstractApivalkResponse
     {
-        return new class extends AbstractApivalkResponse {
-            public static function getDocumentation(): ApivalkResponseDocumentation
-            {
-                return new ApivalkResponseDocumentation();
-            }
-
-            public static function getStatusCode(): int
-            {
-                return 200;
-            }
-
-            public function toArray(): array
-            {
-                return [];
-            }
-        };
+        return new PathItemTestResponse();
     }
 }
 

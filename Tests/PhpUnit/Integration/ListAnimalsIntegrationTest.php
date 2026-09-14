@@ -78,8 +78,6 @@ class ListAnimalsIntegrationTest extends TestCase
                 public static function getRoute(): \apivalk\apivalk\Router\Route\Route {
                     return \apivalk\apivalk\Router\Route\Route::get('/animals');
                 }
-                public static function getRequestClass(): string { return 'ListAnimalsIntegrationTestRequest'; }
-                public static function getResponseClasses(): array { return ['ListAnimalsIntegrationTestResponse']; }
             }
 PHP
         );

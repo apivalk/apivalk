@@ -22,9 +22,6 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Address\Request\AddressListRequest;
 
-/**
- * @extends AbstractApivalkController<AddressListRequest>
- */
 class ListAddressesController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -50,15 +47,7 @@ class ListAddressesController extends AbstractApivalkController
             ->rateLimit(new IpRateLimit('list-addresses', 60, 60));
     }
 
-    public static function getRequestClass(): string
-    {
-        return AddressListRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [AddressListResponse::class];
-    }
 
     public function __invoke(AddressListRequest $request): AbstractApivalkResponse
     {

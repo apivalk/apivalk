@@ -139,8 +139,6 @@ namespace App\Http\Controller\Pet;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\BadRequestApivalkResponse;
-use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use App\Domain\Pet\PetRepository;
@@ -164,20 +162,6 @@ final class CreatePetController extends AbstractApivalkController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']));
     }
 
-    public static function getRequestClass(): string
-    {
-        return CreatePetRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            CreatePetResponse::class,
-            BadRequestApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
-    }
-
     public function __invoke(CreatePetRequest $request): AbstractApivalkResponse
     {
         $pet = $this->repository->create([
@@ -192,6 +176,8 @@ final class CreatePetController extends AbstractApivalkController
     }
 }
 ```
+
+The route is the only thing the controller declares. The request class is read from the `__invoke()` parameter and the documented responses from what its body returns, so `403` and `422` land in the spec without being listed here. See [Controller](/http/controller).
 
 ## View
 
@@ -273,7 +259,6 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -297,20 +282,6 @@ final class ViewPetController extends AbstractApivalkController
             ->summary('Get a pet by UUID')
             ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:read']));
-    }
-
-    public static function getRequestClass(): string
-    {
-        return ViewPetRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            ViewPetResponse::class,
-            NotFoundApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
     }
 
     public function __invoke(ViewPetRequest $request): AbstractApivalkResponse
@@ -415,7 +386,6 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -439,20 +409,6 @@ final class UpdatePetController extends AbstractApivalkController
             ->summary('Update a pet')
             ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:write']));
-    }
-
-    public static function getRequestClass(): string
-    {
-        return UpdatePetRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            UpdatePetResponse::class,
-            NotFoundApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
     }
 
     public function __invoke(UpdatePetRequest $request): AbstractApivalkResponse
@@ -556,7 +512,6 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
-use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
@@ -580,20 +535,6 @@ final class DeletePetController extends AbstractApivalkController
             ->summary('Delete a pet')
             ->pathProperty(new StringProperty('pet_uuid', 'Pet identifier'))
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['pet'], ['pet:delete']));
-    }
-
-    public static function getRequestClass(): string
-    {
-        return DeletePetRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            DeletePetResponse::class,
-            NotFoundApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
     }
 
     public function __invoke(DeletePetRequest $request): AbstractApivalkResponse

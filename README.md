@@ -103,13 +103,16 @@ final class ReadPetController extends AbstractApivalkController
         return Route::get('/v1/pets/{id}')->description('Get a pet by ID');
     }
 
-    public static function getRequestClass(): string  { return ReadPetRequest::class; }
-    public static function getResponseClasses(): array { return [ReadPetResponse::class, NotFoundApivalkResponse::class]; }
-
-    public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
+    // The parameter names the request class, the returns name the documented responses
+    public function __invoke(ReadPetRequest $request): AbstractApivalkResponse
     {
         $pet = $this->petRepo->find($request->path()->id); // id is cast to int automatically
-        return $pet ? new ReadPetResponse($pet) : new NotFoundApivalkResponse('Pet not found');
+
+        if ($pet === null) {
+            return new NotFoundApivalkResponse('Pet not found');
+        }
+
+        return new ReadPetResponse($pet);
     }
 }
 
