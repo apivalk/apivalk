@@ -12,9 +12,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerUpdateRequest;
 
-/**
- * @extends AbstractApivalkController<CustomerUpdateRequest>
- */
 class UpdateCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -26,15 +23,7 @@ class UpdateCustomerController extends AbstractApivalkController
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers'], ['api:customers:update']));
     }
 
-    public static function getRequestClass(): string
-    {
-        return CustomerUpdateRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [CustomerUpdatedResponse::class, NotFoundApivalkResponse::class];
-    }
 
     public function __invoke(CustomerUpdateRequest $request): AbstractApivalkResponse
     {

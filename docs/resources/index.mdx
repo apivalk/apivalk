@@ -43,9 +43,8 @@ AbstractResource (your declaration)
     │
 Abstract{Create,View,Update,Delete,List}ResourceController
    ├─ buildRoute()       ── explicit: your URL, method, auth, filters, sortings, pagination
-   ├─ getRequestClass()  ── always ResourceRequest
-   ├─ getResponseClasses ── mode-specific Resource*Response
-   └─ __invoke()         ── your business logic (only thing you implement)
+   └─ __invoke()         ── your business logic; its parameter is the request class,
+                            what it returns is what the spec documents
 ```
 
 ## Learn More

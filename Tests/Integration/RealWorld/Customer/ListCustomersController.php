@@ -20,9 +20,6 @@ use apivalk\apivalk\Router\Route\Sort\Sort;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerListRequest;
 
-/**
- * @extends AbstractApivalkController<CustomerListRequest>
- */
 class ListCustomersController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -46,15 +43,7 @@ class ListCustomersController extends AbstractApivalkController
             ->enableQuery();
     }
 
-    public static function getRequestClass(): string
-    {
-        return CustomerListRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [CustomerListResponse::class];
-    }
 
     public function __invoke(CustomerListRequest $request): AbstractApivalkResponse
     {

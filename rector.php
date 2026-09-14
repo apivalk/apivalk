@@ -30,6 +30,10 @@ return RectorConfig::configure()
     ->withSkip([
         // reordering constructor arguments would break every caller of a published API
         OptionalParametersAfterRequiredRector::class,
+
+        // this fixture writes one response as a fully qualified name on purpose, to prove
+        // ControllerResponseScanner resolves that form; importing it would drop the coverage
+        __DIR__ . '/Tests/PhpUnit/Documentation/Response/Stub/ImportStyleController.php',
     ])
     ->withRules([
         TypedPropertyFromStrictConstructorRector::class,

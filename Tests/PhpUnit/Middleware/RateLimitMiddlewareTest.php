@@ -39,8 +39,6 @@ class RateLimitMiddlewareTest extends TestCase
             private static $routeInstance;
             public function __construct($route) { self::$routeInstance = $route; }
             public static function getRoute(): Route { return self::$routeInstance; }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse { return $this->createMock(AbstractApivalkResponse::class); }
         };
 
@@ -68,8 +66,6 @@ class RateLimitMiddlewareTest extends TestCase
             private static $routeInstance;
             public function __construct($route) { self::$routeInstance = $route; }
             public static function getRoute(): Route { return self::$routeInstance; }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse { return $this->createMock(AbstractApivalkResponse::class); }
         };
 
@@ -98,8 +94,6 @@ class RateLimitMiddlewareTest extends TestCase
             private static $routeInstance;
             public function __construct($route) { self::$routeInstance = $route; }
             public static function getRoute(): Route { return self::$routeInstance; }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse { return $this->createMock(AbstractApivalkResponse::class); }
         };
 

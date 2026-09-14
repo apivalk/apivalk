@@ -187,15 +187,7 @@ class SecurityMiddlewareTest extends TestCase
                 return self::$route;
             }
 
-            public static function getRequestClass(): string
-            {
-                return '';
-            }
 
-            public static function getResponseClasses(): array
-            {
-                return [];
-            }
 
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse
             {

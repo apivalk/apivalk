@@ -12,6 +12,7 @@ use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractUpdateResourceController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractViewResourceController;
+use apivalk\apivalk\Http\Request\RequestClassResolver;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Route;
 
@@ -64,8 +65,7 @@ final class RequestDocumentationFactory
         Route $route,
         string $controllerClass
     ): ApivalkRequestDocumentation {
-        /** @var class-string<\apivalk\apivalk\Http\Request\ApivalkRequestInterface> $requestClass */
-        $requestClass = $controllerClass::getRequestClass();
+        $requestClass = RequestClassResolver::resolve($controllerClass);
         $documentation = $requestClass::getDocumentation();
 
         if (\is_subclass_of($controllerClass, AbstractResourceController::class)) {

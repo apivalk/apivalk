@@ -13,9 +13,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerDeleteRequest;
 
-/**
- * @extends AbstractApivalkController<CustomerDeleteRequest>
- */
 class DeleteCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -27,15 +24,7 @@ class DeleteCustomerController extends AbstractApivalkController
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers'], ['api:customers:delete']));
     }
 
-    public static function getRequestClass(): string
-    {
-        return CustomerDeleteRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [DeletedApivalkResponse::class, NotFoundApivalkResponse::class];
-    }
 
     public function __invoke(CustomerDeleteRequest $request): AbstractApivalkResponse
     {

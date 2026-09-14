@@ -53,8 +53,6 @@ class ApivalkControllerFactoryTest extends TestCase
         // Use an anonymous class that exists
         $controllerClass = get_class(new class extends AbstractApivalkController {
             public static function getRoute(): Route { return new Route('/', new GetMethod()); }
-            public static function getRequestClass(): string { return ''; }
-            public static function getResponseClasses(): array { return []; }
             public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse { return $this->createMock(AbstractApivalkResponse::class); }
         });
 

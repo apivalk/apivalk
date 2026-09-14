@@ -122,16 +122,6 @@ class GetHealthController extends AbstractApivalkController
             ->description('Returns 200 OK as long as the service is reachable.');
     }
 
-    public static function getRequestClass(): string
-    {
-        return GetHealthRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [GetHealthResponse::class];
-    }
-
     public function __invoke(GetHealthRequest $request): AbstractApivalkResponse
     {
         return new GetHealthResponse();
@@ -142,11 +132,11 @@ class GetHealthController extends AbstractApivalkController
 ## What you get out of the box
 
 - **No `RouteAuthorization`** → the `SecurityMiddleware` passes the request straight to the controller. Guest and authenticated clients are both accepted.
-- **OpenAPI coverage** → `GET /health` shows up in the generated spec with a `200` response whose schema matches `GetHealthResponse::getDocumentation()`.
+- **OpenAPI coverage** → `GET /health` shows up in the generated spec with a `200` response whose schema matches `GetHealthResponse::getDocumentation()`, plus a `405`. No authorization, no rate limit and nothing to validate means no other error the route could produce, so none is documented.
 - **Locale + rate-limit headers** → `Content-Language` is added by the middleware stack, and if you ever add a rate limit to this route, the `X-RateLimit-*` headers appear automatically.
 
 ## Variations
 
 - **Add a `version` or `uptime` field** — extend the response with more `StringProperty` / `IntegerProperty` entries and include them in `toArray()`.
-- **Return 503 when a dependency is down** — declare a second response class (e.g. `ServiceUnavailableResponse`) in `getResponseClasses()`, and return whichever matches the actual check result.
+- **Return 503 when a dependency is down** — return a second response class (e.g. `ServiceUnavailableResponse`) from the failing branch of `__invoke()`. Both branches end up in the spec.
 - **Keep it public but log anonymous calls** — read `$request->getAuthIdentity()->isAuthenticated()` inside `__invoke()`; since no `RouteAuthorization` was set, the identity is always populated (guest or real) but never rejected.

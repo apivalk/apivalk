@@ -101,8 +101,6 @@ class RouterTest extends TestCase
                 class TestControllerForRouterTest extends apivalk\apivalk\Http\Controller\AbstractApivalkController {
                 public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return new apivalk\apivalk\Http\Response\NotFoundApivalkResponse(); }
                 public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/", new \apivalk\apivalk\Http\Method\GetMethod()); }
-                public static function getRequestClass(): string { return "TestRequestForRouterTest"; }
-                public static function getResponseClasses(): array { return []; }
             }'
             );
         }
@@ -161,8 +159,6 @@ class RouterTest extends TestCase
                 class TestControllerForRouterTest extends apivalk\apivalk\Http\Controller\AbstractApivalkController {
                 public function __invoke(\apivalk\apivalk\Http\Request\ApivalkRequestInterface $request): \apivalk\apivalk\Http\Response\AbstractApivalkResponse { return new apivalk\apivalk\Http\Response\NotFoundApivalkResponse(); }
                 public static function getRoute(): \apivalk\apivalk\Router\Route\Route { return new \apivalk\apivalk\Router\Route\Route("/", new \apivalk\apivalk\Http\Method\GetMethod()); }
-                public static function getRequestClass(): string { return "TestRequestForRouterTest"; }
-                public static function getResponseClasses(): array { return []; }
             }'
             );
         }

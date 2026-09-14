@@ -31,17 +31,4 @@ abstract class AbstractViewResourceController extends AbstractResourceController
         return $route;
     }
 
-    public static function getRequestClass(): string
-    {
-        return ResourceRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            ResourceViewResponse::class,
-            BadRequestApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
-    }
 }

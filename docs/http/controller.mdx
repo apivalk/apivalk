@@ -5,12 +5,12 @@ description: "In Apivalk, controllers are the entry point for your business logi
 
 ## Creating a Controller
 
-Every controller must extend `AbstractApivalkController` and implement four key methods:
+Every controller must extend `AbstractApivalkController` and implement two methods:
 
 1. `getRoute()`: Defines the path and HTTP method.
-2. `getRequestClass()`: Specifies the `AbstractApivalkRequest` class used for this endpoint.
-3. `getResponseClasses()`: Lists the possible `AbstractApivalkResponse` classes this controller can return.
-4. `__invoke()`: The main execution logic.
+2. `__invoke()`: The main execution logic.
+
+`__invoke()` carries the documentation as well. The request class is read from its parameter, the response classes from what its body returns, so neither is declared a second time.
 
 ### Example
 
@@ -26,27 +26,11 @@ use App\Http\Request\Pet\GetPetRequest;
 use App\Http\Response\Pet\GetPetResponse;
 use App\Http\Response\Common\NotFoundResponse;
 
-/**
- * @extends AbstractApivalkController<GetPetRequest>
- */
 class GetPetController extends AbstractApivalkController
 {
     public static function getRoute(): Route
     {
         return new Route('/pet/{id}', new GetMethod());
-    }
-
-    public static function getRequestClass(): string
-    {
-        return GetPetRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            GetPetResponse::class,
-            NotFoundResponse::class,
-        ];
     }
 
     public function __invoke(GetPetRequest $request): AbstractApivalkResponse
@@ -98,18 +82,39 @@ What is lost is the compile-time guarantee that `__invoke()` exists at all. Two 
 
 Be aware that your IDE will not flag the missing method while you write it, the way it did when the base class declared it abstract. That is the price for naming your own request class.
 
-`ApivalkRequestInterface` still works as the parameter type if you prefer it, for instance in a controller that handles several request shapes.
+`ApivalkRequestInterface` still works as the parameter type if you prefer it, for instance in a controller that handles several request shapes. An abstract request class, or no type hint at all, behaves the same way: none of them names something to instantiate, so the request class falls back to `ResourceRequest`, which carries what the route declares and nothing else.
 
-Pair it with the template argument so the declared request class and `getRequestClass()` cannot drift apart:
+Three signatures are rejected instead, each with a `LogicException` naming the controller:
+
+- `__invoke()` with no parameter.
+- A builtin parameter type such as `string`.
+- A class that does not implement `ApivalkRequestInterface`.
+
+## Documented Responses
+
+`ControllerResponseScanner` reads the response classes out of the `__invoke()` body while the OpenAPI document is generated, never per request. It follows what the method returns:
 
 ```php
-/**
- * @extends AbstractApivalkController<GetPetRequest>
- */
-class GetPetController extends AbstractApivalkController
+return new GetPetResponse($pet);         // documented
+
+$response = new ListPetsResponse($pets); // also documented, a returned variable
+$response->setPaginationResponse($page); // is traced back to its assignment
+return $response;
 ```
 
-`getRequestClass()` is typed `class-string<TRequest>`, so returning a different class than the one in `@extends` is a static-analysis error. Leaving the annotation off keeps the old behaviour, the template defaults to `ApivalkRequestInterface`.
+Every branch of a return expression is read, so a ternary or a null coalesce documents both of its outcomes:
+
+```php
+return $pet ? new GetPetResponse($pet) : new NotFoundApivalkResponse(); // both documented
+```
+
+A response that is constructed but never returned stays out of the spec. Aliased imports, group imports, fully qualified names and classes from the controller's own namespace all resolve.
+
+Tracing a variable back only happens when it is the whole returned expression. As an argument it says nothing about what the surrounding call returns, so `return $this->decorate($response);` documents nothing about `$response`.
+
+Two cases throw a `LogicException` naming the controller rather than publishing a spec that is quietly wrong: returning an anonymous class, which has no name to document, and an `__invoke()` that returns no response class at all.
+
+The error responses the framework produces around your controller are added on top of these, derived from the route. See [OpenAPI Generator](/documentation/openapi-generator).
 
 ## Dependency Injection
 
@@ -132,13 +137,14 @@ For endpoints returning lists of data, see the [Pagination](/http/pagination) gu
 
 ## Resource Controllers (CRUD)
 
-If your endpoint follows a standard RESTful CRUD pattern against a single entity, you don't need to author a controller class like the one above by hand. Apivalk ships five abstract base controllers — `AbstractCreateResourceController`, `AbstractViewResourceController`, `AbstractUpdateResourceController`, `AbstractDeleteResourceController`, `AbstractListResourceController` — that derive their route, request class, response classes, and OpenAPI documentation from an `AbstractResource` declaration.
+If your endpoint follows a standard RESTful CRUD pattern against a single entity, you don't need to author a controller class like the one above by hand. Apivalk ships five abstract base controllers — `AbstractCreateResourceController`, `AbstractViewResourceController`, `AbstractUpdateResourceController`, `AbstractDeleteResourceController`, `AbstractListResourceController` — that derive their route and OpenAPI documentation from an `AbstractResource` declaration.
 
 A minimal list controller looks like this:
 
 ```php
 use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
+use apivalk\apivalk\Http\Response\Resource\ResourceListResponse;
 use App\Resource\AnimalResource;
 
 /**
@@ -153,7 +159,8 @@ final class ListAnimalController extends AbstractListResourceController
 
     public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
-        // fetch, paginate, return ResourceListResponse
+        // fetch and paginate, then hand the resources to the list response
+        return new ResourceListResponse($animals, $paginationResponse);
     }
 }
 ```

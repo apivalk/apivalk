@@ -13,9 +13,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Address\Request\AddressViewRequest;
 
-/**
- * @extends AbstractApivalkController<AddressViewRequest>
- */
 class ViewAddressController extends AbstractApivalkController
 {
     private const UUID_PATTERN = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
@@ -33,15 +30,7 @@ class ViewAddressController extends AbstractApivalkController
             ->routeAuthorization(new RouteAuthorization('bearer', ['api:customers:address'], ['api:customers:address:read']));
     }
 
-    public static function getRequestClass(): string
-    {
-        return AddressViewRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [AddressViewResponse::class, NotFoundApivalkResponse::class];
-    }
 
     public function __invoke(AddressViewRequest $request): AbstractApivalkResponse
     {

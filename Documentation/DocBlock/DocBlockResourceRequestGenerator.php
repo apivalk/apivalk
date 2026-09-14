@@ -9,6 +9,7 @@ use apivalk\apivalk\Http\Controller\Resource\AbstractListResourceController;
 use apivalk\apivalk\Http\Request\Pagination\CursorPaginator;
 use apivalk\apivalk\Http\Request\Pagination\OffsetPaginator;
 use apivalk\apivalk\Http\Request\Pagination\PagePaginator;
+use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Pagination\Pagination;
@@ -72,7 +73,7 @@ final class DocBlockResourceRequestGenerator
             $sortingShape,
             $filteringShape,
             $paginatorClass,
-            $controllerClass::getRequestClass(),
+            ResourceRequest::class,
             $filterFieldShapes
         );
     }

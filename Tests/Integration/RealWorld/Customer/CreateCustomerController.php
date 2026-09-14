@@ -11,9 +11,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Request\CustomerCreateRequest;
 
-/**
- * @extends AbstractApivalkController<CustomerCreateRequest>
- */
 class CreateCustomerController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -23,15 +20,7 @@ class CreateCustomerController extends AbstractApivalkController
             ->rateLimit(new IpRateLimit('create-customer', 60, 60));
     }
 
-    public static function getRequestClass(): string
-    {
-        return CustomerCreateRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [CustomerCreatedResponse::class];
-    }
 
     public function __invoke(CustomerCreateRequest $request): AbstractApivalkResponse
     {

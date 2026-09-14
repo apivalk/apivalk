@@ -9,6 +9,7 @@ use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Controller\Resource\AbstractResourceController;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
+use apivalk\apivalk\Http\Request\RequestClassResolver;
 use apivalk\apivalk\Http\Request\Resource\ResourceRequest;
 use apivalk\apivalk\Resource\AbstractResource;
 use apivalk\apivalk\Util\ClassLocator;
@@ -113,7 +114,7 @@ class DocBlockGenerator
      */
     private function processRegularController(string $className, DocBlockRequestGenerator $generator): void
     {
-        $requestClass = $className::getRequestClass();
+        $requestClass = RequestClassResolver::resolve($className);
         $route = $className::getRoute();
 
         if (!is_subclass_of($requestClass, ApivalkRequestInterface::class)) {

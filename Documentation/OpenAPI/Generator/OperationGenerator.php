@@ -18,6 +18,7 @@ use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\BadValidationApivalkResponse;
+use apivalk\apivalk\Http\Response\ForbiddenApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\TooManyRequestsApivalkResponse;
@@ -150,50 +151,35 @@ class OperationGenerator
         }
 
         $responses = [];
+        $documentedStatusCodes = [];
 
         foreach ($responseDocumentations as $responseDoc) {
+            $statusCode = $responseDoc['statusCode'];
+            $documentedStatusCodes[$statusCode] = true;
+
+            // Pagination describes the payload the route pages through, never an error body.
+            $isSuccess = $statusCode >= 200 && $statusCode < 300;
+
             $responses[] = $responseGenerator->generate(
-                $responseDoc['statusCode'],
+                $statusCode,
                 $responseDoc['documentation'],
-                $route,
+                $isSuccess ? $route : null,
                 $responseHeaders
             );
         }
 
-        $responses[] = $responseGenerator->generate(
-            BadValidationApivalkResponse::getStatusCode(),
-            BadValidationApivalkResponse::getDocumentation(),
-            null,
-            $responseHeaders
-        );
+        foreach (self::getFrameworkResponseClasses($route, $requestDocumentation) as $responseClass) {
+            if (isset($documentedStatusCodes[$responseClass::getStatusCode()])) {
+                continue;
+            }
 
-        $responses[] = $responseGenerator->generate(
-            MethodNotAllowedApivalkResponse::getStatusCode(),
-            MethodNotAllowedApivalkResponse::getDocumentation(),
-            null,
-            $responseHeaders
-        );
-
-        $responses[] = $responseGenerator->generate(
-            NotFoundApivalkResponse::getStatusCode(),
-            NotFoundApivalkResponse::getDocumentation(),
-            null,
-            $responseHeaders
-        );
-
-        $responses[] = $responseGenerator->generate(
-            TooManyRequestsApivalkResponse::getStatusCode(),
-            TooManyRequestsApivalkResponse::getDocumentation(),
-            null,
-            $responseHeaders
-        );
-
-        $responses[] = $responseGenerator->generate(
-            UnauthorizedApivalkResponse::getStatusCode(),
-            UnauthorizedApivalkResponse::getDocumentation(),
-            null,
-            $responseHeaders
-        );
+            $responses[] = $responseGenerator->generate(
+                $responseClass::getStatusCode(),
+                $responseClass::getDocumentation(),
+                null,
+                $responseHeaders
+            );
+        }
 
         $method = $asQueryOperation ? new QueryMethod() : $route->getMethod();
         $requestBody = $asQueryOperation
@@ -211,6 +197,65 @@ class OperationGenerator
             $responses,
             $route->getRouteAuthorization()
         );
+    }
+
+    /**
+     * The responses the framework produces around the controller. A controller body never
+     * constructs these, so they are derived from what the route switches on: no authorization
+     * means no 401, no rate limit means no 429, no path parameter means nothing to not find.
+     *
+     * @return array<int, class-string<AbstractApivalkResponse>>
+     */
+    private static function getFrameworkResponseClasses(
+        Route $route,
+        ApivalkRequestDocumentation $requestDocumentation
+    ): array {
+        $responseClasses = [MethodNotAllowedApivalkResponse::class];
+
+        $routeAuthorization = $route->getRouteAuthorization();
+
+        if ($routeAuthorization !== null) {
+            $responseClasses[] = UnauthorizedApivalkResponse::class;
+
+            // SecurityMiddleware answers 403 only where there is a scope or permission to fail.
+            if ($routeAuthorization->getRequiredScopes() !== []
+                || $routeAuthorization->getRequiredPermissions() !== []
+            ) {
+                $responseClasses[] = ForbiddenApivalkResponse::class;
+            }
+        }
+
+        if ($route->getRateLimit() !== null) {
+            $responseClasses[] = TooManyRequestsApivalkResponse::class;
+        }
+
+        if (self::hasValidatableInput($route, $requestDocumentation)) {
+            $responseClasses[] = BadValidationApivalkResponse::class;
+        }
+
+        if ($route->getPathProperties() !== []) {
+            $responseClasses[] = NotFoundApivalkResponse::class;
+        }
+
+        return $responseClasses;
+    }
+
+    /**
+     * Pagination, sorting and filtering reach the validator as query properties even though the
+     * documentation carries them as parameters, so the route has to be asked as well.
+     */
+    private static function hasValidatableInput(
+        Route $route,
+        ApivalkRequestDocumentation $requestDocumentation
+    ): bool {
+        return $requestDocumentation->getBodyProperties() !== []
+            || $requestDocumentation->getQueryProperties() !== []
+            || $requestDocumentation->getPathProperties() !== []
+            || $requestDocumentation->getFileProperties() !== []
+            || $route->getPathProperties() !== []
+            || $route->getPagination() !== null
+            || $route->getSortings() !== []
+            || $route->getFilters() !== [];
     }
 
     /**

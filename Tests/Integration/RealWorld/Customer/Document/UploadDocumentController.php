@@ -12,9 +12,6 @@ use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
 use Tests\Integration\RealWorld\Customer\Document\Request\DocumentUploadRequest;
 
-/**
- * @extends AbstractApivalkController<DocumentUploadRequest>
- */
 class UploadDocumentController extends AbstractApivalkController
 {
     public static function getRoute(): Route
@@ -29,15 +26,7 @@ class UploadDocumentController extends AbstractApivalkController
             );
     }
 
-    public static function getRequestClass(): string
-    {
-        return DocumentUploadRequest::class;
-    }
 
-    public static function getResponseClasses(): array
-    {
-        return [DocumentUploadedResponse::class, BadRequestApivalkResponse::class];
-    }
 
     /** @var DocumentUploadRequest $request */
     public function __invoke(DocumentUploadRequest $request): AbstractApivalkResponse

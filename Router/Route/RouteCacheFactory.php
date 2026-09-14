@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Router\Route;
 use apivalk\apivalk\Http\Method\MethodInterface;
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\Request\RequestClassResolver;
 use apivalk\apivalk\Router\AbstractRouter;
 
 class RouteCacheFactory
@@ -58,6 +59,10 @@ class RouteCacheFactory
                     $className
                 ));
             }
+
+            // Its signature carries the request class, so an unusable one surfaces while the index
+            // is built rather than on the first request that happens to hit this route.
+            RequestClassResolver::resolve($className);
 
             $route = $className::getRoute();
 

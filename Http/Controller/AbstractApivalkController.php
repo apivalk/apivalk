@@ -19,21 +19,13 @@ use apivalk\apivalk\Router\Route\Route;
  * The trade is that a missing `__invoke()` is no longer a compile-time error. RouteCacheFactory
  * checks for it while indexing routes instead, so it still fails on boot rather than mid-request.
  *
- * @template TRequest of ApivalkRequestInterface = ApivalkRequestInterface
+ * That signature is also the single source of truth for the documentation: `RequestClassResolver`
+ * takes the request class from its parameter, and `ControllerResponseScanner` takes the response
+ * classes from the bodies it returns. Neither has to be declared a second time.
  *
  * @method AbstractApivalkResponse __invoke(ApivalkRequestInterface $request)
  */
 abstract class AbstractApivalkController
 {
     abstract public static function getRoute(): Route;
-
-    /**
-     * @return class-string<TRequest>
-     */
-    abstract public static function getRequestClass(): string;
-
-    /**
-     * @return array<class-string<AbstractApivalkResponse>>
-     */
-    abstract public static function getResponseClasses(): array;
 }

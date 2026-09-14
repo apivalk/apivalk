@@ -38,19 +38,6 @@ abstract class AbstractCreateResourceController extends AbstractResourceControll
         return $route;
     }
 
-    public static function getRequestClass(): string
-    {
-        return ResourceRequest::class;
-    }
-
-    public static function getResponseClasses(): array
-    {
-        return [
-            ResourceCreatedResponse::class,
-            BadRequestApivalkResponse::class,
-            ForbiddenApivalkResponse::class,
-        ];
-    }
 
     /**
      * Build a resource instance from the validated request body.

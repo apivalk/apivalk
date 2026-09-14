@@ -5,7 +5,7 @@ description: "Five abstract controllers — Create, View, Update, Delete, List �
 
 ## The Five Controllers
 
-| Base class | HTTP | Default response |
+| Base class | HTTP | Success response |
 |---|---|---|
 | `AbstractCreateResourceController` | `POST` or `PUT` | `ResourceCreatedResponse` (201) |
 | `AbstractViewResourceController` | `GET` | `ResourceViewResponse` (200) |
@@ -33,7 +33,9 @@ Every resource controller implements three things:
 2. A route declaration method — see the table below.
 3. `__invoke(ResourceRequest $request): AbstractApivalkResponse` — your business logic.
 
-The base class provides `getRequestClass()`, `getResponseClasses()`, and `getEmptyResource()`. Create and Update also expose a `getResource()` helper — see below.
+The base class provides `getEmptyResource()`. Create and Update also expose a `getResource()` helper — see below.
+
+`ResourceRequest` in the `__invoke()` signature is what makes it the request class, and the responses your `__invoke()` returns are the ones that end up in the spec. Neither is declared anywhere else.
 
 ### Route declaration: `buildRoute()`
 
@@ -380,12 +382,6 @@ final class PutAnimalController extends AbstractCreateResourceController
             ->routeAuthorization(new RouteAuthorization('BearerAuth', ['animal'], ['animal:update']));
     }
 
-    /** Declare both outcomes so the spec documents 200 and 201. */
-    public static function getResponseClasses(): array
-    {
-        return array_merge(parent::getResponseClasses(), [ResourceUpdatedResponse::class]);
-    }
-
     public function __invoke(ResourceRequest $request): AbstractApivalkResponse
     {
         $animal = $this->getResource($request);
@@ -403,6 +399,8 @@ final class PutAnimalController extends AbstractCreateResourceController
     }
 }
 ```
+
+Both outcomes are documented because both are returned: the scan of `__invoke()` finds `ResourceUpdatedResponse` and `ResourceCreatedResponse` and the spec gets a `200` and a `201`.
 
 And in the resource:
 
@@ -477,9 +475,9 @@ If you need the raw path value directly without the helper, `$request->path()->k
 
 ## What the Base Class Provides
 
-- `getRequestClass()` — returns `ResourceRequest::class` by default (a shared, empty request class).
-- `getResponseClasses()` — the mode-appropriate success response + `BadRequestApivalkResponse` + `ForbiddenApivalkResponse`.
 - `getEmptyResource()` — instantiates the resource class returned by `getResourceClass()`, useful inside `buildRoute()`.
+
+It does not provide a request or response class. `ResourceRequest` is the request class because your `__invoke()` names it, and the responses in the spec are the ones your `__invoke()` returns, plus the error responses the route itself can produce. See [OpenAPI Generator](/documentation/openapi-generator).
 
 ## IDE Autocomplete via the DocBlock Generator
 
