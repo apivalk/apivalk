@@ -177,7 +177,7 @@ final class CreatePetController extends AbstractApivalkController
 }
 ```
 
-The route is the only thing the controller declares. The request class is read from the `__invoke()` parameter and the documented responses from what its body returns, so `403` and `422` land in the spec without being listed here. See [Controller](/http/controller).
+The route is the only thing the controller declares. The request class is read from the `__invoke()` parameter and the documented responses from the `new` expressions its body returns, so `403` and `422` land in the spec without being listed here. Build a response anywhere but in `__invoke()` and it is [left out of the spec](/http/controller#documented-responses). See [Controller](/http/controller).
 
 ## View
 
