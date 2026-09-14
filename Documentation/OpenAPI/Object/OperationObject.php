@@ -137,7 +137,13 @@ class OperationObject implements ObjectInterface
     {
         $parameters = [];
         foreach ($this->parameters as $parameter) {
-            $parameters[] = array_filter($parameter->toArray());
+            // Only null means "not set". A falsy filter would drop `explode: false`, and the
+            // default for `style: form` is explode, so the document would then describe
+            // `?status=a&status=b` for a parameter the server reads as `?status=a,b`.
+            $parameters[] = array_filter(
+                $parameter->toArray(),
+                static fn($value) => $value !== null
+            );
         }
 
         $responses = [];

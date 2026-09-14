@@ -49,7 +49,7 @@ This section contains upgrade guides between major versions.
 
 - **Filters are validated per operator.** An operator a field does not declare, and combinations that can never match (`value[gte]=100&value[lte]=10`, `eq` equal to `neq`, an empty `in` list), answer `422` instead of being ignored.
 
-- **OpenAPI output targets 3.2.0**, was 3.1.1. Each filter field becomes one `deepObject` parameter whose properties are its allowed operators. Toolchains pinned to 3.1 will reject the document.
+- **OpenAPI output targets 3.2.0**, was 3.1.1. A filter field with several operators becomes one `deepObject` parameter whose properties are its allowed operators. A field with a single operator is documented flat, with the operator named in the description. Toolchains pinned to 3.1 will reject the document.
 
 - **`AbstractApivalkController::__invoke()` is no longer abstract.** Existing controllers keep working, `ApivalkRequestInterface` is still a valid parameter type. What changes is that you *can* now name your own request class, and should, since the generated shapes for `path()`, `body()` and `filtering()` only resolve against the concrete class:
 

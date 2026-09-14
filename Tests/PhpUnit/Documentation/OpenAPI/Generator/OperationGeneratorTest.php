@@ -7,10 +7,12 @@ namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\OperationGenerator;
+use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\RateLimit\RateLimitInterface;
+use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
 use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Route;
@@ -85,7 +87,7 @@ class OperationGeneratorTest extends TestCase
         $this->assertCount(6, $operation->getResponses()); // 1 custom + 5 default
 
         $parameters = $operation->getParameters();
-        // order_by + filter (deepObject) + Accept-Language
+        // order_by + filter + Accept-Language
         $this->assertCount(3, $parameters);
 
         $orderByParameter = null;
@@ -100,7 +102,7 @@ class OperationGeneratorTest extends TestCase
         }
 
         $this->assertNotNull($orderByParameter, 'Expected order_by parameter to be generated.');
-        $this->assertNotNull($filterParameter, 'Expected a deepObject parameter for the status filter.');
+        $this->assertNotNull($filterParameter, 'Expected a query parameter for the status filter.');
 
         $this->assertEquals('query', $orderByParameter->getIn());
         $this->assertEquals('query', $filterParameter->getIn());
@@ -115,41 +117,78 @@ class OperationGeneratorTest extends TestCase
             $orderByParameter->toArray()['schema']['pattern']
         );
 
-        // one deepObject per filter field, whose properties are the allowed operators
+        // a field with a single operator is documented flat, with the operator spelled out
+        $filterArray = $filterParameter->toArray();
+        $this->assertArrayNotHasKey('style', $filterArray);
+        $this->assertArrayNotHasKey('explode', $filterArray);
+        $this->assertFalse($filterParameter->isRequired());
+        $this->assertEquals('string', $filterArray['schema']['type']);
+        $this->assertEquals('Equals filtering on `status`.', $filterArray['description']);
+    }
+
+    public function testOperationGeneratorDocumentsAMultiOperatorFilterAsADeepObject(): void
+    {
+        $generator = new OperationGenerator();
+
+        $route = $this->createRouteMock([
+            'filters' => [new StringFilter(new StringProperty('status'), Operator::EQ, Operator::NEQ)],
+        ]);
+
+        $operation = $generator->generate($route, $this->createRequestDocMock(), [TestResponse::class]);
+
+        $filterParameter = null;
+        foreach ($operation->getParameters() as $parameter) {
+            if ($parameter->getName() === 'status') {
+                $filterParameter = $parameter;
+            }
+        }
+
+        $this->assertNotNull($filterParameter, 'Expected a deepObject parameter for the status filter.');
+
         $filterArray = $filterParameter->toArray();
         $this->assertEquals('deepObject', $filterArray['style']);
         $this->assertTrue($filterArray['explode']);
-        $this->assertFalse($filterParameter->isRequired());
-        $this->assertSame(['eq'], array_keys($filterArray['schema']['properties']));
+        $this->assertSame(['eq', 'neq'], array_keys($filterArray['schema']['properties']));
         $this->assertEquals('string', $filterArray['schema']['properties']['eq']['type']);
         $this->assertFalse($filterArray['schema']['additionalProperties']);
     }
 
+    /**
+     * A single-operator field is flat either way, so the flag is only observable on a field
+     * that would otherwise be a deepObject.
+     */
     public function testOperationGeneratorWithFlatFilters(): void
     {
         $generator = new OperationGenerator(true, true); // flatFilters=true
 
         $route = $this->createRouteMock([
-            'filters' => [new StringFilter(new StringProperty('status'), Operator::EQ)],
+            'filters' => [new IntegerFilter(new IntegerProperty('price', 'Price'), Operator::GT, Operator::LT)],
         ]);
 
         $operation = $generator->generate($route, $this->createRequestDocMock(), [TestResponse::class]);
 
         $parameters = $operation->getParameters();
-        // status (flat) + Accept-Language — no order_by since no sortings
+        // price (flat) + Accept-Language, no order_by since no sortings
         $this->assertCount(2, $parameters);
 
         $names = array_map(static fn($p) => $p->getName(), $parameters);
-        $this->assertContains('status', $names);
+        $this->assertContains('price', $names);
         $this->assertNotContains('filter', $names);
 
         foreach ($parameters as $parameter) {
-            if ($parameter->getName() === 'status') {
-                $this->assertEquals('query', $parameter->getIn());
-                $array = $parameter->toArray();
-                $this->assertArrayNotHasKey('style', $array);
-                $this->assertArrayNotHasKey('explode', $array);
+            if ($parameter->getName() !== 'price') {
+                continue;
             }
+
+            $this->assertEquals('query', $parameter->getIn());
+
+            $array = $parameter->toArray();
+            $this->assertArrayNotHasKey('style', $array);
+            $this->assertArrayNotHasKey('explode', $array);
+            $this->assertEquals('integer', $array['schema']['type']);
+            $this->assertArrayNotHasKey('properties', $array['schema']);
+            // flatFilters drops the operator entirely, so it carries no operator hint either
+            $this->assertEquals('Price', $array['description']);
         }
     }
 

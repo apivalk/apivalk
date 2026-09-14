@@ -453,7 +453,24 @@ $generator = new OpenAPIGenerator(
 
 ### Filter Documentation Style
 
-By default, each filter field becomes its own `deepObject` parameter whose properties are the operators that field declares. Clients send `?status[eq]=active&amount[gte]=10`.
+By default, the form of a filter parameter follows the number of operators the field declares.
+
+A field with exactly one operator becomes a flat query parameter whose description states how it matches. Clients send `?status=active`.
+
+```yaml
+- name: status
+  in: query
+  description: "Equals filtering on `status`. Status"
+  required: false
+  schema:
+    type: string
+    enum: [active, inactive, pending]
+    description: "Status"
+```
+
+A single `IN` operator is documented as an array with `style: form` and `explode: false`, which serialises as `?status=draft,active` and keeps the item `enum`. A single `NULL` operator is documented as a boolean. See [Filtering](/http/filtering) for the full shape.
+
+A field with two or more operators becomes its own `deepObject` parameter whose properties are the operators that field declares. Clients send `?amount[gte]=10&amount[lte]=100`.
 
 ```yaml
 - name: amount
@@ -476,7 +493,7 @@ By default, each filter field becomes its own `deepObject` parameter whose prope
 
 One bracket level with primitive properties is the case OpenAPI defines for `deepObject`, which is why filters are not nested under a shared `filter` key.
 
-If you prefer each filter to appear as a flat query parameter without operators (`?status=active`, which resolves to the first declared operator), pass `true` for the `$flatFilters` parameter:
+Multi-operator fields can be flattened as well, at the cost of not documenting which operator a bare value resolves to. Pass `true` for the `$flatFilters` parameter:
 
 ```php
 $generator = new OpenAPIGenerator(
@@ -490,11 +507,12 @@ $generator = new OpenAPIGenerator(
 ```
 
 With `flatFilters: false` (default):
-- One parameter per field, with its allowed operators as sub-inputs
-- Clients send `?status[eq]=active&amount[gte]=10`
+- Single-operator fields are flat, with the operator stated in the description
+- Multi-operator fields are one parameter per field, with their allowed operators as sub-inputs
+- Clients send `?status=active&amount[gte]=10`
 
 With `flatFilters: true`:
-- One flat input per field, no operator choice documented
+- One flat input per field, no operator choice documented and no operator stated in the description
 - Clients send `?status=active&amount=10`, resolving to each field's first declared operator
 
 Both notations are accepted at runtime regardless of which style you document.

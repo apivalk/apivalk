@@ -35,7 +35,12 @@ class FilteringPopulationStrategy implements PopulationStrategyInterface
 
             $supplied = $body !== null ? ($body[$field] ?? null) : ($_GET[$field] ?? null);
 
-            if (\is_array($supplied)) {
+            if ($this->isFlatList($supplied) && $clonedFilter->getDefaultOperator() === Operator::IN) {
+                // A list has no string keys, so it can never be an operator map. Flat notation
+                // resolves to the first declared operator the same way a scalar does, which
+                // lets `{"status": ["a", "b"]}` and `?status=a,b` mean the same thing.
+                $this->setCondition($clonedFilter, Operator::IN, $supplied);
+            } elseif (\is_array($supplied)) {
                 $this->populateFromOperatorMap($clonedFilter, $filterBag, $supplied);
             } elseif (\is_scalar($supplied)) {
                 $this->setCondition($clonedFilter, $clonedFilter->getDefaultOperator(), $supplied);
@@ -45,6 +50,14 @@ class FilteringPopulationStrategy implements PopulationStrategyInterface
         }
 
         $request->setFilterBag($filterBag);
+    }
+
+    /**
+     * @param mixed $supplied
+     */
+    private function isFlatList($supplied): bool
+    {
+        return \is_array($supplied) && $supplied === array_values($supplied);
     }
 
     /**

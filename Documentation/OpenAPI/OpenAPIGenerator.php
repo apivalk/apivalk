@@ -29,11 +29,12 @@ class OpenAPIGenerator
      * @param ServerObject[]        $servers
      * @param ComponentsObject|null $componentsObject
      * @param bool                  $documentLocaleHeaders
-     * @param bool                  $flatFilters           When true, each filter is documented as its own flat query
-     *                                                     parameter (?status=active). When false (default), all filters
-     *                                                     are grouped under a single `filter` deepObject parameter
-     *                                                     (?filter[status]=active). Both formats work at runtime
-     *                                                     regardless of this setting.
+     * @param bool                  $flatFilters           When false (default), the form follows the operators a
+     *                                                     field declares: one operator is a flat query parameter
+     *                                                     (?status=active), several are a deepObject parameter
+     *                                                     (?amount[gte]=10). When true, multi-operator fields are
+     *                                                     flattened as well and resolve to the first declared
+     *                                                     operator. Both formats work at runtime regardless.
      */
     public function __construct(
         Apivalk $apivalk,

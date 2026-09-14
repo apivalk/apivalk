@@ -214,8 +214,9 @@ class OperationGenerator
     }
 
     /**
-     * The QUERY body mirrors the deepObject parameters: one object per field, whose
-     * properties are the operators that field allows.
+     * The QUERY body mirrors the query parameters: one property per field, an object of
+     * operators for a field that allows several, the operator's own schema for a field
+     * that allows one.
      */
     private static function getFilterRequestBody(Route $route): ?RequestBodyObject
     {
@@ -235,7 +236,7 @@ class OperationGenerator
                 'properties' => $properties,
                 'additionalProperties' => false,
             ])),
-            'Filter conditions, one object per field.',
+            'Filter conditions, one property per field.',
             false
         );
     }
