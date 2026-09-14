@@ -8,6 +8,7 @@ use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
 use apivalk\apivalk\Http\Method\GetMethod;
 use apivalk\apivalk\Router\AbstractRouter;
@@ -69,6 +70,164 @@ class OpenAPIGeneratorTest extends TestCase
         $this->assertArrayNotHasKey('/internal', $data['paths']);
     }
 
+    public function testExcludedRoutesAreDocumentedWhenForceIncluded(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            ['route' => new Route('/test', new GetMethod()), 'controllerClass' => $controllerClass],
+            [
+                'route' => Route::get('/internal')->excludeFromDocumentation(),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $data = json_decode($generator->forceIncludeExcludedRoutes()->generate(), true);
+
+        $this->assertArrayHasKey('/test', $data['paths']);
+        $this->assertArrayHasKey('/internal', $data['paths']);
+    }
+
+    public function testOnlyRoutesWithTheGivenTagsAreDocumented(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            [
+                'route' => Route::get('/animals')->tags([new TagObject('Animals')]),
+                'controllerClass' => $controllerClass
+            ],
+            [
+                'route' => Route::get('/contracts')->tags([new TagObject('Contracts')]),
+                'controllerClass' => $controllerClass
+            ],
+            ['route' => Route::get('/untagged'), 'controllerClass' => $controllerClass],
+        ]);
+
+        $data = json_decode($generator->onlyWithTags(['Animals'])->generate(), true);
+
+        $this->assertSame(['/animals'], array_keys($data['paths']));
+    }
+
+    public function testTagFilterDoesNotDocumentExcludedRoutes(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            [
+                'route' => Route::get('/animals')->tags([new TagObject('Animals')]),
+                'controllerClass' => $controllerClass
+            ],
+            [
+                'route' => Route::get('/internal/animals')
+                    ->tags([new TagObject('Animals')])
+                    ->excludeFromDocumentation(),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $data = json_decode($generator->onlyWithTags(['Animals'])->generate(), true);
+
+        $this->assertSame(['/animals'], array_keys($data['paths']));
+    }
+
+    public function testForceIncludeAndTagFilterCombine(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            [
+                'route' => Route::get('/animals')->tags([new TagObject('Animals')]),
+                'controllerClass' => $controllerClass
+            ],
+            [
+                'route' => Route::get('/internal/animals')
+                    ->tags([new TagObject('Animals')])
+                    ->excludeFromDocumentation(),
+                'controllerClass' => $controllerClass
+            ],
+            [
+                'route' => Route::get('/contracts')->tags([new TagObject('Contracts')]),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $data = json_decode(
+            $generator->forceIncludeExcludedRoutes()->onlyWithTags(['Animals'])->generate(),
+            true
+        );
+
+        $this->assertSame(['/animals', '/internal/animals'], array_keys($data['paths']));
+    }
+
+    public function testEachGenerateCallStartsFromTheCurrentOptions(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            ['route' => new Route('/test', new GetMethod()), 'controllerClass' => $controllerClass],
+            [
+                'route' => Route::get('/internal')->excludeFromDocumentation(),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $internal = json_decode($generator->forceIncludeExcludedRoutes(true)->generate(), true);
+        $public = json_decode($generator->forceIncludeExcludedRoutes(false)->generate(), true);
+
+        $this->assertSame(['/test', '/internal'], array_keys($internal['paths']));
+        $this->assertSame(['/test'], array_keys($public['paths']));
+    }
+
+    public function testTagCarriedOnlyByAnExcludedRouteIsRejected(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            [
+                'route' => Route::get('/animals')->tags([new TagObject('Animals')]),
+                'controllerClass' => $controllerClass
+            ],
+            [
+                'route' => Route::get('/internal')
+                    ->tags([new TagObject('Internal')])
+                    ->excludeFromDocumentation(),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown OpenAPI tag(s) "Internal"');
+
+        $generator->onlyWithTags(['Internal'])->generate();
+    }
+
+    public function testUnknownTagNameIsRejectedInsteadOfProducingAnEmptyDocument(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $generator = $this->createGeneratorForRoutes([
+            [
+                'route' => Route::get('/animals')->tags([new TagObject('Animals')]),
+                'controllerClass' => $controllerClass
+            ],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown OpenAPI tag(s) "animals"');
+
+        $generator->onlyWithTags(['animals'])->generate();
+    }
+
+    public function testEmptyTagNameIsRejected(): void
+    {
+        $generator = new OpenAPIGenerator($this->createMock(Apivalk::class));
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $generator->onlyWithTags(['']);
+    }
+
     public function testGenerateUnsupportedFormat(): void
     {
         $apivalk = $this->createMock(Apivalk::class);
@@ -76,6 +235,20 @@ class OpenAPIGeneratorTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $generator->generate('yaml');
+    }
+
+    /**
+     * @param array<int, array{route: Route, controllerClass: string}> $routes
+     */
+    private function createGeneratorForRoutes(array $routes): OpenAPIGenerator
+    {
+        $router = $this->createMock(AbstractRouter::class);
+        $router->method('getRoutes')->willReturn($routes);
+
+        $apivalk = $this->createMock(Apivalk::class);
+        $apivalk->method('getRouter')->willReturn($router);
+
+        return new OpenAPIGenerator($apivalk, new InfoObject('Title', '1.0.0'));
     }
 
     private function defineTestController(): string

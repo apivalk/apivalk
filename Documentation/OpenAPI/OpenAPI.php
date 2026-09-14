@@ -58,6 +58,11 @@ class OpenAPI
         $this->paths[] = $paths;
     }
 
+    public function resetPaths(): void
+    {
+        $this->paths = [];
+    }
+
     public function addWebhook(string $name, PathItemObject $pathItem): void
     {
         $this->webhooks[$name] = $pathItem;

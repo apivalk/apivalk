@@ -9,6 +9,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Generator\PathsGenerator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
+use apivalk\apivalk\Router\Route\Route;
 
 class OpenAPIGenerator
 {
@@ -16,6 +17,9 @@ class OpenAPIGenerator
     private OpenAPI $openApi;
     private bool $documentLocaleHeaders;
     private bool $flatFilters;
+    private bool $forceIncludeExcludedRoutes = false;
+    /** @var string[] */
+    private array $onlyWithTags = [];
 
     public const FORMAT_JSON = 'json';
 
@@ -57,6 +61,39 @@ class OpenAPIGenerator
         }
     }
 
+    /**
+     * Document routes that are marked with `Route::excludeFromDocumentation()` anyway.
+     *
+     * Meant for an internal spec generated next to the public one, not as a default.
+     */
+    public function forceIncludeExcludedRoutes(bool $force = true): self
+    {
+        $this->forceIncludeExcludedRoutes = $force;
+
+        return $this;
+    }
+
+    /**
+     * Restrict the document to routes carrying at least one of the given tag names.
+     *
+     * Tag names are matched exactly and case sensitively. An empty list (default) documents
+     * every route, including untagged ones. A non-empty list drops untagged routes.
+     *
+     * @param string[] $tagNames
+     */
+    public function onlyWithTags(array $tagNames): self
+    {
+        foreach ($tagNames as $tagName) {
+            if ($tagName === '') {
+                throw new \InvalidArgumentException('onlyWithTags() does not accept an empty tag name.');
+            }
+        }
+
+        $this->onlyWithTags = $tagNames;
+
+        return $this;
+    }
+
     public function generate(string $format = 'json'): string
     {
         $this->generatePaths();
@@ -70,11 +107,22 @@ class OpenAPIGenerator
 
     private function generatePaths(): void
     {
+        $this->openApi->resetPaths();
+
         $pathsGenerator = new PathsGenerator($this->documentLocaleHeaders, $this->flatFilters);
         $routeMapping = [];
+        $availableTagNames = [];
 
         foreach ($this->apivalk->getRouter()->getRoutes() as $route) {
-            if ($route['route']->isExcludedFromDocumentation()) {
+            if ($route['route']->isExcludedFromDocumentation() && !$this->forceIncludeExcludedRoutes) {
+                continue;
+            }
+
+            foreach ($route['route']->getTags() as $tag) {
+                $availableTagNames[$tag->getName()] = true;
+            }
+
+            if (!$this->matchesTagFilter($route['route'])) {
                 continue;
             }
 
@@ -82,8 +130,46 @@ class OpenAPIGenerator
                 ['route' => $route['route'], 'controllerClass' => $route['controllerClass']];
         }
 
+        $this->assertOnlyWithTagsAreAvailable(\array_keys($availableTagNames));
+
         foreach ($routeMapping as $url => $routes) {
             $this->openApi->addPaths($pathsGenerator->generate($url, $routes));
         }
+    }
+
+    private function matchesTagFilter(Route $route): bool
+    {
+        if ($this->onlyWithTags === []) {
+            return true;
+        }
+
+        foreach ($route->getTags() as $tag) {
+            if (\in_array($tag->getName(), $this->onlyWithTags, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * A tag name no documented route carries is a typo, not an empty section. Left alone it
+     * produces a document without `paths`, which no longer validates against the OpenAPI schema.
+     *
+     * @param string[] $availableTagNames
+     */
+    private function assertOnlyWithTagsAreAvailable(array $availableTagNames): void
+    {
+        $unknownTagNames = \array_diff($this->onlyWithTags, $availableTagNames);
+
+        if ($unknownTagNames === []) {
+            return;
+        }
+
+        throw new \InvalidArgumentException(\sprintf(
+            'Unknown OpenAPI tag(s) "%s" passed to onlyWithTags(). Documented routes carry: %s.',
+            \implode('", "', $unknownTagNames),
+            $availableTagNames === [] ? 'no tags at all' : '"' . \implode('", "', $availableTagNames) . '"'
+        ));
     }
 }

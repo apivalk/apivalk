@@ -204,7 +204,8 @@ box. Missing scope → `403 Forbidden`. No token → `401 Unauthorized`. Custom 
 
 `OpenAPIGenerator` introspects every controller's request and response classes and emits a complete OpenAPI 3.0 spec —
 including pagination envelopes, `X-RateLimit-*` headers, locale headers, and per-operation security requirements. No
-annotations. Run it as a `bin/` script and drop the JSON behind Swagger
+annotations. Restrict the output to a set of tags, or force-include routes excluded from documentation to emit a
+separate internal spec. Run it as a `bin/` script and drop the JSON behind Swagger
 UI. → [OpenAPI generator](https://docs.apivalk.com/documentation/openapi-generator) · [Generate how-to](https://docs.apivalk.com/how-to/generate-openapi)
 
 ### 📦 Resource CRUD
