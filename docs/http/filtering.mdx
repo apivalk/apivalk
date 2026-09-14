@@ -172,13 +172,43 @@ QUERY /contracts
 {"amount": {"gte": 10, "lte": 100}, "status": {"in": ["active", "inactive"]}}
 ```
 
-Same declaration, same `FilterBag`, same validation, and `IN` takes a real JSON array here rather than a comma-separated string. Sending body filters and query-string filters on one request is a `422`.
+Same declaration, same `FilterBag`, same validation, and `IN` takes a real JSON array here rather than a comma-separated string, in the flat form (`{"status": ["active", "inactive"]}`) as well as the nested one. Sending body filters and query-string filters on one request is a `422`.
 
 It is opt-in per route: a gateway that does not know the method drops the request before it reaches your application, and generating it everywhere would make SDK generators emit two calls for the same read.
 
 ## OpenAPI Documentation
 
-Each filter field becomes one `deepObject` query parameter whose properties are the operators it declares:
+A field with exactly one operator becomes a flat query parameter. There is no operator left to choose, so the bracket level is dropped and the schema is that operator's schema directly:
+
+```yaml
+- name: name
+  in: query
+  description: "Substring filtering on `name`. Contract name"
+  required: false
+  schema:
+    type: string
+    description: "Contract name"
+```
+
+The wire format no longer names the operator, so the description does: one sentence stating how the field matches, followed by the property description. `NULL` is documented as a `boolean`. `IN` is documented as an array with `style: form` and `explode: false`, which is the OpenAPI spelling of `?status=draft,active` and the only one that keeps the item constraints, an `enum` above all:
+
+```yaml
+- name: status
+  in: query
+  description: "List filtering on `status`. Matches any of the listed values. Status"
+  required: false
+  style: form
+  explode: false
+  schema:
+    type: array
+    items:
+      type: string
+      enum: [draft, active, expired, terminated]
+```
+
+Nested under a `deepObject` the same operator stays a comma-separated `string`, since `deepObject` is defined for one bracket level of primitive properties.
+
+A field with two or more operators becomes one `deepObject` query parameter whose properties are the operators it declares:
 
 ```yaml
 - name: amount
@@ -203,11 +233,13 @@ Each filter field becomes one `deepObject` query parameter whose properties are 
 
 Property constraints (`minimum`, `maximum`, `pattern`, `enum`) carry into each operator schema, and `additionalProperties: false` makes an undeclared operator a schema error rather than something a client discovers at runtime.
 
+A property `default` is the one thing that does not carry over. On a parameter schema OpenAPI reads it as the value the server applies when the client omits the parameter, and an omitted filter adds no condition at all, so it is stripped.
+
 A single bracket level with primitive properties is the case OpenAPI actually defines for `deepObject`, which is why filters are not nested under a shared `filter` key.
 
-With `->enableQuery()` the path also gets a `query` operation whose `requestBody` mirrors those schemas, one object per field. That requires OpenAPI 3.2, which is what Apivalk emits.
+With `->enableQuery()` the path also gets a `query` operation whose `requestBody` mirrors those schemas, one property per field: an object of operators for a multi-operator field, the operator's schema directly for a single-operator one. That requires OpenAPI 3.2, which is what Apivalk emits.
 
-Pass `flatFilters: true` to `OpenAPIGenerator` to document one flat parameter per field instead, matching flat notation. See [OpenAPI Generator → Filter Documentation Style](/documentation/openapi-generator).
+Pass `flatFilters: true` to `OpenAPIGenerator` to flatten multi-operator fields as well, matching flat notation. Those parameters resolve to the field's first declared operator and carry no operator hint in the description. See [OpenAPI Generator → Filter Documentation Style](/documentation/openapi-generator).
 
 ## IDE Support
 

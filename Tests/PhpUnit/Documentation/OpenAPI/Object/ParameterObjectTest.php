@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Object;
 
+use apivalk\apivalk\Documentation\Property\EnumProperty;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
+use apivalk\apivalk\Router\Route\Filter\StringFilter;
 use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ParameterObject;
 use apivalk\apivalk\Documentation\Property\AbstractProperty;
@@ -120,6 +123,79 @@ class ParameterObjectTest extends TestCase
         $this->assertFalse($array['schema']['additionalProperties']);
         $this->assertSame(['gt', 'lte'], array_keys($array['schema']['properties']));
         $this->assertEquals('integer', $array['schema']['properties']['gt']['type']);
+    }
+
+    public function testForFilterDocumentsASingleOperatorFieldFlat(): void
+    {
+        $filter = new IntegerFilter(new IntegerProperty('price', 'Filter by price'), Operator::GT);
+
+        $parameter = ParameterObject::forFilter($filter);
+
+        $this->assertEquals('price', $parameter->getName());
+        $this->assertEquals('query', $parameter->getIn());
+        $this->assertFalse($parameter->isRequired());
+        $this->assertNull($parameter->getStyle());
+        $this->assertEquals('Greater-than filtering on `price`. Filter by price', $parameter->getDescription());
+
+        $array = $parameter->toArray();
+        $this->assertArrayNotHasKey('style', $array);
+        $this->assertArrayNotHasKey('explode', $array);
+        $this->assertEquals('integer', $array['schema']['type']);
+        $this->assertArrayNotHasKey('properties', $array['schema']);
+    }
+
+    public function testForFilterStatesTheOperatorWithoutAPropertyDescription(): void
+    {
+        $filter = new StringFilter(new StringProperty('status'), Operator::EQ);
+
+        $this->assertEquals(
+            'Equals filtering on `status`.',
+            ParameterObject::forFilter($filter)->getDescription()
+        );
+    }
+
+    /**
+     * A comma-separated list is an array in OpenAPI terms. Spelling it as one is what keeps
+     * the item constraints, an enum above all, in the document.
+     */
+    public function testForFilterDocumentsASingleInOperatorAsAnArray(): void
+    {
+        $parameter = ParameterObject::forFilter(
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active']), Operator::IN)
+        );
+
+        $array = $parameter->toArray();
+
+        $this->assertEquals('form', $array['style']);
+        $this->assertFalse($array['explode']);
+        $this->assertEquals('array', $array['schema']['type']);
+        $this->assertEquals('string', $array['schema']['items']['type']);
+        $this->assertSame(['draft', 'active'], $array['schema']['items']['enum']);
+        $this->assertStringContainsString('List filtering on `status`.', $parameter->getDescription());
+    }
+
+    public function testForFilterKeepsTheOperatorSchemaForASingleNullOperator(): void
+    {
+        $null = ParameterObject::forFilter(
+            new IntegerFilter(new IntegerProperty('price', 'Filter by price'), Operator::NULL)
+        );
+
+        $this->assertEquals('boolean', $null->toArray()['schema']['type']);
+        $this->assertStringContainsString('true matches null values', $null->getDescription());
+    }
+
+    /**
+     * deepObject is defined for one bracket level of primitive properties, so a nested `in`
+     * cannot be an array the way the flat form can.
+     */
+    public function testForFilterKeepsANestedInOperatorAString(): void
+    {
+        $properties = ParameterObject::forFilter(
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active']), Operator::IN, Operator::EQ)
+        )->toArray()['schema']['properties'];
+
+        $this->assertEquals('string', $properties['in']['type']);
+        $this->assertArrayNotHasKey('items', $properties['in']);
     }
 
     public function testForFilterDocumentsInAsACommaSeparatedStringAndNullAsBoolean(): void

@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Http\Request\Population\Strategy;
 
 use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
+use apivalk\apivalk\Documentation\Property\BooleanProperty;
 use apivalk\apivalk\Documentation\Property\DateProperty;
+use apivalk\apivalk\Documentation\Property\EnumProperty;
 use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
 use apivalk\apivalk\Http\Request\Population\RequestPopulationContext;
 use apivalk\apivalk\Http\Request\Population\Strategy\FilteringPopulationStrategy;
+use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
 use apivalk\apivalk\Router\Route\Filter\DateFilter;
+use apivalk\apivalk\Router\Route\Filter\EnumFilter;
 use apivalk\apivalk\Router\Route\Filter\FilterBag;
 use apivalk\apivalk\Router\Route\Filter\FilterInterface;
 use apivalk\apivalk\Router\Route\Filter\IntegerFilter;
@@ -44,6 +48,69 @@ class FilteringPopulationStrategyTest extends TestCase
         );
 
         return $request->filtering();
+    }
+
+    /**
+     * A list has no string keys, so it cannot be an operator map. It means the same as the
+     * comma-separated form, which is what lets a QUERY body send a real JSON array.
+     */
+    public function testFlatListResolvesToTheDefaultInOperator(): void
+    {
+        $_GET['status'] = ['draft', 'active'];
+
+        $filters = $this->populate([
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active']), Operator::IN),
+        ]);
+
+        self::assertSame(['draft', 'active'], $filters->get('status')->in);
+        self::assertSame([], $filters->getViolations());
+    }
+
+    public function testFlatListIsStillAViolationWhenTheDefaultOperatorIsNotIn(): void
+    {
+        $_GET['status'] = ['draft', 'active'];
+
+        $filters = $this->populate([
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active']), Operator::EQ, Operator::IN),
+        ]);
+
+        self::assertSame([], $filters->get('status')->conditions());
+        self::assertCount(2, $filters->getViolations());
+    }
+
+    public function testOperatorMapIsStillReadAsAnOperatorMap(): void
+    {
+        $_GET['status'] = ['in' => 'draft,active'];
+
+        $filters = $this->populate([
+            new EnumFilter(new EnumProperty('status', 'Status', ['draft', 'active']), Operator::IN),
+        ]);
+
+        self::assertSame(['draft', 'active'], $filters->get('status')->in);
+        self::assertSame([], $filters->getViolations());
+    }
+
+    public function testBooleanFilterReadsTheWireValueRatherThanCastingEveryStringToTrue(): void
+    {
+        $_GET['is_primary'] = 'false';
+
+        $filters = $this->populate([
+            new BooleanFilter(new BooleanProperty('is_primary', 'Is primary', false), Operator::EQ),
+        ]);
+
+        self::assertFalse($filters->get('is_primary')->equal);
+    }
+
+    public function testBooleanFilterNullsAValueThatIsNotABoolean(): void
+    {
+        $_GET['is_primary'] = 'schwurbel';
+
+        $filters = $this->populate([
+            new BooleanFilter(new BooleanProperty('is_primary', 'Is primary', false), Operator::EQ),
+        ]);
+
+        // The validation middleware turns the null into a 422, a `true` would have passed.
+        self::assertNull($filters->get('is_primary')->equal);
     }
 
     public function testDeclaredFilterWithoutInputIsPresentButEmpty(): void

@@ -134,6 +134,36 @@ class ParameterBagFactoryTest extends TestCase
         $this->assertEquals('123', ParameterBagFactory::typeCastValueByProperty(123, $prop));
     }
 
+    /**
+     * A plain (bool) cast reads the query string "false" as true and leaves the boolean
+     * validators nothing to reject, since true is a valid boolean.
+     */
+    public function testTypeCastBooleanReadsWireValuesAndNullsUnparseableInput(): void
+    {
+        $prop = new BooleanProperty('test', '', false);
+
+        $this->assertTrue(ParameterBagFactory::typeCastValueByProperty('true', $prop));
+        $this->assertTrue(ParameterBagFactory::typeCastValueByProperty('1', $prop));
+        $this->assertTrue(ParameterBagFactory::typeCastValueByProperty(true, $prop));
+
+        $this->assertFalse(ParameterBagFactory::typeCastValueByProperty('false', $prop));
+        $this->assertFalse(ParameterBagFactory::typeCastValueByProperty('0', $prop));
+        $this->assertFalse(ParameterBagFactory::typeCastValueByProperty(false, $prop));
+
+        $this->assertNull(ParameterBagFactory::typeCastValueByProperty('schwurbel', $prop));
+        $this->assertNull(ParameterBagFactory::typeCastValueByProperty(2, $prop));
+    }
+
+    public function testTypeCastSimpleArrayNullsUnparseableBooleanItems(): void
+    {
+        $boolProp = new SimpleArrayProperty('flags', '', SimpleArrayProperty::TYPE_BOOL);
+
+        $this->assertSame(
+            [true, false, null],
+            ParameterBagFactory::typeCastValueByProperty(['true', 'false', 'schwurbel'], $boolProp)
+        );
+    }
+
     public function testTypeCastSimpleArrayCastsElementsToItemType(): void
     {
         $intProp = new SimpleArrayProperty('ids', '', SimpleArrayProperty::TYPE_INT);

@@ -218,7 +218,7 @@ final class ParameterBagFactory
                         case SimpleArrayProperty::TYPE_NUMBER:
                             return (float)$item;
                         case SimpleArrayProperty::TYPE_BOOL:
-                            return (bool)$item;
+                            return filter_var($item, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                         case SimpleArrayProperty::TYPE_STRING:
                         default:
                             return (string)$item;
@@ -236,7 +236,10 @@ final class ParameterBagFactory
             case 'float':
                 return (float)$value;
             case 'bool':
-                return (bool)$value;
+                // (bool)'false' is true, so a plain cast turns every non-empty string into
+                // true and leaves the boolean validators nothing to reject. Unparseable input
+                // becomes null instead, which is what they answer 422 for.
+                return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             case 'object':
             case 'array':
                 if (\is_array($value)) {

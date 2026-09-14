@@ -15,6 +15,24 @@ use apivalk\apivalk\Router\Route\Filter\Operator;
  */
 class ParameterObject implements ObjectInterface
 {
+    /**
+     * How a single-operator filter matches, stated for readers of the flat form.
+     *
+     * @var array<string, string>
+     */
+    private const SINGLE_OPERATOR_HINTS = [
+        Operator::EQ => 'Equals filtering on `%s`.',
+        Operator::NEQ => 'Not-equals filtering on `%s`.',
+        Operator::IN => 'List filtering on `%s`. Matches any of the listed values.',
+        Operator::GT => 'Greater-than filtering on `%s`.',
+        Operator::GTE => 'Greater-than-or-equal filtering on `%s`.',
+        Operator::LT => 'Less-than filtering on `%s`.',
+        Operator::LTE => 'Less-than-or-equal filtering on `%s`.',
+        Operator::LIKE => 'Pattern-match filtering on `%s`.',
+        Operator::CONTAINS => 'Substring filtering on `%s`.',
+        Operator::NULL => 'Null-check filtering on `%s`. true matches null values, false matches non-null values.',
+    ];
+
     private string $name;
 
     private string $in;
@@ -45,23 +63,50 @@ class ParameterObject implements ObjectInterface
     }
 
     /**
-     * One deepObject parameter per filter field, whose properties are the operators the
-     * field allows: `?price[gt]=10&price[lt]=100`.
+     * A field with exactly one operator has nothing to choose, so it is documented flat:
+     * `?status=active`. Bracket notation for a single operator is noise a reader has to
+     * decode for no gain, and flat notation is what the population strategy resolves it to.
      *
-     * A single bracket level with primitive properties is the case OpenAPI actually
-     * defines for deepObject, which is why filters are not nested under a `filter` key.
+     * A field with several operators becomes one deepObject parameter whose properties are
+     * the operators it allows: `?price[gt]=10&price[lt]=100`. A single bracket level with
+     * primitive properties is the case OpenAPI actually defines for deepObject, which is why
+     * filters are not nested under a `filter` key.
      */
     public static function forFilter(FilterInterface $filter): self
     {
         $property = $filter->getProperty();
+        $operators = $filter->getAllowedOperators();
 
         $instance = new self('query', $property);
         $instance->required = false;
+
+        if (\count($operators) === 1) {
+            $instance->description = self::singleOperatorDescription($operators[0], $property);
+
+            if ($operators[0] === Operator::IN) {
+                // A list of values is an array, not a string that happens to hold commas.
+                // `form` without `explode` is the style that serialises it as `?status=a,b`,
+                // and it is the only spelling that keeps the item constraints documented.
+                $instance->style = 'form';
+                $instance->explode = false;
+                $instance->rawSchema = [
+                    'type' => 'array',
+                    'items' => self::valueSchema($property),
+                ];
+
+                return $instance;
+            }
+
+            $instance->rawSchema = self::operatorSchema($operators[0], $property);
+
+            return $instance;
+        }
+
         $instance->style = 'deepObject';
         $instance->explode = true;
 
         $operatorSchemas = [];
-        foreach ($filter->getAllowedOperators() as $operator) {
+        foreach ($operators as $operator) {
             $operatorSchemas[$operator] = self::operatorSchema($operator, $property);
         }
 
@@ -72,6 +117,27 @@ class ParameterObject implements ObjectInterface
         ];
 
         return $instance;
+    }
+
+    /**
+     * The operator disappears from the wire format when a field declares only one, so it
+     * has to be stated in prose instead: the parameter alone no longer says how it matches.
+     */
+    private static function singleOperatorDescription(string $operator, AbstractProperty $property): string
+    {
+        if (!isset(self::SINGLE_OPERATOR_HINTS[$operator])) {
+            throw new \InvalidArgumentException(\sprintf(
+                'Filter operator "%s" on field "%s" has no documentation hint. Add it to %s::SINGLE_OPERATOR_HINTS.',
+                $operator,
+                $property->getPropertyName(),
+                self::class
+            ));
+        }
+
+        $hint = \sprintf(self::SINGLE_OPERATOR_HINTS[$operator], $property->getPropertyName());
+        $description = $property->getPropertyDescription();
+
+        return $description === '' ? $hint : $hint . ' ' . $description;
     }
 
     /**
@@ -86,6 +152,8 @@ class ParameterObject implements ObjectInterface
             ];
         }
 
+        // deepObject is defined for one bracket level of primitive properties, so a nested
+        // `in` stays a comma-separated string. Only the flat form can spell it as an array.
         if ($operator === Operator::IN) {
             return [
                 'type' => 'string',
@@ -93,7 +161,22 @@ class ParameterObject implements ObjectInterface
             ];
         }
 
-        return $property->getDocumentationArray();
+        return self::valueSchema($property);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function valueSchema(AbstractProperty $property): array
+    {
+        $schema = $property->getDocumentationArray();
+
+        // A property default describes the resource field, not the filter. On a parameter
+        // schema OpenAPI reads it as "omitting this applies that value", which is the
+        // opposite of what the population strategy does: an absent filter adds no condition.
+        unset($schema['default']);
+
+        return $schema;
     }
 
     public function getName(): string
