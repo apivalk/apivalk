@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.0.0](https://github.com/apivalk/apivalk/compare/v2.4.0...v3.0.0) (2026-09-15)
+
+### ⚠ BREAKING CHANGES
+
+* filter named constructors, getType(), isType*(), getValue()
+  and getRawValue() are removed; the `filter[...]` query wrapper no longer
+  resolves; generated specs declare OpenAPI 3.2.0
+* flat OpenAPI parameters for single-operator filters (#167)
+* getRequestClass() and getResponseClasses() are removed from
+  AbstractApivalkController and from the five resource controller bases.
+  __invoke() has to declare its request class as the first parameter and return
+  its responses. The @template TRequest on AbstractApivalkController goes with
+  them, so @extends AbstractApivalkController<T> annotations have to be deleted.
+* requires PHP 7.4, was 7.2
+
+* Feat/152 querying logic (#161) ([be9ba19](https://github.com/apivalk/apivalk/commit/be9ba1976fa0ea9b2012fdde7b059c5fa5fae0b3)), closes [#152](https://github.com/apivalk/apivalk/issues/152), references [#161](https://github.com/apivalk/apivalk/issues/161)
+
+### Features
+
+* add support for dots in path property values ([#163](https://github.com/apivalk/apivalk/issues/163)) ([84ab827](https://github.com/apivalk/apivalk/commit/84ab827251171274b224da1d725b1f5cb29c117c))
+* add support for excluding routes from OpenAPI documentation ([#157](https://github.com/apivalk/apivalk/issues/157)) ([ffdc04d](https://github.com/apivalk/apivalk/commit/ffdc04d47f3a249efc8919a12e70fcc4c4524bcc)), references [#156](https://github.com/apivalk/apivalk/issues/156)
+* add tag filtering and forced inclusion of excluded routes to OpenAPI generator ([#166](https://github.com/apivalk/apivalk/issues/166)) ([df73502](https://github.com/apivalk/apivalk/commit/df7350262d948aa329043513aeb8d4e45a8ca71f)), references [#165](https://github.com/apivalk/apivalk/issues/165)
+* derive request and response classes from __invoke() ([#168](https://github.com/apivalk/apivalk/issues/168)), references [#162](https://github.com/apivalk/apivalk/issues/162)
+* enforce method validation in resource controllers and improve PATCH semantics documentation ([#159](https://github.com/apivalk/apivalk/issues/159)) ([cc28d45](https://github.com/apivalk/apivalk/commit/cc28d4578d024f3709752c82a87f89d20654fbc7)), references [#135](https://github.com/apivalk/apivalk/issues/135)
+* flat OpenAPI parameters for single-operator filters ([#167](https://github.com/apivalk/apivalk/issues/167)) ([6a45203](https://github.com/apivalk/apivalk/commit/6a45203fdfb1d5d3c77c91cc21f55ae3956ea2ae)), references [#164](https://github.com/apivalk/apivalk/issues/164)
+* upgrade to PHP 7.4 ([#160](https://github.com/apivalk/apivalk/issues/160)), closes [#154](https://github.com/apivalk/apivalk/issues/154)
+
 ## [2.4.0](https://github.com/apivalk/apivalk/compare/v2.3.1...v2.4.0) (2026-08-05)
 
 
