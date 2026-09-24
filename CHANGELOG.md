@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.0](https://github.com/apivalk/apivalk/compare/v3.0.0...v3.1.0) (2026-09-24)
+
+### Features
+
+* add audience support to route authorization ([#171](https://github.com/apivalk/apivalk/issues/171)) ([5720db6](https://github.com/apivalk/apivalk/commit/5720db66c7f0ee73a8270c4f00e7c90984008940))
+
+### Bug Fixes
+
+* **docs:** fix tip in authenticator.mdx ([#172](https://github.com/apivalk/apivalk/issues/172)) ([a38c46b](https://github.com/apivalk/apivalk/commit/a38c46b313ed63754b4f12c66330bec4eac63b39))
+* **jwt:** reject tokens that omit a configured iss or aud claim ([#170](https://github.com/apivalk/apivalk/issues/170)) ([047e552](https://github.com/apivalk/apivalk/commit/047e552619f1eafe6d509a831de997c417b162d3))
+
 ## [3.0.0](https://github.com/apivalk/apivalk/compare/v2.4.0...v3.0.0) (2026-09-15)
 
 ### ⚠ BREAKING CHANGES
