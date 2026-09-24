@@ -22,7 +22,7 @@ class UploadDocumentController extends AbstractApivalkController
                 (new IntegerProperty('customer_id', 'Customer integer ID'))->setMinimumValue(1)
             )
             ->routeAuthorization(
-                new RouteAuthorization('bearer', ['api:customers'], ['api:customers:create'])
+                new RouteAuthorization('bearer', ['api:customers'], ['api:customers:create'], 'dev-client')
             );
     }
 

@@ -14,6 +14,7 @@ use apivalk\apivalk\Middleware\SecurityMiddleware;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\AuthIdentity\AbstractAuthIdentity;
 use apivalk\apivalk\Security\AuthIdentity\GuestAuthIdentity;
+use apivalk\apivalk\Security\AuthIdentity\JwtAuthIdentity;
 use apivalk\apivalk\Security\RouteAuthorization;
 use PHPUnit\Framework\TestCase;
 
@@ -149,6 +150,64 @@ class SecurityMiddlewareTest extends TestCase
 
         $request = $this->createMock(ApivalkRequestInterface::class);
         $request->method('getAuthIdentity')->willReturn(new GuestAuthIdentity([]));
+
+        $result = $this->middleware->process(
+            $request,
+            $this->controllerFor($route),
+            static fn() => new NotFoundApivalkResponse()
+        );
+
+        self::assertInstanceOf(UnauthorizedApivalkResponse::class, $result);
+    }
+
+    public function testWrongRequiredAud_returnsUnauthorized_forAuthorized(): void
+    {
+        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:update'], 'dev-client');
+        $route = $this->mockRoute($routeAuthorization);
+
+        $identity = new JwtAuthIdentity(null, null, null, [], ['asset:update'], ['staging-client']);
+
+        $request = $this->createMock(ApivalkRequestInterface::class);
+        $request->method('getAuthIdentity')->willReturn($identity);
+
+        $result = $this->middleware->process(
+            $request,
+            $this->controllerFor($route),
+            static fn() => new NotFoundApivalkResponse()
+        );
+
+        self::assertInstanceOf(UnauthorizedApivalkResponse::class, $result);
+    }
+
+    public function testRequiredAudAmongSeveralTokenAudiences_isAllowed(): void
+    {
+        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:update'], 'dev-client');
+        $route = $this->mockRoute($routeAuthorization);
+
+        $identity = new JwtAuthIdentity(null, null, null, [], ['asset:update'], ['staging-client', 'dev-client']);
+
+        $request = $this->createMock(ApivalkRequestInterface::class);
+        $request->method('getAuthIdentity')->willReturn($identity);
+        $expected = $this->createMock(AbstractApivalkResponse::class);
+
+        $result = $this->middleware->process(
+            $request,
+            $this->controllerFor($route),
+            static fn(ApivalkRequestInterface $r) => $expected
+        );
+
+        self::assertSame($expected, $result);
+    }
+
+    public function testTokenWithoutAudiences_isRejected_whenRouteRequiresOne(): void
+    {
+        $routeAuthorization = new RouteAuthorization('Bearer', [], ['asset:update'], 'dev-client');
+        $route = $this->mockRoute($routeAuthorization);
+
+        $identity = new JwtAuthIdentity(null, null, null, [], ['asset:update']);
+
+        $request = $this->createMock(ApivalkRequestInterface::class);
+        $request->method('getAuthIdentity')->willReturn($identity);
 
         $result = $this->middleware->process(
             $request,

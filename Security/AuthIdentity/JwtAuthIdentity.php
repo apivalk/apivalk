@@ -13,23 +13,28 @@ class JwtAuthIdentity extends AbstractAuthIdentity
     private array $scopes;
     /** @var string[] */
     private array $permissions;
+    /** @var string[] */
+    private array $aud;
 
     /**
      * @param string[] $scopes
      * @param string[] $permissions
+     * @param string[] $aud
      */
     public function __construct(
         ?string $username,
         ?string $email,
         ?string $sub,
         array $scopes,
-        array $permissions
+        array $permissions,
+        array $aud = []
     ) {
         $this->scopes = $scopes;
         $this->permissions = $permissions;
         $this->username = $username;
         $this->email = $email;
         $this->sub = $sub;
+        $this->aud = $aud;
     }
 
     /** @return string[] */
@@ -42,6 +47,12 @@ class JwtAuthIdentity extends AbstractAuthIdentity
     public function getPermissions(): array
     {
         return $this->permissions;
+    }
+
+    /** @return string[] */
+    public function getAud(): array
+    {
+        return $this->aud;
     }
 
     public function isAuthenticated(): bool

@@ -51,9 +51,9 @@ class JwtAuthenticator implements AuthenticatorInterface
                 return null;
             }
 
-            if ($this->audience !== ''
-                && (!isset($payload['aud']) || !$this->audMatches($payload['aud'], $this->audience))
-            ) {
+            $audiences = $this->parseAudiences($payload['aud'] ?? null);
+
+            if ($this->audience !== '' && !\in_array($this->audience, $audiences, true)) {
                 return null;
             }
 
@@ -65,7 +65,8 @@ class JwtAuthenticator implements AuthenticatorInterface
                 isset($payload['email']) ? (string)$payload['email'] : null,
                 isset($payload['sub']) ? (string)$payload['sub'] : null,
                 $scopes,
-                $permissions
+                $permissions,
+                $audiences
             );
         } catch (\Throwable $e) {
             return null;
@@ -73,24 +74,23 @@ class JwtAuthenticator implements AuthenticatorInterface
     }
 
     /**
-     * @param mixed  $audClaim
-     * @param string $expectedAudience
+     * A single-valued aud claim is a plain string, a multi-valued one an array (RFC 7519 section 4.1.3).
+     *
+     * @param mixed $audClaim
+     *
+     * @return string[]
      */
-    private function audMatches($audClaim, string $expectedAudience): bool
+    private function parseAudiences($audClaim): array
     {
         if (\is_string($audClaim)) {
-            return $audClaim === $expectedAudience;
+            $audClaim = [$audClaim];
         }
 
-        if (\is_array($audClaim)) {
-            foreach ($audClaim as $aud) {
-                if ((string)$aud === $expectedAudience) {
-                    return true;
-                }
-            }
+        if (!\is_array($audClaim)) {
+            return [];
         }
 
-        return false;
+        return $this->normalizeStringArray($audClaim, false);
     }
 
     /**
