@@ -28,8 +28,8 @@ class JwtAuthenticator implements AuthenticatorInterface
     /**
      * @param string              $jwkSetUrl The URL to the JWK Set (e.g. https://example.com/.well-known/jwks.json)
      * @param CacheInterface|null $cache
-     * @param string              $issuer    Expected issuer (iss claim)
-     * @param string              $audience  Expected audience (aud claim)
+     * @param string              $issuer    Expected issuer (iss claim); an empty string disables the check
+     * @param string              $audience  Expected audience (aud claim); an empty string disables the check
      */
     public function __construct(string $jwkSetUrl, ?CacheInterface $cache, string $issuer, string $audience)
     {
@@ -45,16 +45,20 @@ class JwtAuthenticator implements AuthenticatorInterface
             $keys = $this->getJwksKeys();
             $payload = (array)JWT::decode($token, $keys);
 
-            if (isset($payload['iss']) && (string)$payload['iss'] !== $this->issuer) {
+            if ($this->issuer !== ''
+                && (!isset($payload['iss']) || (string)$payload['iss'] !== $this->issuer)
+            ) {
                 return null;
             }
 
-            if (isset($payload['aud']) && !$this->audMatches($payload['aud'], $this->audience)) {
+            if ($this->audience !== ''
+                && (!isset($payload['aud']) || !$this->audMatches($payload['aud'], $this->audience))
+            ) {
                 return null;
             }
 
             $scopes = $this->parseScopes($payload['scope'] ?? $payload['scp'] ?? null);
-            $permissions = $this->extractPermissions($payload);
+            $permissions = $this->extractPermissions($payload) ?? [];
 
             return new JwtAuthIdentity(
                 isset($payload['username']) ? (string)$payload['username'] : null,
