@@ -19,28 +19,6 @@ class JwtAuthenticatorTest extends TestCase
     private const SIGNING_KEY_ID = 'test-key';
     private const SIGNING_SECRET = 'a-test-signing-secret-of-32-byte';
 
-    public function testAuthenticateInvalidIssuer(): void
-    {
-        $cache = $this->createMock(CacheInterface::class);
-        $authenticator = $this->getMockBuilder(JwtAuthenticator::class)
-            ->setConstructorArgs([self::JWK_SET_URL, $cache, self::ISSUER, self::AUDIENCE])
-            ->setMethods(['getJwksKeys'])
-            ->getMock();
-
-        $payload = [
-            'iss' => 'wrong-issuer',
-            'aud' => self::AUDIENCE,
-            'sub' => 'user-123'
-        ];
-
-        // We can't easily mock JWT::decode because it's a static call.
-        // But JwtAuthenticator handles the payload after decode.
-        // Wait, JwtAuthenticator::authenticate calls JWT::decode.
-        // If I want to test JwtAuthenticator::authenticate, I might need to provide a real token and mock getKeys.
-
-        $this->assertTrue(true);
-    }
-
     public function testGetKeysUsesCache(): void
     {
         $cache = $this->createMock(CacheInterface::class);
@@ -130,6 +108,246 @@ class JwtAuthenticatorTest extends TestCase
         $this->assertNotNull($authenticator->authenticate($token));
     }
 
+    public function testTokenWithForeignIssuerIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => 'https://attacker.example/',
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123'
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenWithForeignAudienceIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => 'other-api',
+                'sub' => 'user-123'
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenWithAudienceListWithoutTheExpectedAudienceIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => ['other-api', 'third-api'],
+                'sub' => 'user-123'
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenSignedWithAnUntrustedSecretIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->sign(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123'
+            ],
+            'an-attacker-signing-secret-32-by',
+            self::SIGNING_KEY_ID
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenWithUnknownKeyIdIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->sign(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123'
+            ],
+            self::SIGNING_SECRET,
+            'unknown-key'
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testExpiredTokenIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123',
+                'exp' => time() - 60
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenThatIsNotYetValidIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123',
+                'nbf' => time() + 600
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testMalformedTokenIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $this->assertNull($authenticator->authenticate('not-a-jwt'));
+    }
+
+    public function testClaimsOfAnAcceptedTokenArePropagatedToTheIdentity(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123',
+                'username' => 'jane',
+                'email' => 'jane@example.com',
+                'scope' => 'read write',
+                'permissions' => ['user:read', 'user:write']
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertTrue($identity->isAuthenticated());
+        $this->assertSame('jane', $identity->getUsername());
+        $this->assertSame('jane@example.com', $identity->getEmail());
+        $this->assertSame('user-123', $identity->getSub());
+        $this->assertSame([self::AUDIENCE], $identity->getAud());
+        $this->assertSame(['read', 'write'], $identity->getScopes());
+        $this->assertSame(['user:read', 'user:write'], $identity->getPermissions());
+    }
+
+    public function testScopesAndPermissionsAreReadFromTheAlternativeClaims(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'scp' => ['read', 'write read'],
+                'roles' => 'admin support'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame(['read', 'write'], $identity->getScopes());
+        $this->assertSame(['admin', 'support'], $identity->getPermissions());
+    }
+
+    public function testTokenWithoutScopeAndPermissionClaimsYieldsAnIdentityWithoutGrants(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame([], $identity->getScopes());
+        $this->assertSame([], $identity->getPermissions());
+    }
+
+    public function testAudClaimIsPropagatedEvenWhenTheAudienceCheckIsDisabled(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, '');
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => 'some-other-api',
+                'sub' => 'user-123'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame(['some-other-api'], $identity->getAud());
+    }
+
+    public function testTokenWithAudienceListContainingTheExpectedAudienceIsAccepted(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => ['other-api', self::AUDIENCE],
+                'sub' => 'user-123'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame(['other-api', self::AUDIENCE], $identity->getAud());
+        $this->assertTrue($identity->isAudGranted(self::AUDIENCE));
+        $this->assertFalse($identity->isAudGranted('third-api'));
+    }
+
+    public function testIdentityOfATokenWithoutAudClaimCarriesNoAudience(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, '');
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'sub' => 'user-123'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame([], $identity->getAud());
+    }
+
     private function authenticatorWithTrustedKey(string $issuer, string $audience): JwtAuthenticator
     {
         $authenticator = new JwtAuthenticator(self::JWK_SET_URL, null, $issuer, $audience);
@@ -146,6 +364,14 @@ class JwtAuthenticatorTest extends TestCase
      */
     private function signWithTrustedKey(array $payload): string
     {
-        return JWT::encode($payload, self::SIGNING_SECRET, 'HS256', self::SIGNING_KEY_ID);
+        return $this->sign($payload, self::SIGNING_SECRET, self::SIGNING_KEY_ID);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function sign(array $payload, string $secret, string $keyId): string
+    {
+        return JWT::encode($payload, $secret, 'HS256', $keyId);
     }
 }

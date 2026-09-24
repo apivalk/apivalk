@@ -43,7 +43,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'admin-token',
+            'admin-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
         );
@@ -70,7 +70,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'admin-token'
+            'admin-token-with-dev-aud'
         );
 
         $this->assertSame(422, $response->getStatusCode());
@@ -90,7 +90,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'admin-token',
+            'admin-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $this->uploadedFile('plain text disguised as a pdf')]
         );
@@ -111,7 +111,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'admin-token',
+            'admin-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $this->uploadedFile($contents)]
         );
@@ -137,7 +137,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'admin-token',
+            'admin-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $file]
         );
@@ -156,7 +156,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'not-a-known-type'],
-            'admin-token',
+            'admin-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
         );
@@ -173,6 +173,21 @@ class FileUploadIntegrationTest extends TestCase
             [],
             ['document_type' => 'invoice'],
             null,
+            '127.0.0.1',
+            ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testUpload_withWrongAud_returns401(): void
+    {
+        $response = $this->makeRequest(
+            'POST',
+            self::PATH,
+            [],
+            ['document_type' => 'invoice'],
+            'admin-token',
             '127.0.0.1',
             ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
         );

@@ -58,6 +58,11 @@ final class ApiKeyIdentity extends AbstractAuthIdentity
         return $this->permissions;
     }
 
+    public function getAud(): array
+    {
+        return [];
+    }
+
     public function isAuthenticated(): bool
     {
         return true;

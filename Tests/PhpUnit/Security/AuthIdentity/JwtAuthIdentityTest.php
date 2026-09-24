@@ -16,7 +16,8 @@ class JwtAuthIdentityTest extends TestCase
             'user@example.com',
             'sub-456',
             ['read', 'write'],
-            ['perm1', 'perm2']
+            ['perm1', 'perm2'],
+            ['dev-client', 'mobile-client']
         );
 
         $this->assertEquals('user123', $identity->getUsername());
@@ -24,6 +25,10 @@ class JwtAuthIdentityTest extends TestCase
         $this->assertEquals('sub-456', $identity->getSub());
         $this->assertEquals(['read', 'write'], $identity->getScopes());
         $this->assertEquals(['perm1', 'perm2'], $identity->getPermissions());
+        $this->assertEquals(['dev-client', 'mobile-client'], $identity->getAud());
+        $this->assertTrue($identity->isAudGranted('dev-client'));
+        $this->assertTrue($identity->isAudGranted('mobile-client'));
+        $this->assertFalse($identity->isAudGranted('staging-client'));
         $this->assertTrue($identity->isAuthenticated());
     }
 
@@ -36,6 +41,7 @@ class JwtAuthIdentityTest extends TestCase
         $this->assertNull($identity->getSub());
         $this->assertEmpty($identity->getScopes());
         $this->assertEmpty($identity->getPermissions());
+        $this->assertSame([], $identity->getAud());
         $this->assertTrue($identity->isAuthenticated());
     }
 }

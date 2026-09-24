@@ -12,6 +12,9 @@ abstract class AbstractAuthIdentity
     /** @return string[] */
     abstract public function getPermissions(): array;
 
+    /** @return string[] */
+    abstract public function getAud(): array;
+
     abstract public function isAuthenticated(): bool;
 
     public function isScopeGranted(string $scope): bool
@@ -22,5 +25,10 @@ abstract class AbstractAuthIdentity
     public function isPermissionGranted(string $permission): bool
     {
         return \in_array($permission, $this->getPermissions(), true);
+    }
+
+    public function isAudGranted(string $aud): bool
+    {
+        return \in_array($aud, $this->getAud(), true);
     }
 }

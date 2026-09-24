@@ -15,8 +15,9 @@ A route can have a `RouteAuthorization` object that defines:
 1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`). This name must match a `SecuritySchemeObject` defined in your `ComponentsObject` so the generated OpenAPI spec correctly links the route to its authentication method. See [Security Schemes and Components](/documentation/openapi-generator#security-schemes-and-components) for full setup examples.
 2. **Scopes**: A list of required scopes.
 3. **Permissions**: A list of required permissions.
+4. **Audience**: A single audience the token has to be issued for. Optional, `null` disables the check.
 
-The current [Identity](/security/identity) must possess **all** the required scopes and permissions to be granted access.
+The current [Identity](/security/identity) must possess **all** the required scopes and permissions to be granted access. If the route requires an audience, the identity's audience list has to contain it.
 
 ## Route Examples
 
@@ -53,6 +54,20 @@ $route = Route::get('/admin/dashboard')
     );
 ```
 
+### Audience-Restricted Route
+A route that additionally requires the token to be issued for a specific audience. The fourth argument is matched against `AbstractAuthIdentity::getAud()`, which for a JWT holds the `aud` claim. A token issued for several audiences passes as soon as one of them matches.
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+
+$route = Route::post('/admin/exports')
+    ->description('Trigger an export')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin'], ['admin:export:create'], 'internal-tools')
+    );
+```
+
 ### Optional Security (Public with Identity)
 If you want a route to be public but also optionally use identity information when a token is provided, leave `RouteAuthorization` as `null`. The `AuthenticationMiddleware` will still populate the identity if a valid token is present — you can check `$request->getAuthIdentity()->isAuthenticated()` in your controller to adapt behavior.
 
@@ -62,6 +77,7 @@ When authorization fails, the middleware returns an error response directly — 
 
 1.  **401 Unauthorized**: Returned when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
 2.  **403 Forbidden**: Returned when an authenticated identity (e.g. [JwtAuthIdentity](/security/identity)) does not have the required scopes or permissions for the route.
+3.  **401 Unauthorized (audience mismatch)**: Returned when the identity does not carry the audience the route requires, even when it is authenticated. A token issued for a different audience is not a missing privilege, it was never meant for this API, so the request is treated as unauthenticated rather than forbidden.
 
 ## Scopes and Permissions
 

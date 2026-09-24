@@ -70,6 +70,21 @@ $route = Route::get('/admin/settings')
 
 In this example, the route requires a security scheme named `BearerAuth` with the `admin:settings` scope and `admin:settings:read` permission.
 
+### 4. Audience-Restricted Route
+
+A route that additionally requires the token to be issued for a specific audience, passed as the fourth argument. It is matched against the identity's audience list, which for a JWT comes from the `aud` claim. A token issued for several audiences passes as soon as one of them matches, a token without a matching audience gets a `401 Unauthorized` even when it is otherwise valid.
+
+```php
+use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\RouteAuthorization;
+
+$route = Route::post('/admin/exports')
+    ->description('Trigger an export')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin'], ['admin:export:create'], 'internal-tools')
+    );
+```
+
 ### Connection to OpenAPI
 
 The first argument of `RouteAuthorization` is the security scheme name. **This name must match the `name` parameter of a `SecuritySchemeObject` in your `ComponentsObject`.** This is how Apivalk connects a route to its security definition in the generated OpenAPI spec, and how Swagger UI knows to show the "Authorize" button for that endpoint.
@@ -144,6 +159,13 @@ $scopedRoute = Route::post('/orders')
     ->description('Create order')
     ->routeAuthorization(
         new RouteAuthorization('BearerAuth', ['order'], ['order:create'])
+    );
+
+// AUDIENCE-RESTRICTED: Additionally requires the token to be issued for this audience
+$internalRoute = Route::post('/admin/exports')
+    ->description('Trigger an export')
+    ->routeAuthorization(
+        new RouteAuthorization('BearerAuth', ['admin'], ['admin:export:create'], 'internal-tools')
     );
 ```
 
