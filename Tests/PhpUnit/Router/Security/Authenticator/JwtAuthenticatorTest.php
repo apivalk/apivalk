@@ -7,6 +7,7 @@ namespace apivalk\apivalk\Tests\PhpUnit\Router\Security\Authenticator;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
 use apivalk\apivalk\Security\Authenticator\JwtAuthenticator;
+use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +16,8 @@ class JwtAuthenticatorTest extends TestCase
     private const JWK_SET_URL = 'https://example.com/jwks.json';
     private const ISSUER = 'https://example.com/';
     private const AUDIENCE = 'my-api';
+    private const SIGNING_KEY_ID = 'test-key';
+    private const SIGNING_SECRET = 'a-test-signing-secret-of-32-byte';
 
     public function testAuthenticateInvalidIssuer(): void
     {
@@ -70,5 +73,79 @@ class JwtAuthenticatorTest extends TestCase
         $this->assertIsArray($keys);
         $this->assertArrayHasKey('1', $keys);
         $this->assertInstanceOf(Key::class, $keys['1']);
+    }
+
+    public function testTokenMissingIssAndAudIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'sub' => 'attacker',
+                'scope' => 'admin:everything'
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenMissingAudIsRejected(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'sub' => 'user-123'
+            ]
+        );
+
+        $this->assertNull($authenticator->authenticate($token));
+    }
+
+    public function testTokenWithMatchingIssAndAudIsAccepted(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey(self::ISSUER, self::AUDIENCE);
+
+        $token = $this->signWithTrustedKey(
+            [
+                'iss' => self::ISSUER,
+                'aud' => self::AUDIENCE,
+                'sub' => 'user-123'
+            ]
+        );
+
+        $identity = $authenticator->authenticate($token);
+
+        $this->assertNotNull($identity);
+        $this->assertSame('user-123', $identity->getSub());
+    }
+
+    public function testUnconfiguredIssuerAndAudienceAreNotEnforced(): void
+    {
+        $authenticator = $this->authenticatorWithTrustedKey('', '');
+
+        $token = $this->signWithTrustedKey(['sub' => 'user-123']);
+
+        $this->assertNotNull($authenticator->authenticate($token));
+    }
+
+    private function authenticatorWithTrustedKey(string $issuer, string $audience): JwtAuthenticator
+    {
+        $authenticator = new JwtAuthenticator(self::JWK_SET_URL, null, $issuer, $audience);
+
+        $keys = new \ReflectionProperty(JwtAuthenticator::class, 'keys');
+        $keys->setAccessible(true);
+        $keys->setValue($authenticator, [self::SIGNING_KEY_ID => new Key(self::SIGNING_SECRET, 'HS256')]);
+
+        return $authenticator;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function signWithTrustedKey(array $payload): string
+    {
+        return JWT::encode($payload, self::SIGNING_SECRET, 'HS256', self::SIGNING_KEY_ID);
     }
 }
