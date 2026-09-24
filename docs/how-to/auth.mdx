@@ -171,12 +171,19 @@ final class ApiKeyIdentity extends AbstractAuthIdentity
         return [];
     }
 
+    public function getAud(): array
+    {
+        return [];
+    }
+
     public function isAuthenticated(): bool
     {
         return true;
     }
 }
 ```
+
+`getAud()` returns the audiences the credential is valid for, and is matched against the audience a route requires. Return an empty array if the concept doesn't apply to your credential, but note that such an identity is then rejected on every route that requires an audience.
 
 Return it from your authenticator and downcast with PHPStan-friendly narrowing in the controllers that care.
 

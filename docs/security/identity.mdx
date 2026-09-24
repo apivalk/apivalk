@@ -7,7 +7,7 @@ Every request in Apivalk is associated with an `AbstractAuthIdentity`. This ensu
 
 ## AbstractAuthIdentity
 
-The base class for all identities. It defines the contract for checking authentication status, granted scopes, and permissions.
+The base class for all identities. It defines the contract for checking authentication status, granted scopes, permissions, and audiences.
 
 ### Methods
 
@@ -16,6 +16,8 @@ The base class for all identities. It defines the contract for checking authenti
 - **`getPermissions(): string[]`**: Returns an array of permission names granted to this identity.
 - **`isScopeGranted(string $scope): bool`**: Helper method to check if a specific scope is present.
 - **`isPermissionGranted(string $permission): bool`**: Helper method to check if a specific permission is present.
+- **`getAud(): string[]`**: Returns the audiences this identity is valid for. A JWT carries them in the `aud` claim, which is a single string or a list of strings.
+- **`isAudGranted(string $aud): bool`**: Helper method to check if a specific audience is present. Used by the [SecurityMiddleware](/middleware/security) for the audience a route requires.
 
 ---
 
@@ -35,7 +37,8 @@ $identity = new JwtAuthIdentity(
     'john@example.com',
     'user-123',
     ['read:profile'],
-    ['profile:view']
+    ['profile:view'],
+    ['https://api.example.com']
 );
 ```
 

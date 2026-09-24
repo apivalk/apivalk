@@ -49,6 +49,12 @@ class SecurityMiddleware implements MiddlewareInterface
             return new UnauthorizedApivalkResponse();
         }
 
+        $requiredAud = $routeAuthorization->getRequiredAud();
+
+        if ($requiredAud !== null && !$authIdentity->isAudGranted($requiredAud)) {
+            return new UnauthorizedApivalkResponse();
+        }
+
         return $next($request);
     }
 }

@@ -28,7 +28,7 @@ $configuration->getMiddlewareStack()->add(new SecurityMiddleware());
 
 The cache is optional but strongly recommended in production — without it every request re-downloads the JWKS. Any `CacheInterface` works; `FilesystemCache` is shipped.
 
-A configured `iss` or `aud` is mandatory: a token that omits the claim is rejected just like one that carries the wrong value. Pass an empty string to skip either check.
+A configured `iss` or `aud` is mandatory: a token that omits the claim is rejected just like one that carries the wrong value. Pass an empty string to skip either check. Per RFC 7519 the `aud` claim is either a single string or a list of strings, and the token passes as soon as one entry equals the configured audience.
 
 ## 2. Declare the security scheme in your OpenAPI components
 
@@ -77,8 +77,11 @@ Clients send `Authorization: Bearer <jwt>`. Anything else reaches your controlle
 | `username` | `$identity->getUsername()` |
 | `scope` or `scp` (space-separated string or array) | `$identity->getScopes()` |
 | `permissions`, `permission`, `roles`, `role` (string or array) | `$identity->getPermissions()` |
+| `aud` (string or array) | `$identity->getAud()`, always a list |
 
-A token that carries none of the permission claims gets an empty permission list.
+A token that carries none of the permission claims gets an empty permission list, a token without `aud` an empty audience list.
+
+Individual routes can require one of those audiences on top of scopes and permissions, see [Security Middleware](/middleware/security).
 
 If `iss` or `aud` are missing or don't match the values you passed into the constructor, or the signature is invalid, or the token is expired, `authenticate()` returns `null` and the middleware falls back to `GuestAuthIdentity`. It never throws.
 
@@ -109,7 +112,7 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 
 ## Troubleshooting
 
-- **Always guest, even with a valid token.** Confirm the token carries `iss` and `aud` and that both **exactly** match what you passed into the constructor (trailing slash on `iss` matters). Confirm the JWKS URL is reachable from your PHP container — `JwtAuthenticator::httpGet()` times out after 5 seconds.
+- **Always guest, even with a valid token.** Confirm the token carries `iss` and `aud`, that `iss` **exactly** matches what you passed into the constructor (trailing slash matters) and that `aud` contains the configured audience. Confirm the JWKS URL is reachable from your PHP container — `JwtAuthenticator::httpGet()` times out after 5 seconds.
 - **"Invalid JWKS response".** Your provider returned HTML or an error. Open the URL in a browser; the response must be `{"keys": [...]}`.
 - **Cache poisoning suspicions.** JWKS is cached for 3600 seconds per URL. Delete the cached entry (key pattern: `jwks_<md5(url)>`) or clear the `FilesystemCache` directory and retry.
 - **Signature failures after key rotation.** `JwtAuthenticator` caches keys for an hour; worst case you wait that hour. To force a refresh on demand, clear the same cache entry.

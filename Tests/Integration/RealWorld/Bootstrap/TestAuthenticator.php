@@ -43,6 +43,9 @@ class TestAuthenticator implements AuthenticatorInterface
             case 'admin-token':
                 return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, self::ALL_PERMISSIONS);
 
+            case 'admin-token-with-dev-aud':
+                return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, self::ALL_PERMISSIONS, ['dev-client']);
+
             case 'read-only-token':
                 return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, [
                     'api:customers:read',
