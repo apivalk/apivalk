@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.2.0](https://github.com/apivalk/apivalk/compare/v3.1.0...v3.2.0) (2026-09-25)
+
+### Features
+
+* move security schemes to the configuration ([#173](https://github.com/apivalk/apivalk/issues/173)) ([b98cd0a](https://github.com/apivalk/apivalk/commit/b98cd0aeb23fdfd78ad9d2d42728ff9f98929a1c))
+
 ## [3.1.0](https://github.com/apivalk/apivalk/compare/v3.0.0...v3.1.0) (2026-09-24)
 
 ### Features
