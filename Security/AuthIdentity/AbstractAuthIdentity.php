@@ -6,16 +6,22 @@ namespace apivalk\apivalk\Security\AuthIdentity;
 
 abstract class AbstractAuthIdentity
 {
+    /** @var string[] */
+    protected array $aud = [];
+
     /** @return string[] */
     abstract public function getScopes(): array;
 
     /** @return string[] */
     abstract public function getPermissions(): array;
 
-    /** @return string[] */
-    abstract public function getAud(): array;
-
     abstract public function isAuthenticated(): bool;
+
+    /** @return string[] */
+    public function getAud(): array
+    {
+        return $this->aud;
+    }
 
     public function isScopeGranted(string $scope): bool
     {
@@ -27,8 +33,13 @@ abstract class AbstractAuthIdentity
         return \in_array($permission, $this->getPermissions(), true);
     }
 
-    public function isAudGranted(string $aud): bool
+    /**
+     * A token is accepted when it carries at least one of the audiences the scheme lists.
+     *
+     * @param string[] $audiences
+     */
+    public function isAnyAudGranted(array $audiences): bool
     {
-        return \in_array($aud, $this->getAud(), true);
+        return \array_intersect($audiences, $this->getAud()) !== [];
     }
 }

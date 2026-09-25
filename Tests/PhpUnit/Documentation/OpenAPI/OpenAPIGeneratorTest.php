@@ -9,6 +9,7 @@ use apivalk\apivalk\Documentation\ApivalkRequestDocumentation;
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
@@ -18,6 +19,7 @@ use apivalk\apivalk\Http\Request\AbstractApivalkRequest;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Security\SecuritySchemeCollection;
 use PHPUnit\Framework\TestCase;
 
 class OpenAPIGeneratorTest extends TestCase
@@ -254,6 +256,48 @@ class OpenAPIGeneratorTest extends TestCase
         $apivalk->method('getRouter')->willReturn($router);
 
         return new OpenAPIGenerator($apivalk, new InfoObject('Title', '1.0.0'));
+    }
+
+    public function testSecuritySchemesComeFromTheApivalkConfiguration(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $router = $this->createMock(AbstractRouter::class);
+        $router->method('getRoutes')->willReturn([
+            ['route' => new Route('/test', new GetMethod()), 'controllerClass' => $controllerClass]
+        ]);
+
+        $schemes = new SecuritySchemeCollection();
+        $schemes->add(SecuritySchemeObject::http('bearer', 'bearer', null, 'JWT', ['dev-client']));
+
+        $apivalk = $this->createMock(Apivalk::class);
+        $apivalk->method('getRouter')->willReturn($router);
+        $apivalk->method('getSecuritySchemes')->willReturn($schemes);
+
+        $data = json_decode((new OpenAPIGenerator($apivalk, new InfoObject('Title', '1.0.0')))->generate(), true);
+
+        $this->assertSame(
+            ['type' => 'http', 'x-audience' => ['dev-client'], 'scheme' => 'bearer', 'bearerFormat' => 'JWT'],
+            $data['components']['securitySchemes']['bearer']
+        );
+    }
+
+    public function testWithoutRegisteredSchemesNoSecuritySchemesKeyIsEmitted(): void
+    {
+        $controllerClass = $this->defineTestController();
+
+        $router = $this->createMock(AbstractRouter::class);
+        $router->method('getRoutes')->willReturn([
+            ['route' => new Route('/test', new GetMethod()), 'controllerClass' => $controllerClass]
+        ]);
+
+        $apivalk = $this->createMock(Apivalk::class);
+        $apivalk->method('getRouter')->willReturn($router);
+        $apivalk->method('getSecuritySchemes')->willReturn(new SecuritySchemeCollection());
+
+        $data = json_decode((new OpenAPIGenerator($apivalk, new InfoObject('Title', '1.0.0')))->generate(), true);
+
+        $this->assertArrayNotHasKey('components', $data);
     }
 
     private function defineTestController(): string

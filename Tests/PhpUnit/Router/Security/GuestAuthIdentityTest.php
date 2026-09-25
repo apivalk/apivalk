@@ -16,7 +16,7 @@ class GuestAuthIdentityTest extends TestCase
         $this->assertEquals(['public-read'], $identity->getScopes());
         $this->assertFalse($identity->isAuthenticated());
         $this->assertSame([], $identity->getAud());
-        $this->assertFalse($identity->isAudGranted('dev-client'));
+        $this->assertFalse($identity->isAnyAudGranted(['dev-client']));
     }
 
     public function testGuestAuthIdentityEmptyScopes(): void

@@ -9,6 +9,7 @@ use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Router\AbstractRouter;
+use apivalk\apivalk\Security\SecuritySchemeCollection;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -25,6 +26,7 @@ class Apivalk
         }
 
         $this->configuration->getRouter()->setApivalk($this);
+        $this->configuration->getSecuritySchemes()->assertRoutesResolvable($this->configuration->getRouter());
     }
 
     public function run(): AbstractApivalkResponse
@@ -60,5 +62,10 @@ class Apivalk
     public function getLocalizationConfiguration(): LocalizationConfiguration
     {
         return $this->configuration->getLocalizationConfiguration();
+    }
+
+    public function getSecuritySchemes(): SecuritySchemeCollection
+    {
+        return $this->configuration->getSecuritySchemes();
     }
 }

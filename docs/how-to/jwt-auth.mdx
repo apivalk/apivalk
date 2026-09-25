@@ -23,33 +23,39 @@ $authenticator = new JwtAuthenticator(
 );
 
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
 The cache is optional but strongly recommended in production — without it every request re-downloads the JWKS. Any `CacheInterface` works; `FilesystemCache` is shipped.
 
 A configured `iss` or `aud` is mandatory: a token that omits the claim is rejected just like one that carries the wrong value. Pass an empty string to skip either check. Per RFC 7519 the `aud` claim is either a single string or a list of strings, and the token passes as soon as one entry equals the configured audience.
 
-## 2. Declare the security scheme in your OpenAPI components
+## 2. Register the security scheme
 
-This name is what your routes reference via `RouteAuthorization`.
+This name is what your routes reference via `RouteAuthorization`, at runtime and in the generated document. Register it before you construct `Apivalk`, otherwise the constructor rejects the routes pointing at it.
 
 ```php
-use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 
-$components = new ComponentsObject();
-$components->setSecuritySchemes([
+$configuration->addSecurityScheme(
     SecuritySchemeObject::http(
         'BearerAuth',  // name — referenced by RouteAuthorization('BearerAuth', ...)
         'bearer',      // scheme
         'JWT Bearer',  // description
         'JWT'          // bearerFormat
-    ),
-]);
+    )
+);
 ```
 
-Pass `$components` when you run the OpenAPI generator — see [Generate OpenAPI and docblocks](/how-to/generate-openapi).
+The OpenAPI generator reads the schemes from the same configuration — see [Generate OpenAPI and docblocks](/how-to/generate-openapi).
+
+Add the audiences the scheme accepts as the last argument when tokens of a foreign audience must be rejected:
+
+```php
+$configuration->addSecurityScheme(
+    SecuritySchemeObject::http('BearerAuth', 'bearer', 'JWT Bearer', 'JWT', 'https://api.example.com')
+);
+```
 
 ## 3. Protect routes
 
@@ -81,7 +87,7 @@ Clients send `Authorization: Bearer <jwt>`. Anything else reaches your controlle
 
 A token that carries none of the permission claims gets an empty permission list, a token without `aud` an empty audience list.
 
-Individual routes can require one of those audiences on top of scopes and permissions, see [Security Middleware](/middleware/security).
+A security scheme can require one of those audiences on top of scopes and permissions, see [Security Middleware](/middleware/security).
 
 If `iss` or `aud` are missing or don't match the values you passed into the constructor, or the signature is invalid, or the token is expired, `authenticate()` returns `null` and the middleware falls back to `GuestAuthIdentity`. It never throws.
 

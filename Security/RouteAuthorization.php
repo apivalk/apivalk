@@ -11,20 +11,17 @@ class RouteAuthorization
     private array $requiredScopes;
     /** @var string[] */
     private array $requiredPermissions;
-    private ?string $requiredAud;
 
     /**
      * @param string $securitySchemeName
      * @param string[]|null $scopes
      * @param string[]|null $permissions
-     * @param string|null $aud
      */
-    public function __construct(string $securitySchemeName, ?array $scopes = null, ?array $permissions = null, ?string $aud = null)
+    public function __construct(string $securitySchemeName, ?array $scopes = null, ?array $permissions = null)
     {
         $this->securitySchemeName = $securitySchemeName;
         $this->requiredScopes = $scopes ?? [];
         $this->requiredPermissions = $permissions ?? [];
-        $this->requiredAud = $aud;
     }
 
     public function getSecuritySchemeName(): string
@@ -46,10 +43,5 @@ class RouteAuthorization
     public function getRequiredPermissions(): array
     {
         return $this->requiredPermissions;
-    }
-
-    public function getRequiredAud(): ?string
-    {
-        return $this->requiredAud;
     }
 }

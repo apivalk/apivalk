@@ -100,7 +100,7 @@ The authentication middleware populates the "Who" (Identity), while the security
 ```php
 // CORRECT ORDER
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($jwtAuth));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
 See the full [auth how-to](/how-to/auth) for how authentication, authorization, and identity fit together.

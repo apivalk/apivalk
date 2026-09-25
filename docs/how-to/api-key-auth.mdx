@@ -174,25 +174,23 @@ Notes:
 $authenticator = new ApiKeyAuthenticator($apiKeyRepository);
 
 $configuration->getMiddlewareStack()->add(new ApiKeyMiddleware($authenticator));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
-## 5. Declare the security scheme for OpenAPI
+## 5. Register the security scheme
 
-Tell the OpenAPI generator that this API is secured via an `apiKey` in the `X-Api-Key` header. The name (`ApiKeyAuth` below) is what your routes reference.
+Tell Apivalk that this API is secured via an `apiKey` in the `X-Api-Key` header. The name (`ApiKeyAuth` below) is what your routes reference, at runtime and in the generated document.
 
 ```php
-use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 
-$components = new ComponentsObject();
-$components->setSecuritySchemes([
+$configuration->addSecurityScheme(
     SecuritySchemeObject::apiKey(
         'ApiKeyAuth',  // name — link to routes
         'header',      // in
         'API key'      // description
-    ),
-]);
+    )
+);
 ```
 
 Swagger UI will prompt the user for a key and send it on matching requests. See [OpenAPI Generator / Security Schemes](/documentation/openapi-generator#security-schemes-and-components) for the full mapping rules.
@@ -216,12 +214,12 @@ Run both middlewares. Whichever header the client sent populates the identity; `
 ```php
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($jwtAuth));   // Bearer
 $configuration->getMiddlewareStack()->add(new ApiKeyMiddleware($apiKeyAuth));        // X-Api-Key
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
 Because both are passive, a request carrying *neither* credential still falls through as a guest — the route's `RouteAuthorization` decides whether that's allowed.
 
-In your `ComponentsObject`, register both schemes (`BearerAuth` and `ApiKeyAuth`). Different routes can require different schemes; the `SecuritySchemeObject.name` passed to `RouteAuthorization` picks which one OpenAPI displays.
+Register both schemes (`BearerAuth` and `ApiKeyAuth`) on the configuration. Different routes can require different schemes; the `SecuritySchemeObject.name` passed to `RouteAuthorization` picks which one the middleware enforces and OpenAPI displays.
 
 ## Rotating keys
 

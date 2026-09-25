@@ -63,6 +63,24 @@ class FileUploadIntegrationTest extends TestCase
         );
     }
 
+    /**
+     * A token for another audience is not valid for this API, so it must not be told which scope it lacks.
+     */
+    public function testUpload_tokenWithoutAudienceAndWithoutScopes_returns401NotForbidden(): void
+    {
+        $response = $this->makeRequest(
+            'POST',
+            self::PATH,
+            [],
+            ['document_type' => 'invoice'],
+            'no-scope-token',
+            '127.0.0.1',
+            ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
     public function testUpload_withoutFile_returns422(): void
     {
         $response = $this->makeRequest(
@@ -202,7 +220,7 @@ class FileUploadIntegrationTest extends TestCase
             self::PATH,
             [],
             ['document_type' => 'invoice'],
-            'read-only-token',
+            'read-only-token-with-dev-aud',
             '127.0.0.1',
             ['file' => $this->uploadedFile(self::PDF_CONTENTS)]
         );

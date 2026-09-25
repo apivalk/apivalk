@@ -26,9 +26,9 @@ class JwtAuthIdentityTest extends TestCase
         $this->assertEquals(['read', 'write'], $identity->getScopes());
         $this->assertEquals(['perm1', 'perm2'], $identity->getPermissions());
         $this->assertEquals(['dev-client', 'mobile-client'], $identity->getAud());
-        $this->assertTrue($identity->isAudGranted('dev-client'));
-        $this->assertTrue($identity->isAudGranted('mobile-client'));
-        $this->assertFalse($identity->isAudGranted('staging-client'));
+        $this->assertTrue($identity->isAnyAudGranted(['dev-client']));
+        $this->assertTrue($identity->isAnyAudGranted(['staging-client', 'mobile-client']));
+        $this->assertFalse($identity->isAnyAudGranted(['staging-client']));
         $this->assertTrue($identity->isAuthenticated());
     }
 

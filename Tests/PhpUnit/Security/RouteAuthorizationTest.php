@@ -14,14 +14,12 @@ class RouteAuthorizationTest extends TestCase
         $securitySchemeName = 'BearerAuth';
         $scopes = ['read:users', 'write:users'];
         $permissions = ['admin'];
-        $aud = 'dev-client';
 
-        $routeAuthorization = new RouteAuthorization($securitySchemeName, $scopes, $permissions, $aud);
+        $routeAuthorization = new RouteAuthorization($securitySchemeName, $scopes, $permissions);
 
         $this->assertEquals($securitySchemeName, $routeAuthorization->getSecuritySchemeName());
         $this->assertEquals($scopes, $routeAuthorization->getRequiredScopes());
         $this->assertEquals($permissions, $routeAuthorization->getRequiredPermissions());
-        $this->assertEquals($aud, $routeAuthorization->getRequiredAud());
     }
 
     public function testDefaultValues(): void
@@ -32,7 +30,6 @@ class RouteAuthorizationTest extends TestCase
         $this->assertEquals($securitySchemeName, $routeAuthorization->getSecuritySchemeName());
         $this->assertEquals([], $routeAuthorization->getRequiredScopes());
         $this->assertEquals([], $routeAuthorization->getRequiredPermissions());
-        $this->assertNull($routeAuthorization->getRequiredAud());
     }
 
     public function testNullValuesBecomeEmptyArrays(): void

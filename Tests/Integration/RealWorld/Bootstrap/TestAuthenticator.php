@@ -37,6 +37,13 @@ class TestAuthenticator implements AuthenticatorInterface
         'api:contracts:invoices:delete',
     ];
 
+    private const READ_ONLY_PERMISSIONS = [
+        'api:customers:read',
+        'api:customers:address:read',
+        'api:contracts:read',
+        'api:contracts:invoices:read',
+    ];
+
     public function authenticate(string $token): ?AbstractAuthIdentity
     {
         switch ($token) {
@@ -47,12 +54,17 @@ class TestAuthenticator implements AuthenticatorInterface
                 return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, self::ALL_PERMISSIONS, ['dev-client']);
 
             case 'read-only-token':
-                return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, [
-                    'api:customers:read',
-                    'api:customers:address:read',
-                    'api:contracts:read',
-                    'api:contracts:invoices:read',
-                ]);
+                return new JwtAuthIdentity(null, null, null, self::ALL_SCOPES, self::READ_ONLY_PERMISSIONS);
+
+            case 'read-only-token-with-dev-aud':
+                return new JwtAuthIdentity(
+                    null,
+                    null,
+                    null,
+                    self::ALL_SCOPES,
+                    self::READ_ONLY_PERMISSIONS,
+                    ['dev-client']
+                );
 
             case 'customer-token':
                 return new JwtAuthIdentity(null, null, null, ['api:customers'], [

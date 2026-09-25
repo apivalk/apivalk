@@ -10,6 +10,7 @@ use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\TagObject;
+use apivalk\apivalk\Security\SecuritySchemeCollection;
 
 /**
  * Class OpenAPI
@@ -30,12 +31,14 @@ class OpenAPI
     /** @var array<string, PathItemObject> */
     private array $webhooks = [];
     private ComponentsObject $components;
+    private SecuritySchemeCollection $securitySchemes;
     /** @var TagObject[] */
     private array $tags = [];
 
     public function __construct()
     {
         $this->components = new ComponentsObject();
+        $this->securitySchemes = new SecuritySchemeCollection();
     }
 
     public function setInfo(InfoObject $info): void
@@ -71,6 +74,11 @@ class OpenAPI
     public function setComponents(ComponentsObject $components): void
     {
         $this->components = $components;
+    }
+
+    public function setSecuritySchemes(SecuritySchemeCollection $securitySchemes): void
+    {
+        $this->securitySchemes = $securitySchemes;
     }
 
     public function addTag(TagObject $tag): void
@@ -116,6 +124,11 @@ class OpenAPI
         return $this->components;
     }
 
+    public function getSecuritySchemes(): SecuritySchemeCollection
+    {
+        return $this->securitySchemes;
+    }
+
     /** @return TagObject[] */
     public function getTags(): array
     {
@@ -142,6 +155,17 @@ class OpenAPI
             $tags[] = $tag->toArray();
         }
 
+        $components = array_filter($this->components->toArray());
+
+        $securitySchemes = [];
+        foreach ($this->securitySchemes->all() as $name => $securityScheme) {
+            $securitySchemes[$name] = $securityScheme->toArray();
+        }
+
+        if ($securitySchemes !== []) {
+            $components['securitySchemes'] = $securitySchemes;
+        }
+
         return array_filter([
             'openapi' => $this->openapi,
             'info' => $this->info instanceof InfoObject ? array_filter($this->info->toArray()) : [],
@@ -149,7 +173,7 @@ class OpenAPI
             'servers' => $servers,
             'paths' => $paths,
             'webhooks' => $webhooks,
-            'components' => array_filter($this->components->toArray()),
+            'components' => $components,
             'tags' => $tags,
         ]);
     }
