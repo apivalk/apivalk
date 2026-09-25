@@ -36,9 +36,7 @@ final class ApivalkBootstrap
 
 declare(strict_types=1);
 
-use apivalk\apivalk\Documentation\OpenAPI\Object\ComponentsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
-use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\ServerObject;
 use apivalk\apivalk\Documentation\OpenAPI\OpenAPIGenerator;
 
@@ -56,16 +54,11 @@ $info = new InfoObject(
     'Internal reference API powered by Apivalk'
 );
 
-// 2. Declare security schemes so Swagger UI knows how to authorize
-$components = new ComponentsObject();
-$components->setSecuritySchemes([
-    SecuritySchemeObject::http(
-        'BearerAuth',  // name — must match RouteAuthorization('BearerAuth', ...)
-        'bearer',
-        'JWT Bearer',
-        'JWT'
-    ),
-]);
+// 2. The security schemes come from the configuration the bootstrap registered them on:
+//    $configuration->addSecurityScheme(
+//        SecuritySchemeObject::http('BearerAuth', 'bearer', 'JWT Bearer', 'JWT')
+//    );
+//    The name must match RouteAuthorization('BearerAuth', ...).
 
 // 3. List the servers clients can use
 $servers = [
@@ -74,7 +67,7 @@ $servers = [
 ];
 
 // 4. Generate
-$generator = new OpenAPIGenerator($apivalk, $info, $servers, $components);
+$generator = new OpenAPIGenerator($apivalk, $info, $servers);
 $json = $generator->generate('json');
 
 // 5. Write to disk
@@ -169,7 +162,7 @@ public function __invoke(ApivalkRequestInterface $request): AbstractApivalkRespo
 Or regenerate on-the-fly in a non-production environment:
 
 ```php
-$generator = new OpenAPIGenerator($apivalk, $info, $servers, $components);
+$generator = new OpenAPIGenerator($apivalk, $info, $servers);
 
 return new RawJsonResponse($generator->generate('json'));
 ```

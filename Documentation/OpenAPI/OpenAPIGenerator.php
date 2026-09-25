@@ -46,6 +46,7 @@ class OpenAPIGenerator
     ) {
         $this->apivalk = $apivalk;
         $this->openApi = new OpenAPI();
+        $this->openApi->setSecuritySchemes($apivalk->getSecuritySchemes());
         $this->documentLocaleHeaders = $documentLocaleHeaders;
         $this->flatFilters = $flatFilters;
 

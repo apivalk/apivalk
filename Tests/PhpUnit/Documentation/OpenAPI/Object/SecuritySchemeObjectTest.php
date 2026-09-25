@@ -104,6 +104,46 @@ class SecuritySchemeObjectTest extends TestCase
         $this->assertArrayNotHasKey('name', $scheme->toArray());
     }
 
+    public function testAudiencesAreEmittedAsXAudience(): void
+    {
+        $scheme = SecuritySchemeObject::http('bearer', 'bearer', null, 'JWT', ['dev-client', 'mobile-client']);
+
+        $this->assertEquals(['dev-client', 'mobile-client'], $scheme->getAudiences());
+        $this->assertEquals(['dev-client', 'mobile-client'], $scheme->toArray()['x-audience']);
+    }
+
+    public function testASingleAudienceStringBecomesAList(): void
+    {
+        $scheme = SecuritySchemeObject::http('bearer', 'bearer', null, null, 'dev-client');
+
+        $this->assertEquals(['dev-client'], $scheme->getAudiences());
+        $this->assertEquals(['dev-client'], $scheme->toArray()['x-audience']);
+    }
+
+    public function testWithoutAudiencesTheKeyIsOmitted(): void
+    {
+        $scheme = SecuritySchemeObject::http('bearer', 'bearer');
+
+        $this->assertSame([], $scheme->getAudiences());
+        $this->assertArrayNotHasKey('x-audience', $scheme->toArray());
+    }
+
+    public function testAudiencesWorkOnEverySchemeType(): void
+    {
+        $flows = $this->createMock(OAuthFlowsObject::class);
+        $flows->method('toArray')->willReturn(['implicit' => ['authorizationUrl' => 'https://example.com/auth']]);
+
+        $schemes = [
+            SecuritySchemeObject::apiKey('apiKey', 'header', null, ['dev-client']),
+            SecuritySchemeObject::oauth2('oauth2', $flows, null, ['dev-client']),
+            SecuritySchemeObject::openIdConnect('oidc', 'https://example.com/.well-known/openid', null, ['dev-client']),
+        ];
+
+        foreach ($schemes as $scheme) {
+            $this->assertEquals(['dev-client'], $scheme->toArray()['x-audience'], $scheme->getType());
+        }
+    }
+
     public function testLegacyConstructorStillWorks(): void
     {
         $scheme = new SecuritySchemeObject('http', 'api', 'OAuth2 Bearer Authorization', 'header', 'bearer', 'JWT', null, null);

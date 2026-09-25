@@ -23,8 +23,6 @@ class ComponentsObject implements ObjectInterface
     private array $requestBodies = [];
     /** @var array<string, HeaderObject> */
     private array $headers = [];
-    /** @var array<string, SecuritySchemeObject> */
-    private array $securitySchemes = [];
     /** @var array<string, PathItemObject> */
     private array $pathItems = [];
 
@@ -78,16 +76,6 @@ class ComponentsObject implements ObjectInterface
         $this->headers = $headers;
     }
 
-    public function getSecuritySchemes(): array
-    {
-        return $this->securitySchemes;
-    }
-
-    public function setSecuritySchemes(array $securitySchemes): void
-    {
-        $this->securitySchemes = $securitySchemes;
-    }
-
     public function getPathItems(): array
     {
         return $this->pathItems;
@@ -110,11 +98,6 @@ class ComponentsObject implements ObjectInterface
 
         $headers = array_map(static fn($header) => array_filter($header->toArray()), $this->headers);
 
-        $securitySchemes = [];
-        foreach ($this->securitySchemes as $securityScheme) {
-            $securitySchemes[$securityScheme->getName()] = array_filter($securityScheme->toArray());
-        }
-
         $pathItems = array_map(static fn($pathItem) => array_filter($pathItem->toArray()), $this->pathItems);
 
         return array_filter(
@@ -124,7 +107,6 @@ class ComponentsObject implements ObjectInterface
                 'parameters' => $parameters,
                 'requestBodies' => $requestBodies,
                 'headers' => $headers,
-                'securitySchemes' => $securitySchemes,
                 'pathItems' => $pathItems,
             ]
         );

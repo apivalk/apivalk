@@ -327,8 +327,8 @@ class JwtAuthenticatorTest extends TestCase
 
         $this->assertNotNull($identity);
         $this->assertSame(['other-api', self::AUDIENCE], $identity->getAud());
-        $this->assertTrue($identity->isAudGranted(self::AUDIENCE));
-        $this->assertFalse($identity->isAudGranted('third-api'));
+        $this->assertTrue($identity->isAnyAudGranted([self::AUDIENCE]));
+        $this->assertFalse($identity->isAnyAudGranted(['third-api']));
     }
 
     public function testIdentityOfATokenWithoutAudClaimCarriesNoAudience(): void

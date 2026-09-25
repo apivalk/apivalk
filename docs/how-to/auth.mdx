@@ -36,7 +36,7 @@ Controller::__invoke()    ← guaranteed that auth policy was met
 
 1. **Pick or implement an authenticator.** Apivalk ships `JwtAuthenticator` (see [how to authenticate with JWT](/how-to/jwt-auth)). For anything else, implement `AuthenticatorInterface` — [API key example](/how-to/api-key-auth).
 2. **Register the two middlewares in the right order.** Authentication before Security.
-3. **Declare a security scheme in `ComponentsObject`.** The `name` you give it (e.g. `BearerAuth`, `ApiKeyAuth`) becomes the link between your routes and the OpenAPI spec.
+3. **Register a security scheme on the `ApivalkConfiguration`.** The `name` you give it (e.g. `BearerAuth`, `ApiKeyAuth`) becomes the link between your routes, the middleware and the OpenAPI spec.
 4. **Attach `RouteAuthorization` to each protected route.**
 
 ### Bootstrap
@@ -46,7 +46,7 @@ use apivalk\apivalk\Middleware\AuthenticationMiddleware;
 use apivalk\apivalk\Middleware\SecurityMiddleware;
 
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
 ### Route-level declaration
@@ -63,17 +63,13 @@ public static function getRoute(): Route
 }
 ```
 
-`'BearerAuth'` must match the `name` of a `SecuritySchemeObject` in your `ComponentsObject` — see [OpenAPI Generator / Security Schemes](/documentation/openapi-generator#security-schemes-and-components).
+`'BearerAuth'` must match the `name` of a `SecuritySchemeObject` registered with `$configuration->addSecurityScheme(...)`, otherwise `new Apivalk($configuration)` throws — see [OpenAPI Generator / Security Schemes](/documentation/openapi-generator#security-schemes-and-components).
 
 ### What SecurityMiddleware does with this
 
-For every required scope / permission:
-
-- If the identity has it → keep going.
-- If the identity is authenticated but missing the requirement → `403 Forbidden`.
-- If the identity is a guest → `401 Unauthorized`.
-
-And finally, if the identity is still a guest at the end → `401 Unauthorized`. Passing *no* requirements (just the scheme name) means "any authenticated user".
+- A guest on a route with a `RouteAuthorization` → `401 Unauthorized`. Passing *no* requirements (just the scheme name) therefore means "any authenticated user".
+- The scheme lists audiences and the identity carries none of them → `401 Unauthorized`.
+- An authenticated identity missing a required scope or permission → `403 Forbidden`.
 
 ## The three useful route shapes
 
@@ -171,11 +167,6 @@ final class ApiKeyIdentity extends AbstractAuthIdentity
         return [];
     }
 
-    public function getAud(): array
-    {
-        return [];
-    }
-
     public function isAuthenticated(): bool
     {
         return true;
@@ -183,7 +174,7 @@ final class ApiKeyIdentity extends AbstractAuthIdentity
 }
 ```
 
-`getAud()` returns the audiences the credential is valid for, and is matched against the audience a route requires. Return an empty array if the concept doesn't apply to your credential, but note that such an identity is then rejected on every route that requires an audience.
+`AbstractAuthIdentity` already implements `getAud()` on top of its protected `$aud` property, which defaults to `[]`. Set `$this->aud` in your constructor when the credential is bound to audiences; leave it alone when the concept doesn't apply, but note that such an identity is rejected on every route whose scheme lists audiences. Never redeclare `$aud` as `private` in the subclass — that is a fatal error.
 
 Return it from your authenticator and downcast with PHPStan-friendly narrowing in the controllers that care.
 

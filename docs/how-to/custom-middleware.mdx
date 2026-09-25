@@ -151,7 +151,7 @@ $stack = $configuration->getMiddlewareStack();
 $stack->add(new AccessLogMiddleware($logger));              // outermost
 $stack->add(new RequestIdMiddleware());
 $stack->add(new AuthenticationMiddleware($authenticator));
-$stack->add(new SecurityMiddleware());
+$stack->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 $stack->add(new RateLimitMiddleware($cache));
 $stack->add(new RequestValidationMiddleware());             // innermost, last before controller
 ```
