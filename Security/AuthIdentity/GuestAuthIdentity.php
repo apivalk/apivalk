@@ -30,10 +30,4 @@ class GuestAuthIdentity extends AbstractAuthIdentity
     {
         return [];
     }
-
-    /** @return string[] */
-    public function getAud(): array
-    {
-        return [];
-    }
 }

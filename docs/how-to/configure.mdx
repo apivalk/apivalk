@@ -83,7 +83,7 @@ $authenticator = new JwtAuthenticator(
 );
 
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
 
 See [how to authenticate with JWT](/how-to/jwt-auth) and [how to authenticate with a custom API key](/how-to/api-key-auth).
@@ -161,7 +161,7 @@ The recommended order is:
 ```php
 $stack = $configuration->getMiddlewareStack();
 $stack->add(new AuthenticationMiddleware($authenticator));
-$stack->add(new SecurityMiddleware());
+$stack->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 $stack->add(new RateLimitMiddleware($rateLimiter));
 $stack->add(new RequestValidationMiddleware());
 ```

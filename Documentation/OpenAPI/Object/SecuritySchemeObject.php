@@ -28,7 +28,10 @@ class SecuritySchemeObject implements ObjectInterface
     private ?string $bearerFormat;
     private ?OAuthFlowsObject $flows;
     private ?string $openIdConnectUrl;
+    /** @var string[] */
+    private array $audiences;
 
+    /** @param string|string[] $audiences */
     public function __construct(
         string $type,
         string $name,
@@ -37,7 +40,8 @@ class SecuritySchemeObject implements ObjectInterface
         ?string $scheme,
         ?string $bearerFormat,
         ?OAuthFlowsObject $flows,
-        ?string $openIdConnectUrl
+        ?string $openIdConnectUrl,
+        $audiences = []
     ) {
         $this->type = $type;
         $this->name = $name;
@@ -47,39 +51,58 @@ class SecuritySchemeObject implements ObjectInterface
         $this->bearerFormat = $bearerFormat;
         $this->flows = $flows;
         $this->openIdConnectUrl = $openIdConnectUrl;
+        $this->audiences = self::normalizeAudiences($audiences);
     }
 
+    /** @param string|string[] $audiences */
     public static function http(
         string $name,
         string $scheme,
         ?string $description = null,
-        ?string $bearerFormat = null
+        ?string $bearerFormat = null,
+        $audiences = []
     ): self {
-        return new self(self::TYPE_HTTP, $name, $description, null, $scheme, $bearerFormat, null, null);
+        return new self(self::TYPE_HTTP, $name, $description, null, $scheme, $bearerFormat, null, null, $audiences);
     }
 
+    /** @param string|string[] $audiences */
     public static function apiKey(
         string $name,
         string $in,
-        ?string $description = null
+        ?string $description = null,
+        $audiences = []
     ): self {
-        return new self(self::TYPE_API_KEY, $name, $description, $in, null, null, null, null);
+        return new self(self::TYPE_API_KEY, $name, $description, $in, null, null, null, null, $audiences);
     }
 
+    /** @param string|string[] $audiences */
     public static function oauth2(
         string $name,
         OAuthFlowsObject $flows,
-        ?string $description = null
+        ?string $description = null,
+        $audiences = []
     ): self {
-        return new self(self::TYPE_OAUTH2, $name, $description, null, null, null, $flows, null);
+        return new self(self::TYPE_OAUTH2, $name, $description, null, null, null, $flows, null, $audiences);
     }
 
+    /** @param string|string[] $audiences */
     public static function openIdConnect(
         string $name,
         string $openIdConnectUrl,
-        ?string $description = null
+        ?string $description = null,
+        $audiences = []
     ): self {
-        return new self(self::TYPE_OPEN_ID_CONNECT, $name, $description, null, null, null, null, $openIdConnectUrl);
+        return new self(
+            self::TYPE_OPEN_ID_CONNECT,
+            $name,
+            $description,
+            null,
+            null,
+            null,
+            null,
+            $openIdConnectUrl,
+            $audiences
+        );
     }
 
     public function getType(): string
@@ -87,7 +110,10 @@ class SecuritySchemeObject implements ObjectInterface
         return $this->type;
     }
 
-    /** Used internally to key the securitySchemes map and match RouteAuthorization — not emitted in toArray(). */
+    /**
+     * Keys the securitySchemes map, matches RouteAuthorization at runtime and resolves the scheme
+     * in the SecuritySchemeCollection — not emitted in toArray().
+     */
     public function getName(): string
     {
         return $this->name;
@@ -123,12 +149,19 @@ class SecuritySchemeObject implements ObjectInterface
         return $this->openIdConnectUrl;
     }
 
+    /** @return string[] */
+    public function getAudiences(): array
+    {
+        return $this->audiences;
+    }
+
     public function toArray(): array
     {
         $base = array_filter(
             [
                 'type' => $this->type,
                 'description' => $this->description,
+                'x-audience' => $this->audiences,
             ]
         );
 
@@ -166,5 +199,19 @@ class SecuritySchemeObject implements ObjectInterface
             default:
                 return $base;
         }
+    }
+
+    /**
+     * @param string|string[] $audiences
+     *
+     * @return string[]
+     */
+    private static function normalizeAudiences($audiences): array
+    {
+        if (\is_string($audiences)) {
+            return [$audiences];
+        }
+
+        return \array_values($audiences);
     }
 }

@@ -7,6 +7,7 @@ namespace Tests\Integration\RealWorld\Bootstrap;
 use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\ApivalkConfiguration;
 use apivalk\apivalk\Cache\CacheInterface;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 use apivalk\apivalk\Middleware\AuthenticationMiddleware;
 use apivalk\apivalk\Middleware\RateLimitMiddleware;
 use apivalk\apivalk\Middleware\RequestValidationMiddleware;
@@ -35,10 +36,15 @@ class ApiFactory
         $router = new Router($classLocator, $cache);
 
         $config = new ApivalkConfiguration($router);
+        $config->addSecurityScheme(SecuritySchemeObject::http('bearer', 'bearer', 'JWT Bearer token', 'JWT'));
+        $config->addSecurityScheme(
+            SecuritySchemeObject::http('bearer-dev', 'bearer', 'JWT Bearer token of the dev client', 'JWT', 'dev-client')
+        );
+
         $stack = $config->getMiddlewareStack();
 
         $stack->add(new AuthenticationMiddleware($authenticator));
-        $stack->add(new SecurityMiddleware());
+        $stack->add(new SecurityMiddleware($config->getSecuritySchemes()));
         $stack->add(new RateLimitMiddleware($cache));
         $stack->add(new RequestValidationMiddleware());
 

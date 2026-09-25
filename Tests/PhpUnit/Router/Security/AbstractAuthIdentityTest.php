@@ -11,30 +11,7 @@ class AbstractAuthIdentityTest extends TestCase
 {
     public function testAbstractAuthIdentity(): void
     {
-        $identity = new class(['read', 'write'], ['perm1'], ['dev-client']) extends AbstractAuthIdentity {
-            private array $scopes;
-            private array $perms;
-            private array $aud;
-            public function __construct(array $scopes, array $perms, array $aud) {
-                $this->scopes = $scopes;
-                $this->perms = $perms;
-                $this->aud = $aud;
-            }
-            public function getScopes(): array {
-                return $this->scopes;
-            }
-            public function getPermissions(): array {
-                return $this->perms;
-            }
-            public function getAud(): array
-            {
-                return $this->aud;
-            }
-
-            public function isAuthenticated(): bool {
-                return true;
-            }
-        };
+        $identity = $this->identity(['read', 'write'], ['perm1'], ['dev-client']);
 
         $this->assertEquals(['read', 'write'], $identity->getScopes());
         $this->assertEquals(['perm1'], $identity->getPermissions());
@@ -43,7 +20,67 @@ class AbstractAuthIdentityTest extends TestCase
         $this->assertTrue($identity->isScopeGranted('read'));
         $this->assertFalse($identity->isScopeGranted('other'));
         $this->assertTrue($identity->isPermissionGranted('perm1'));
-        $this->assertTrue($identity->isAudGranted('dev-client'));
-        $this->assertFalse($identity->isAudGranted('staging-client'));
+    }
+
+    public function testAudDefaultsToAnEmptyList(): void
+    {
+        $identity = $this->identity([], [], []);
+
+        $this->assertSame([], $identity->getAud());
+    }
+
+    public function testIsAnyAudGranted_whenOneOfSeveralAudiencesMatches(): void
+    {
+        $identity = $this->identity([], [], ['dev-client']);
+
+        $this->assertTrue($identity->isAnyAudGranted(['staging-client', 'dev-client']));
+    }
+
+    public function testIsAnyAudGranted_whenNoAudienceMatches(): void
+    {
+        $identity = $this->identity([], [], ['dev-client']);
+
+        $this->assertFalse($identity->isAnyAudGranted(['staging-client']));
+    }
+
+    public function testIsAnyAudGranted_withAnEmptyListOnEitherSide(): void
+    {
+        $this->assertFalse($this->identity([], [], ['dev-client'])->isAnyAudGranted([]));
+        $this->assertFalse($this->identity([], [], [])->isAnyAudGranted(['dev-client']));
+    }
+
+    /**
+     * @param string[] $scopes
+     * @param string[] $permissions
+     * @param string[] $aud
+     */
+    private function identity(array $scopes, array $permissions, array $aud): AbstractAuthIdentity
+    {
+        return new class($scopes, $permissions, $aud) extends AbstractAuthIdentity {
+            private array $scopes;
+            private array $permissions;
+
+            public function __construct(array $scopes, array $permissions, array $aud)
+            {
+                $this->scopes = $scopes;
+                $this->permissions = $permissions;
+                $this->aud = $aud;
+            }
+
+            public function getScopes(): array
+            {
+                return $this->scopes;
+            }
+
+            public function getPermissions(): array
+            {
+                return $this->permissions;
+            }
+
+            public function isAuthenticated(): bool
+            {
+                return true;
+            }
+        };
     }
 }

@@ -9,6 +9,8 @@ use apivalk\apivalk\Documentation\OpenAPI\OpenAPI;
 use apivalk\apivalk\Documentation\OpenAPI\Object\InfoObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathsObject;
 use apivalk\apivalk\Documentation\OpenAPI\Object\PathItemObject;
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
+use apivalk\apivalk\Security\SecuritySchemeCollection;
 
 class OpenAPITest extends TestCase
 {
@@ -24,6 +26,30 @@ class OpenAPITest extends TestCase
         $this->assertEquals('3.2.0', $result['openapi']);
         $this->assertEquals('Title', $result['info']['title']);
         $this->assertArrayHasKey('/test', $result['paths']);
+    }
+
+    public function testSecuritySchemesAreRenderedIntoComponents(): void
+    {
+        $schemes = new SecuritySchemeCollection();
+        $schemes->add(SecuritySchemeObject::http('bearer', 'bearer', null, 'JWT', ['dev-client']));
+
+        $openApi = new OpenAPI();
+        $openApi->setSecuritySchemes($schemes);
+
+        $result = $openApi->toArray();
+
+        $this->assertSame(
+            ['type' => 'http', 'x-audience' => ['dev-client'], 'scheme' => 'bearer', 'bearerFormat' => 'JWT'],
+            $result['components']['securitySchemes']['bearer']
+        );
+    }
+
+    public function testWithoutSecuritySchemesTheKeyIsOmitted(): void
+    {
+        $openApi = new OpenAPI();
+        $openApi->setInfo(new InfoObject('Title', '1.0.0'));
+
+        $this->assertArrayNotHasKey('components', $openApi->toArray());
     }
 
     public function testToJson(): void

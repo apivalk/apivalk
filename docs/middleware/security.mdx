@@ -5,19 +5,35 @@ description: "The Security Middleware enforces scope-based authorization as defi
 
 The `SecurityMiddleware` is the core authorization engine of Apivalk. It ensures that the current requester has the necessary scopes and permissions to access a specific route. For a deep dive into the underlying architecture, check the [Security Overview](/security/index).
 
+<Note>
+**Coming from 3.1?** Three things moved:
+- Security schemes are registered with `ApivalkConfiguration::addSecurityScheme()` instead of `ComponentsObject::setSecuritySchemes()`, and the generator reads them from there.
+- `new SecurityMiddleware()` now takes the scheme collection: `new SecurityMiddleware($configuration->getSecuritySchemes())`.
+- The fourth `RouteAuthorization` argument (the route audience) is gone. Put the audiences on the security scheme and point the route at that scheme.
+</Note>
+
 ## How it Works
 
-The middleware retrieves the `Route` object from the controller being called and examines its `RouteAuthorization`.
+The middleware retrieves the `Route` object from the controller being called and examines its `RouteAuthorization`. The security schemes it resolves against are the ones registered on the `ApivalkConfiguration`, so it is constructed with that collection:
+
+```php
+$configuration->addSecurityScheme(
+    SecuritySchemeObject::http('BearerAuth', 'bearer', 'JWT Bearer token', 'JWT')
+);
+
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
+```
 
 ### Authorization Logic
 
 A route can have a `RouteAuthorization` object that defines:
-1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`). This name must match a `SecuritySchemeObject` defined in your `ComponentsObject` so the generated OpenAPI spec correctly links the route to its authentication method. See [Security Schemes and Components](/documentation/openapi-generator#security-schemes-and-components) for full setup examples.
+1. **Security Scheme**: The name of the security scheme required (e.g., `BearerAuth`). The name must match a scheme registered with `ApivalkConfiguration::addSecurityScheme()`: the middleware resolves it on every request and throws a `LogicException` when it is unknown. See [Security Schemes and Components](/documentation/openapi-generator#security-schemes-and-components) for full setup examples.
 2. **Scopes**: A list of required scopes.
 3. **Permissions**: A list of required permissions.
-4. **Audience**: A single audience the token has to be issued for. Optional, `null` disables the check.
 
-The current [Identity](/security/identity) must possess **all** the required scopes and permissions to be granted access. If the route requires an audience, the identity's audience list has to contain it.
+The current [Identity](/security/identity) must possess **all** the required scopes and permissions to be granted access.
+
+The **audience** is not part of the route: it belongs to the security scheme, because a token is issued for an API, not for a single endpoint. When the scheme lists audiences, the identity has to carry at least one of them.
 
 ## Route Examples
 
@@ -54,17 +70,22 @@ $route = Route::get('/admin/dashboard')
     );
 ```
 
-### Audience-Restricted Route
-A route that additionally requires the token to be issued for a specific audience. The fourth argument is matched against `AbstractAuthIdentity::getAud()`, which for a JWT holds the `aud` claim. A token issued for several audiences passes as soon as one of them matches.
+### Audience-Restricted Scheme
+Routes that only accept tokens of a certain audience use their own scheme. The audiences are matched against `AbstractAuthIdentity::getAud()`, which for a JWT holds the `aud` claim; a token issued for several audiences passes as soon as one of them matches.
 
 ```php
+use apivalk\apivalk\Documentation\OpenAPI\Object\SecuritySchemeObject;
 use apivalk\apivalk\Router\Route\Route;
 use apivalk\apivalk\Security\RouteAuthorization;
+
+$configuration->addSecurityScheme(
+    SecuritySchemeObject::http('InternalTools', 'bearer', 'Internal tooling token', 'JWT', 'internal-tools')
+);
 
 $route = Route::post('/admin/exports')
     ->description('Trigger an export')
     ->routeAuthorization(
-        new RouteAuthorization('BearerAuth', ['admin'], ['admin:export:create'], 'internal-tools')
+        new RouteAuthorization('InternalTools', ['admin'], ['admin:export:create'])
     );
 ```
 
@@ -73,11 +94,11 @@ If you want a route to be public but also optionally use identity information wh
 
 ## Status Codes
 
-When authorization fails, the middleware returns an error response directly — it does not throw. The status code depends on whether the request was authenticated:
+When authorization fails, the middleware returns an error response directly — it does not throw. The checks run in this order:
 
-1.  **401 Unauthorized**: Returned when a [GuestAuthIdentity](/security/identity) (anonymous user) attempts to access a route that requires security.
-2.  **403 Forbidden**: Returned when an authenticated identity (e.g. [JwtAuthIdentity](/security/identity)) does not have the required scopes or permissions for the route.
-3.  **401 Unauthorized (audience mismatch)**: Returned when the identity does not carry the audience the route requires, even when it is authenticated. A token issued for a different audience is not a missing privilege, it was never meant for this API, so the request is treated as unauthenticated rather than forbidden.
+1.  **401 Unauthorized (audience mismatch)**: Returned when the scheme lists audiences and the identity carries none of them, even when it is authenticated. A token issued for a different audience is not a missing privilege, it was never meant for this API, so the request is treated as unauthenticated rather than forbidden. Because this check runs first, such a token never learns which scope it lacks.
+2.  **403 Forbidden**, or **401 Unauthorized** for a guest: Every required scope and then every required permission is checked in turn. An authenticated identity (e.g. [JwtAuthIdentity](/security/identity)) missing one gets a `403 Forbidden`, a [GuestAuthIdentity](/security/identity) missing one gets a `401 Unauthorized`.
+3.  **401 Unauthorized**: The final check. A [GuestAuthIdentity](/security/identity) (anonymous user) that got this far is rejected here, which is what makes a `RouteAuthorization` carrying only a scheme name mean "any authenticated user".
 
 ## Scopes and Permissions
 
@@ -89,5 +110,5 @@ The `SecurityMiddleware` should always be placed **after** your authentication m
 
 ```php
 $configuration->getMiddlewareStack()->add(new AuthenticationMiddleware($authenticator));
-$configuration->getMiddlewareStack()->add(new SecurityMiddleware());
+$configuration->getMiddlewareStack()->add(new SecurityMiddleware($configuration->getSecuritySchemes()));
 ```
