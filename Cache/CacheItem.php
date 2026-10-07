@@ -45,7 +45,7 @@ class CacheItem
             return null;
         }
 
-        return $this->createdAt->modify(\sprintf('+%d seconds', $this->ttl));
+        return (clone $this->createdAt)->modify(\sprintf('+%d seconds', $this->ttl));
     }
 
     public function getTtl(): ?int
