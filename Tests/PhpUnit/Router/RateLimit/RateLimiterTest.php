@@ -74,4 +74,24 @@ class RateLimiterTest extends TestCase
 
         $this->assertEquals(8, $result->getRemaining());
     }
+
+    public function testAllowKeepsWindowStartOfExistingRequest(): void
+    {
+        $rateLimit = $this->createMock(RateLimitInterface::class);
+        $rateLimit->method('getKey')->willReturn('key');
+        $rateLimit->method('getName')->willReturn('test');
+        $rateLimit->method('getMaxAttempts')->willReturn(10);
+        $rateLimit->method('getWindowInSeconds')->willReturn(60);
+
+        $context = $this->createMock(RateLimitContext::class);
+
+        $createdAt = new \DateTime('2026-01-04T12:48:54Z');
+        $cacheItem = new CacheItem('key', 1, 60, clone $createdAt);
+        $this->cache->method('get')->willReturn($cacheItem);
+
+        $result = $this->rateLimiter->allow($rateLimit, $context);
+
+        $this->assertEquals($createdAt->getTimestamp() + 60, $result->getResetAt());
+        $this->assertEquals($createdAt, $cacheItem->getCreatedAt());
+    }
 }

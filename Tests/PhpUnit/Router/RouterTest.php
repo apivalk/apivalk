@@ -8,8 +8,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\Cache\CacheInterface;
 use apivalk\apivalk\Cache\CacheItem;
+use apivalk\apivalk\Cache\FilesystemCache;
+use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\Controller\ApivalkControllerFactoryInterface;
 use apivalk\apivalk\Http\Method\GetMethod;
+use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
@@ -231,5 +234,32 @@ class RouterTest extends TestCase
         $this->assertCount(1, $routes);
         $this->assertEquals($route->getUrl(), $routes[0]['route']->getUrl());
         $this->assertEquals($controllerClass, $routes[0]['controllerClass']);
+    }
+
+    public function testGetRoutesRebuildsExpiredIndex(): void
+    {
+        $controllerClass = \get_class(new class extends AbstractApivalkController {
+            public static function getRoute(): Route { return new Route('/test', new GetMethod()); }
+            public function __invoke(ApivalkRequestInterface $request): AbstractApivalkResponse {
+                return new NotFoundApivalkResponse();
+            }
+        });
+        $this->classLocator->method('find')->willReturn([
+            ['className' => $controllerClass, 'path' => 'path/to/controller.php']
+        ]);
+
+        $cache = new FilesystemCache(sys_get_temp_dir() . '/apivalk_router_test_' . uniqid('', true));
+        $router = new Router($this->classLocator, $cache, $this->controllerFactory);
+
+        // Simulates the index expiring during the router's lifetime.
+        $cache->delete(AbstractRouter::CACHE_INDEX_KEY);
+
+        $routes = $router->getRoutes();
+
+        $this->assertCount(1, $routes);
+        $this->assertEquals('/test', $routes[0]['route']->getUrl());
+        $this->assertNotNull($cache->get(AbstractRouter::CACHE_INDEX_KEY));
+
+        $cache->clear();
     }
 }

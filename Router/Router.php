@@ -16,6 +16,7 @@ use apivalk\apivalk\Http\Response\MethodNotAllowedApivalkResponse;
 use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
 use apivalk\apivalk\Router\Route\Route;
+use apivalk\apivalk\Router\Route\RouteCacheFactory;
 use apivalk\apivalk\Router\Route\RouteJsonSerializer;
 
 class Router extends AbstractRouter
@@ -60,6 +61,13 @@ class Router extends AbstractRouter
     private function getRouteIndexCache(): ?array
     {
         $indexCacheItem = $this->getCache()->get(self::CACHE_INDEX_KEY);
+        if (!$indexCacheItem instanceof CacheItem) {
+            // The index expires during the lifetime of long-running processes, so rebuild it here
+            // rather than relying on the constructor alone.
+            (new RouteCacheFactory($this))->build();
+            $indexCacheItem = $this->getCache()->get(self::CACHE_INDEX_KEY);
+        }
+
         if (!$indexCacheItem instanceof CacheItem) {
             return null;
         }

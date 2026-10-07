@@ -60,6 +60,16 @@ class CacheItemTest extends TestCase
         $this->assertEquals($createdAt, $newItem->getCreatedAt());
     }
 
+    public function testGetExpiresAtDoesNotMoveCreatedAt(): void
+    {
+        $createdAt = new \DateTime('2026-01-04T12:48:54Z');
+        $item = new CacheItem('key', 'value', 60, $createdAt);
+
+        $this->assertEquals(new \DateTime('2026-01-04T12:49:54Z'), $item->getExpiresAt());
+        $this->assertEquals(new \DateTime('2026-01-04T12:49:54Z'), $item->getExpiresAt());
+        $this->assertEquals(new \DateTime('2026-01-04T12:48:54Z'), $item->getCreatedAt());
+    }
+
     public function testByJsonReturnsNullOnInvalidData(): void
     {
         $this->assertNull(CacheItem::byJson('invalid json'));
