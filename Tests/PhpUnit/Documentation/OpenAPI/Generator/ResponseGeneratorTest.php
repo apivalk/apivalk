@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace apivalk\apivalk\Tests\PhpUnit\Documentation\OpenAPI\Generator;
 
 use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\FileResponseDocumentation;
 use apivalk\apivalk\Documentation\OpenAPI\Generator\ResponseGenerator;
 use apivalk\apivalk\Documentation\OpenAPI\Object\HeaderObject;
 use PHPUnit\Framework\TestCase;
@@ -43,5 +44,22 @@ class ResponseGeneratorTest extends TestCase
         $this->assertCount(2, $response->getHeaders());
         $this->assertArrayHasKey('Content-Language', $response->getHeaders());
         $this->assertArrayHasKey('X-RateLimit-Limit', $response->getHeaders());
+    }
+
+    public function testFileResponseDocumentationGeneratesBinarySchemaUnderItsMediaType(): void
+    {
+        $generator = new ResponseGenerator();
+
+        $response = $generator->generate(200, new FileResponseDocumentation('application/pdf', 'Invoice as PDF'));
+
+        $this->assertSame(
+            [
+                200 => [
+                    'content' => ['application/pdf' => ['schema' => ['type' => 'string', 'format' => 'binary']]],
+                    'description' => 'Invoice as PDF',
+                ],
+            ],
+            $response->toArray()
+        );
     }
 }

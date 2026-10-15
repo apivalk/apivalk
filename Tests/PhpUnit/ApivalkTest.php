@@ -10,7 +10,9 @@ use apivalk\apivalk\Apivalk;
 use apivalk\apivalk\ApivalkConfiguration;
 use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Http\Renderer\DelegatingRenderer;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
+use apivalk\apivalk\Http\Response\NotFoundApivalkResponse;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -37,11 +39,23 @@ class ApivalkTest extends TestCase
         $apivalk = new Apivalk($config);
 
         $this->assertSame($middlewareStack, $apivalk->getMiddlewareStack());
-        $this->assertSame($renderer, $apivalk->getRenderer());
+        $this->assertInstanceOf(DelegatingRenderer::class, $apivalk->getRenderer());
         $this->assertSame($router, $apivalk->getRouter());
         $this->assertSame($container, $apivalk->getContainer());
         $this->assertSame($logger, $apivalk->getLogger());
         $this->assertSame($localizationConfiguration, $apivalk->getLocalizationConfiguration());
+    }
+
+    public function testGetRendererDelegatesNonFileResponsesToConfiguredRenderer(): void
+    {
+        $response = new NotFoundApivalkResponse();
+        $renderer = $this->createMock(RendererInterface::class);
+        $renderer->expects($this->once())->method('render')->with($response);
+
+        $config = $this->createMock(ApivalkConfiguration::class);
+        $config->method('getRenderer')->willReturn($renderer);
+
+        (new Apivalk($config))->getRenderer()->render($response);
     }
 
     public function testRun(): void

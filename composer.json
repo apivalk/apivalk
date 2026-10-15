@@ -47,6 +47,7 @@
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
+    "ext-fileinfo": "*",
     "ext-mbstring": "*",
     "psr/container": "^1.1.1 || ^2.0.1",
     "psr/log": "^1.1 || ^2.0 || ^3.0",
