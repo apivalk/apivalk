@@ -117,6 +117,50 @@ $response->setPaginationResponse(
 );
 ```
 
+## File Downloads
+
+Return a `FileApivalkResponse` to stream a file instead of JSON. It always holds a stream, so large files are never loaded into memory as a whole.
+
+```php
+use apivalk\apivalk\Http\Response\FileApivalkResponse;
+
+// mime type is detected from the file content, file name defaults to the basename
+return FileApivalkResponse::fromPath('/var/invoices/2026-001.pdf');
+
+// explicit file name and mime type, shown inline in the browser instead of downloaded
+return FileApivalkResponse::fromPath($path, 'invoice-2026-001.pdf', 'application/pdf', true);
+
+// generated content
+return FileApivalkResponse::fromContent($csv, 'export.csv', 'text/csv');
+
+// any stream resource
+return new FileApivalkResponse($stream, 'backup.zip', 'application/zip');
+```
+
+Mime detection uses `ext-fileinfo` and sniffs the content, not the extension. CSV and JSON files are detected as `text/plain`, so pass the mime type explicitly for those.
+
+The response sets `Content-Type`, `Content-Disposition` (RFC 6266, UTF-8 file names supported), `X-Content-Type-Options: nosniff` and, when the stream size is known, `Content-Length`. The status code is `200`.
+
+In the OpenAPI document a file response shows up as `{type: string, format: binary}` under `application/octet-stream`. To document a specific media type, extend the response and override `getDocumentation()`:
+
+```php
+use apivalk\apivalk\Documentation\ApivalkResponseDocumentation;
+use apivalk\apivalk\Documentation\FileResponseDocumentation;
+use apivalk\apivalk\Http\Response\FileApivalkResponse;
+
+final class InvoicePdfResponse extends FileApivalkResponse
+{
+    public static function getDocumentation(): ApivalkResponseDocumentation
+    {
+        return new FileResponseDocumentation('application/pdf', 'Invoice as PDF');
+    }
+}
+```
+
 ## Rendering
 
 The `JsonRenderer` is the default renderer. It takes the array from `toArray()` and converts it to a JSON string, handling headers and status codes automatically.
+
+`$apivalk->getRenderer()` routes `FileApivalkResponse` to the `FileStreamRenderer` and everything else to the renderer from your configuration. Error responses on a download route (404, 401, 422, ...) therefore still render as JSON.
+
+If output buffering is active (`ob_start()`), the whole file ends up in the buffer before it is sent. Disable it for download routes when serving large files.
