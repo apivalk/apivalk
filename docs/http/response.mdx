@@ -163,4 +163,6 @@ The `JsonRenderer` is the default renderer. It takes the array from `toArray()` 
 
 `$apivalk->getRenderer()` routes `FileApivalkResponse` to the `FileStreamRenderer` and everything else to the renderer from your configuration. Error responses on a download route (404, 401, 422, ...) therefore still render as JSON.
 
+If anything was output before the file (a notice, a BOM, a debug `echo`), the `FileStreamRenderer` throws a `LogicException` instead of sending a corrupt download. The stream is closed either way.
+
 If output buffering is active (`ob_start()`), the whole file ends up in the buffer before it is sent. Disable it for download routes when serving large files.
