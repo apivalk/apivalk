@@ -7,6 +7,7 @@ namespace apivalk\apivalk;
 use apivalk\apivalk\Http\i18n\LocalizationConfiguration;
 use apivalk\apivalk\Http\Response\AbstractApivalkResponse;
 use apivalk\apivalk\Middleware\MiddlewareStack;
+use apivalk\apivalk\Http\Renderer\DelegatingRenderer;
 use apivalk\apivalk\Http\Renderer\RendererInterface;
 use apivalk\apivalk\Router\AbstractRouter;
 use apivalk\apivalk\Security\SecuritySchemeCollection;
@@ -16,10 +17,12 @@ use Psr\Log\LoggerInterface;
 class Apivalk
 {
     private ApivalkConfiguration $configuration;
+    private RendererInterface $renderer;
 
     public function __construct(ApivalkConfiguration $apivalkConfiguration)
     {
         $this->configuration = $apivalkConfiguration;
+        $this->renderer = new DelegatingRenderer($apivalkConfiguration->getRenderer());
 
         if ($apivalkConfiguration->getExceptionHandler() !== null) {
             set_exception_handler($apivalkConfiguration->getExceptionHandler());
@@ -41,7 +44,7 @@ class Apivalk
 
     public function getRenderer(): RendererInterface
     {
-        return $this->configuration->getRenderer();
+        return $this->renderer;
     }
 
     public function getRouter(): AbstractRouter
