@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.0](https://github.com/apivalk/apivalk/compare/v3.2.1...v3.3.0) (2026-10-19)
+
+### Features
+
+* **response:** add file download response ([#177](https://github.com/apivalk/apivalk/issues/177)) ([97a3e78](https://github.com/apivalk/apivalk/commit/97a3e78c3e537d5000b036f0a264e26d49ef057e))
+
 ## [3.2.1](https://github.com/apivalk/apivalk/compare/v3.2.0...v3.2.1) (2026-10-07)
 
 ### Bug Fixes
