@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.1](https://github.com/apivalk/apivalk/compare/v3.3.0...v3.3.1) (2026-10-22)
+
+### Bug Fixes
+
+* **validator:** accept valid date-times on PHP 8.2+ ([#179](https://github.com/apivalk/apivalk/issues/179)) ([d598216](https://github.com/apivalk/apivalk/commit/d598216367ebd0d8c92e5e1ca8bb9a451ded9f23))
+
 ## [3.3.0](https://github.com/apivalk/apivalk/compare/v3.2.1...v3.3.0) (2026-10-19)
 
 ### Features
