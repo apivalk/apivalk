@@ -71,7 +71,32 @@ final class ParameterBagFactory
             }
         }
 
+        self::applyQueryDefaults($queryBag, $route, $queryProperties);
+
         return $queryBag;
+    }
+
+    /**
+     * Fills every absent optional query parameter that declares a default, as the OpenAPI document promises.
+     * Filter fields stay absent: an absent filter means "do not filter", not "filter by the default".
+     *
+     * @param AbstractProperty[] $queryProperties
+     */
+    private static function applyQueryDefaults(ParameterBag $queryBag, Route $route, array $queryProperties): void
+    {
+        foreach ($queryProperties as $property) {
+            $name = $property->getPropertyName();
+            $default = $property->getDefault();
+
+            if ($default === null
+                || $property->isRequired()
+                || $queryBag->has($name)
+                || self::isFilterField($route, $name)) {
+                continue;
+            }
+
+            $queryBag->set(new Parameter($name, self::typeCastValueByProperty($default, $property), $default));
+        }
     }
 
     private static function isFilterField(Route $route, string $key): bool

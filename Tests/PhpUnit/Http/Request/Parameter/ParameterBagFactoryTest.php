@@ -12,6 +12,8 @@ use apivalk\apivalk\Documentation\Property\IntegerProperty;
 use apivalk\apivalk\Documentation\Property\SimpleArrayProperty;
 use apivalk\apivalk\Documentation\Property\StringProperty;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBagFactory;
+use apivalk\apivalk\Router\Route\Filter\BooleanFilter;
+use apivalk\apivalk\Router\Route\Filter\Operator;
 use apivalk\apivalk\Router\Route\Route;
 use PHPUnit\Framework\TestCase;
 
@@ -106,6 +108,74 @@ class ParameterBagFactoryTest extends TestCase
         $this->assertEquals('Jane', $bag->name);
         $this->assertEquals(30, $bag->age);
         $this->assertIsInt($bag->age);
+    }
+
+    public function testCreateQueryBagAppliesDefaultOfAbsentOptionalProperty(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addQueryProperty((new BooleanProperty('is_business', '', false))->setIsRequired(false));
+
+        $bag = ParameterBagFactory::createQueryBag($this->createMock(Route::class), $doc->getQueryProperties());
+
+        $this->assertTrue($bag->has('is_business'));
+        $this->assertFalse($bag->is_business);
+    }
+
+    public function testCreateQueryBagPrefersSentValueOverDefault(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addQueryProperty((new BooleanProperty('is_business', '', false))->setIsRequired(false));
+
+        $_GET['is_business'] = 'true';
+
+        $bag = ParameterBagFactory::createQueryBag($this->createMock(Route::class), $doc->getQueryProperties());
+
+        $this->assertTrue($bag->is_business);
+    }
+
+    public function testCreateQueryBagLeavesOptionalPropertyWithoutDefaultAbsent(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addQueryProperty((new BooleanProperty('is_business'))->setIsRequired(false));
+
+        $bag = ParameterBagFactory::createQueryBag($this->createMock(Route::class), $doc->getQueryProperties());
+
+        $this->assertFalse($bag->has('is_business'));
+    }
+
+    public function testCreateQueryBagIgnoresDefaultOfRequiredProperty(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addQueryProperty((new StringProperty('status'))->setDefault('open'));
+
+        $bag = ParameterBagFactory::createQueryBag($this->createMock(Route::class), $doc->getQueryProperties());
+
+        $this->assertFalse($bag->has('status'));
+    }
+
+    public function testCreateQueryBagIgnoresDefaultOfFilterField(): void
+    {
+        $filterProperty = new BooleanProperty('is_primary', '', false);
+        $filterProperty->setIsRequired(false);
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addQueryProperty($filterProperty);
+
+        $route = $this->createMock(Route::class);
+        $route->method('getFilters')->willReturn([new BooleanFilter($filterProperty, Operator::EQ)]);
+
+        $bag = ParameterBagFactory::createQueryBag($route, $doc->getQueryProperties());
+
+        $this->assertFalse($bag->has('is_primary'));
+    }
+
+    public function testCreateBodyBagIgnoresDefaultOfAbsentProperty(): void
+    {
+        $doc = new ApivalkRequestDocumentation();
+        $doc->addBodyProperty((new BooleanProperty('is_primary', '', false))->setIsRequired(false));
+
+        $bag = ParameterBagFactory::createBodyBag($doc->getBodyProperties());
+
+        $this->assertFalse($bag->has('is_primary'));
     }
 
     public function testCreatePathBagWithUnderscoreParam(): void

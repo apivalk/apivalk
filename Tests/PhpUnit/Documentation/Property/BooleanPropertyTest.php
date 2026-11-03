@@ -21,4 +21,12 @@ class BooleanPropertyTest extends TestCase
         $this->assertTrue($doc['default']);
         $this->assertEquals('Is Active', $doc['description']);
     }
+
+    public function testBooleanPropertyWithoutDefaultOmitsDefaultFromDocumentation(): void
+    {
+        $property = new BooleanProperty('active', 'Is Active');
+
+        $this->assertNull($property->getDefault());
+        $this->assertArrayNotHasKey('default', $property->getDocumentationArray());
+    }
 }

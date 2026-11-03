@@ -6,12 +6,12 @@ namespace apivalk\apivalk\Documentation\Property;
 
 class BooleanProperty extends AbstractProperty
 {
-    private bool $default;
+    private ?bool $default;
 
     public function __construct(
         string $propertyName,
         string $propertyDescription = '',
-        bool $default
+        ?bool $default = null
     ) {
         parent::__construct($propertyName, $propertyDescription);
 
@@ -28,17 +28,18 @@ class BooleanProperty extends AbstractProperty
         return 'bool';
     }
 
-    public function getDefault(): bool
+    public function getDefault(): ?bool
     {
         return $this->default;
     }
 
     public function getDocumentationArray(): array
     {
-        $array = [
-            'type' => $this->getType(),
-            'default' => $this->getDefault(),
-        ];
+        $array = ['type' => $this->getType()];
+
+        if ($this->getDefault() !== null) {
+            $array['default'] = $this->getDefault();
+        }
 
         if ($this->getPropertyDescription() !== '') {
             $array['description'] = $this->getPropertyDescription();

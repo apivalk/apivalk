@@ -36,6 +36,16 @@ abstract class AbstractProperty
         $this->propertyDescription = $propertyDescription;
     }
 
+    /**
+     * Value the request uses when the client omits the optional property. Null means no default.
+     *
+     * @return mixed
+     */
+    public function getDefault()
+    {
+        return null;
+    }
+
     final public function getPropertyName(): string
     {
         return $this->propertyName;

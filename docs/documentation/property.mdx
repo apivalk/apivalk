@@ -31,6 +31,15 @@ All properties share a common set of configuration methods:
 * `setExample(string $example)`: A sample value for OpenAPI documentation.
 * `addValidator(AbstractValidator $validator)`: Add custom validation logic.
 
+An optional query parameter with a default gets that default in `$request->query()` when the client omits it. These stay absent (`null`):
+
+* a required property
+* a property without a default
+* a filter field: an absent filter means no filtering
+* a body property: an absent body property means no change, e.g. on an update
+
+`BooleanProperty` takes its default as the optional third constructor argument.
+
 ## Specific Features
 
 ### `StringProperty`
