@@ -23,6 +23,7 @@ use apivalk\apivalk\Documentation\Property\Validator\AbstractValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
 use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\ValidationMessageTranslatorInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
 use apivalk\apivalk\Http\Request\Parameter\ParameterBag;
@@ -631,6 +632,53 @@ class RequestValidationMiddlewareTest extends TestCase
 
         $response = $this->runFilterMiddleware($filter);
         $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+    }
+
+    public function testWithoutTranslatorTheMessageStaysEnglish(): void
+    {
+        $response = $this->processRequiredStatusFilter(new RequestValidationMiddleware());
+
+        $error = $response->getErrors()[0];
+        $this->assertSame('This field is required.', $error->getMessage());
+        $this->assertSame(ValidatorResult::FIELD_IS_REQUIRED, $error->getErrorKey());
+    }
+
+    public function testTranslatorReplacesTheMessageAndKeepsKeyAndParameter(): void
+    {
+        $translator = $this->createMock(ValidationMessageTranslatorInterface::class);
+        $translator->expects($this->once())
+            ->method('translate')
+            ->with(
+                ValidatorResult::FIELD_IS_REQUIRED,
+                'This field is required.',
+                $this->callback(static fn(Locale $locale): bool => $locale->getTag() === Locale::en()->getTag())
+            )
+            ->willReturn('Dieses Feld ist erforderlich.');
+
+        $response = $this->processRequiredStatusFilter(new RequestValidationMiddleware($translator));
+
+        $error = $response->getErrors()[0];
+        $this->assertSame('Dieses Feld ist erforderlich.', $error->getMessage());
+        $this->assertSame(ValidatorResult::FIELD_IS_REQUIRED, $error->getErrorKey());
+        $this->assertSame('status', $error->getParameter());
+    }
+
+    private function processRequiredStatusFilter(RequestValidationMiddleware $middleware): BadValidationApivalkResponse
+    {
+        $property = new StringProperty('status');
+        $property->setIsRequired(true);
+
+        $filterBag = new FilterBag();
+        $filterBag->set(new StringFilter($property, Operator::EQ));
+
+        $response = $middleware->process(
+            $this->createRequest(new ApivalkRequestDocumentation(), $filterBag),
+            $this->createMock(AbstractApivalkController::class),
+            fn($req) => $this->createMock(AbstractApivalkResponse::class)
+        );
+        $this->assertInstanceOf(BadValidationApivalkResponse::class, $response);
+
+        return $response;
     }
 
     private function runFilterMiddleware(FilterInterface $filter): AbstractApivalkResponse
