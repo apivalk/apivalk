@@ -57,6 +57,8 @@ $configuration->addMiddleware(new RequestValidationMiddleware());
 
 Validation messages are English. To translate them, pass a `ValidationMessageTranslatorInterface` to the middleware. It receives the error key, the English message and the request locale, and returns the text to send. The error key and the parameter stay unchanged.
 
+The error key is usually a `ValidatorResult` key. For an unknown sort field it is free text (`Invalid sort field "X"`), so return `$message` for every key you do not translate.
+
 ```php
 use apivalk\apivalk\Http\i18n\Locale;
 use apivalk\apivalk\Http\i18n\ValidationMessageTranslatorInterface;

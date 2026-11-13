@@ -39,7 +39,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
     /** @var ValidationErrorObject[] */
     private array $errors = [];
-    private ?ValidationMessageTranslatorInterface $translator;
+    private ?ValidationMessageTranslatorInterface $translator = null;
     private ?Locale $locale = null;
 
     public function __construct(?ValidationMessageTranslatorInterface $translator = null)
