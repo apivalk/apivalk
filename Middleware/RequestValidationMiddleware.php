@@ -10,6 +10,8 @@ use apivalk\apivalk\Documentation\Property\Validator\FileValidator;
 use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
 use apivalk\apivalk\Documentation\Response\ValidationErrorObject;
 use apivalk\apivalk\Http\Controller\AbstractApivalkController;
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\ValidationMessageTranslatorInterface;
 use apivalk\apivalk\Http\Request\ApivalkRequestInterface;
 use apivalk\apivalk\Http\Request\File\FileBag;
 use apivalk\apivalk\Http\Request\Parameter\Parameter;
@@ -37,6 +39,13 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
     /** @var ValidationErrorObject[] */
     private array $errors = [];
+    private ?ValidationMessageTranslatorInterface $translator = null;
+    private ?Locale $locale = null;
+
+    public function __construct(?ValidationMessageTranslatorInterface $translator = null)
+    {
+        $this->translator = $translator;
+    }
 
     public function process(
         ApivalkRequestInterface $request,
@@ -44,6 +53,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
         callable $next
     ): AbstractApivalkResponse {
         $this->errors = [];
+        $this->locale = $this->translator !== null ? $request->getLocale() : null;
 
         $documentation = $request->getRuntimeDocumentation();
 
@@ -72,7 +82,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
         foreach ($sortBag as $sort) {
             if (!\in_array($sort->getField(), $availableSortFields, true)) {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                $this->errors[] = $this->createError(
                     'order_by',
                     new ValidatorResult(false, \sprintf('Invalid sort field "%s"', $sort->getField()))
                 );
@@ -90,7 +100,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
             if ($file === null) {
                 if ($property->isRequired()) {
-                    $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                    $this->errors[] = $this->createError(
                         $property->getPropertyName(),
                         new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
                     );
@@ -102,8 +112,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             $validatorResult = (new FileValidator($property))->validate($file);
 
             if (!$validatorResult->isSuccess()) {
-                $this->errors[] =
-                    ValidationErrorObject::createByValidatorResult($property->getPropertyName(), $validatorResult);
+                $this->errors[] = $this->createError($property->getPropertyName(), $validatorResult);
             }
         }
     }
@@ -112,7 +121,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
     {
         foreach ($filterBag->getViolations() as $violation) {
             if ($violation['operator'] === '') {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                $this->errors[] = $this->createError(
                     $violation['field'],
                     new ValidatorResult(false, ValidatorResult::FILTER_SENT_TWICE)
                 );
@@ -120,7 +129,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
                 continue;
             }
 
-            $this->errors[] = ValidationErrorObject::createByValidatorResult(
+            $this->errors[] = $this->createError(
                 \sprintf('%s[%s]', $violation['field'], $violation['operator']),
                 new ValidatorResult(false, ValidatorResult::FILTER_OPERATOR_IS_NOT_ALLOWED)
             );
@@ -132,7 +141,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
             if ($conditions === []) {
                 if ($filter->getProperty()->isRequired()) {
-                    $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                    $this->errors[] = $this->createError(
                         $filter->getField(),
                         new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
                     );
@@ -158,7 +167,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
         if ($operator === Operator::NULL) {
             if ($value === null) {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                $this->errors[] = $this->createError(
                     $parameterName,
                     new ValidatorResult(false, ValidatorResult::VALUE_IS_NOT_BOOLEAN)
                 );
@@ -174,7 +183,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             $rawItems = $rawValue === null ? [] : \array_map('trim', \explode(',', $rawValue));
 
             if ($value === [] || $rawItems === ['']) {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult(
+                $this->errors[] = $this->createError(
                     $parameterName,
                     new ValidatorResult(false, ValidatorResult::FILTER_RANGE_IS_EMPTY)
                 );
@@ -212,7 +221,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             $result = $validator->validate($parameter);
 
             if (!$result->isSuccess()) {
-                $this->errors[] = ValidationErrorObject::createByValidatorResult($parameterName, $result);
+                $this->errors[] = $this->createError($parameterName, $result);
             }
         }
     }
@@ -260,7 +269,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
     private function addFilterLogicError(FilterInterface $filter, string $left, string $right): void
     {
-        $this->errors[] = ValidationErrorObject::createByValidatorResult(
+        $this->errors[] = $this->createError(
             \sprintf('%s[%s]+[%s]', $filter->getField(), $left, $right),
             new ValidatorResult(false, ValidatorResult::FILTER_RANGE_IS_EMPTY)
         );
@@ -279,7 +288,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
             }
 
             if ($parameter === null && $property->isRequired()) {
-                $error = ValidationErrorObject::createByValidatorResult(
+                $error = $this->createError(
                     $property->getPropertyName(),
                     new ValidatorResult(false, ValidatorResult::FIELD_IS_REQUIRED)
                 );
@@ -294,12 +303,26 @@ class RequestValidationMiddleware implements MiddlewareInterface
                 $validatorResult = $validator->validate($parameter);
 
                 if (!$validatorResult->isSuccess()) {
-                    $error =
-                        ValidationErrorObject::createByValidatorResult($property->getPropertyName(), $validatorResult);
+                    $error = $this->createError($property->getPropertyName(), $validatorResult);
 
                     $this->errors[] = $error;
                 }
             }
         }
+    }
+
+    private function createError(string $parameter, ValidatorResult $validatorResult): ValidationErrorObject
+    {
+        $errorKey = $validatorResult->getErrorKey();
+
+        if ($this->translator === null || $this->locale === null || $errorKey === null) {
+            return ValidationErrorObject::createByValidatorResult($parameter, $validatorResult);
+        }
+
+        return ValidationErrorObject::create(
+            $parameter,
+            $this->translator->translate($errorKey, $validatorResult->getLocalizedErrorMessage(), $this->locale),
+            $errorKey
+        );
     }
 }
