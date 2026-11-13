@@ -41,4 +41,19 @@ class ValidationErrorObjectTest extends TestCase
 
         $this->assertinstanceOf(AbstractPropertyCollection::class, $validationErrorObject->getPropertyCollection());
     }
+
+    public function testDocumentedPropertiesMatchTheResponseKeys(): void
+    {
+        $error = ValidationErrorObject::create('email', 'This field is required.', ValidatorResult::FIELD_IS_REQUIRED);
+
+        $documented = array_map(
+            static fn($property): string => $property->getPropertyName(),
+            iterator_to_array($error->getPropertyCollection(), false)
+        );
+        $sent = array_keys($error->toArray());
+        sort($documented);
+        sort($sent);
+
+        $this->assertSame($sent, $documented);
+    }
 }
