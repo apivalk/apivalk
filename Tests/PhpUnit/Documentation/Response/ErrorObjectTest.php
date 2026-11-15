@@ -46,4 +46,20 @@ final class ErrorObjectTest extends TestCase
             $this->assertSame(AbstractPropertyCollection::MODE_VIEW, $collection->getMode());
         }
     }
+
+    public function testDocumentedPropertiesMatchTheResponseKeys(): void
+    {
+        $obj = new ErrorObject();
+        $obj->populate('not_found', 'Not found.');
+
+        $documented = array_map(
+            static fn($property): string => $property->getPropertyName(),
+            iterator_to_array($obj->getPropertyCollection(), false)
+        );
+        $sent = array_keys($obj->toArray());
+        sort($documented);
+        sort($sent);
+
+        $this->assertSame($sent, $documented);
+    }
 }

@@ -16,7 +16,7 @@ class ErrorObjectPropertyCollectionTest extends TestCase
         $properties = iterator_to_array($collection);
 
         $this->assertCount(2, $properties);
-        $this->assertEquals('errorKey', $properties[0]->getPropertyName());
+        $this->assertEquals('key', $properties[0]->getPropertyName());
         $this->assertTrue($properties[0]->isRequired());
         $this->assertEquals('message', $properties[1]->getPropertyName());
         $this->assertTrue($properties[1]->isRequired());

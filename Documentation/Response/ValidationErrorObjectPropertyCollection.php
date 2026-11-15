@@ -11,7 +11,7 @@ class ValidationErrorObjectPropertyCollection extends AbstractPropertyCollection
 {
     public function __construct(string $mode)
     {
-        $this->addProperty(new StringProperty('errorKey', 'A key identifying the error'));
+        $this->addProperty(new StringProperty('key', 'A key identifying the error'));
         $this->addProperty(new StringProperty('message', 'The error message'));
         $this->addProperty(new StringProperty('parameter', 'The parameter that caused the error, if any'));
     }
