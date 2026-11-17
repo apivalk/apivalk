@@ -649,8 +649,10 @@ class RequestValidationMiddlewareTest extends TestCase
         $translator->expects($this->once())
             ->method('translate')
             ->with(
-                ValidatorResult::FIELD_IS_REQUIRED,
-                'This field is required.',
+                $this->callback(
+                    static fn(ValidatorResult $result): bool
+                        => $result->getErrorKey() === ValidatorResult::FIELD_IS_REQUIRED
+                ),
                 $this->callback(static fn(Locale $locale): bool => $locale->getTag() === Locale::de()->getTag())
             )
             ->willReturn('Dieses Feld ist erforderlich.');

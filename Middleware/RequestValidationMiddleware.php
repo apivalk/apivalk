@@ -321,7 +321,7 @@ class RequestValidationMiddleware implements MiddlewareInterface
 
         return ValidationErrorObject::create(
             $parameter,
-            $this->translator->translate($errorKey, $validatorResult->getLocalizedErrorMessage(), $this->locale),
+            $this->translator->translate($validatorResult, $this->locale),
             $errorKey
         );
     }
