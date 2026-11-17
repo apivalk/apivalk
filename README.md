@@ -240,7 +240,8 @@ automatically. → [Rate limiting](https://docs.apivalk.com/middleware/rate-limi
 
 Locale resolved from `Accept-Language` on every request, `Content-Language` set on every response. Both headers
 documented in OpenAPI. Zero boilerplate in
-controllers. → [Localization docs](https://docs.apivalk.com/http/localization)
+controllers. Validation messages are English; pass a `ValidationMessageTranslatorInterface` to
+`RequestValidationMiddleware` to translate them. → [Localization docs](https://docs.apivalk.com/http/localization)
 
 ### ⚙️ Dependency Injection
 

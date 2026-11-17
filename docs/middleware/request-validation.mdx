@@ -52,3 +52,29 @@ use apivalk\apivalk\Middleware\RequestValidationMiddleware;
 
 $configuration->addMiddleware(new RequestValidationMiddleware());
 ```
+
+## Translate Validation Messages
+
+Validation messages are English. To translate them, pass a `ValidationMessageTranslatorInterface` to the middleware. It receives the `ValidatorResult` and the request locale, and returns the text to send. The error key and the parameter stay unchanged.
+
+The error key is usually one of the `ValidatorResult` constants. For an unknown sort field it is free text (`Invalid sort field "X"`), so return `getLocalizedErrorMessage()` for every key you do not translate.
+
+```php
+use apivalk\apivalk\Documentation\Property\Validator\ValidatorResult;
+use apivalk\apivalk\Http\i18n\Locale;
+use apivalk\apivalk\Http\i18n\ValidationMessageTranslatorInterface;
+use apivalk\apivalk\Middleware\RequestValidationMiddleware;
+
+$translator = new class implements ValidationMessageTranslatorInterface {
+    public function translate(ValidatorResult $validatorResult, Locale $locale): string
+    {
+        if ($locale->getLanguage() === 'de' && $validatorResult->getErrorKey() === ValidatorResult::FIELD_IS_REQUIRED) {
+            return 'Dieses Feld ist erforderlich.';
+        }
+
+        return $validatorResult->getLocalizedErrorMessage();
+    }
+};
+
+$configuration->addMiddleware(new RequestValidationMiddleware($translator));
+```
