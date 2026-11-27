@@ -51,7 +51,8 @@ class OffsetPaginationResponse implements PaginationResponseInterface
                 'offset' => $this->offset,
                 'total' => $this->total,
                 'has_more' => $this->hasMore,
-            ]
+            ],
+            static fn ($value): bool => $value !== null
         );
     }
 

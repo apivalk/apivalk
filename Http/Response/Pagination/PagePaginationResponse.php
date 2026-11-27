@@ -23,7 +23,7 @@ class PagePaginationResponse implements PaginationResponseInterface
         $this->totalPages = $totalPages;
     }
 
-    /** @return array{ page: int, total_pages: int|null, page_size: int, has_more: bool} */
+    /** @return array{page: int, total_pages?: int, page_size: int, has_more: bool} */
     public function toArray(): array
     {
         return array_filter(
@@ -32,7 +32,8 @@ class PagePaginationResponse implements PaginationResponseInterface
                 'total_pages' => $this->totalPages,
                 'page_size' => $this->pageSize,
                 'has_more' => $this->hasMore,
-            ]
+            ],
+            static fn ($value): bool => $value !== null
         );
     }
 
