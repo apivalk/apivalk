@@ -21,28 +21,21 @@ class PagePaginationResponseTest extends TestCase
         $this->assertEquals($expected, $response->toArray());
     }
 
-    public function testToArrayFiltersNull(): void
+    public function testToArrayOnLastPageOmitsNullTotalPagesAndKeepsHasMoreFalse(): void
     {
         $response = new PagePaginationResponse(1, 10, false, null);
-        $expected = [
-            'page' => 1,
-            'page_size' => 10,
-            // has_more is false, array_filter might remove it if not careful, 
-            // but in PHP false is filtered out by array_filter without callback.
-            // Wait, let's check PagePaginationResponse::toArray()
-        ];
-        // In PagePaginationResponse.php:
-        // return array_filter([
-        //     'page' => $this->page,
-        //     'total_pages' => $this->totalPages,
-        //     'page_size' => $this->pageSize,
-        //     'has_more' => $this->hasMore,
-        // ]);
-        // If hasMore is false, it WILL be filtered out. page=0 would also be filtered.
-        
-        $result = $response->toArray();
-        $this->assertArrayNotHasKey('total_pages', $result);
-        $this->assertArrayNotHasKey('has_more', $result);
+
+        $this->assertSame(
+            ['page' => 1, 'page_size' => 10, 'has_more' => false],
+            $response->toArray()
+        );
+    }
+
+    public function testToArrayKeepsZeroTotalPages(): void
+    {
+        $response = new PagePaginationResponse(1, 10, false, 0);
+
+        $this->assertSame(0, $response->toArray()['total_pages']);
     }
 
     public function testGetResponseDocumentationProperties(): void

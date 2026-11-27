@@ -11,14 +11,14 @@ use apivalk\apivalk\Documentation\Property\StringProperty;
 class CursorPaginationResponse implements PaginationResponseInterface
 {
     private int $limit;
-    private string $currentCursor;
-    private string $nextCursor;
+    private ?string $currentCursor;
+    private ?string $nextCursor;
     private bool $hasMore;
 
     public function __construct(
         int $limit,
-        string $currentCursor,
-        string $nextCursor,
+        ?string $currentCursor,
+        ?string $nextCursor,
         bool $hasMore
     ) {
         $this->limit = $limit;
@@ -32,12 +32,12 @@ class CursorPaginationResponse implements PaginationResponseInterface
         return $this->limit;
     }
 
-    public function getCurrentCursor(): string
+    public function getCurrentCursor(): ?string
     {
         return $this->currentCursor;
     }
 
-    public function getNextCursor(): string
+    public function getNextCursor(): ?string
     {
         return $this->nextCursor;
     }
@@ -47,7 +47,7 @@ class CursorPaginationResponse implements PaginationResponseInterface
         return $this->hasMore;
     }
 
-    /** @return array{limit: int, current_cursor: string, next_cursor?: string, has_more: bool} */
+    /** @return array{limit: int, current_cursor?: string, next_cursor?: string, has_more: bool} */
     public function toArray(): array
     {
         return array_filter(
@@ -56,7 +56,8 @@ class CursorPaginationResponse implements PaginationResponseInterface
                 'current_cursor' => $this->currentCursor,
                 'next_cursor' => $this->nextCursor,
                 'has_more' => $this->hasMore,
-            ]
+            ],
+            static fn ($value): bool => $value !== null
         );
     }
 
@@ -70,6 +71,13 @@ class CursorPaginationResponse implements PaginationResponseInterface
             IntegerProperty::FORMAT_INT64
         );
         $limit->setExample('10');
+
+        $currentCursor = new StringProperty(
+            'current_cursor',
+            'Cursor this result set was requested with. Omitted on the first page.'
+        );
+        $currentCursor->setExample('eyJpZCI6MTAwfQ==');
+        $currentCursor->setIsRequired(false);
 
         $nextCursor = new StringProperty(
             'next_cursor',
@@ -86,6 +94,7 @@ class CursorPaginationResponse implements PaginationResponseInterface
         $hasMore->setExample('true');
 
         $properties[] = $limit;
+        $properties[] = $currentCursor;
         $properties[] = $nextCursor;
         $properties[] = $hasMore;
 

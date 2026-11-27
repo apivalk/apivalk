@@ -21,24 +21,47 @@ class CursorPaginationResponseTest extends TestCase
         $this->assertEquals($expected, $response->toArray());
     }
 
-    public function testToArrayFiltersEmptyStrings(): void
+    public function testToArrayOnFirstPageOmitsNullCurrentCursor(): void
     {
-        // currentCursor is required in constructor, but if we pass empty string it might be filtered
+        $response = new CursorPaginationResponse(15, null, 'nxt', true);
+
+        $this->assertSame(
+            ['limit' => 15, 'next_cursor' => 'nxt', 'has_more' => true],
+            $response->toArray()
+        );
+        $this->assertNull($response->getCurrentCursor());
+    }
+
+    public function testToArrayOnLastPageKeepsHasMoreFalse(): void
+    {
+        $response = new CursorPaginationResponse(15, 'cur', null, false);
+
+        $this->assertSame(
+            ['limit' => 15, 'current_cursor' => 'cur', 'has_more' => false],
+            $response->toArray()
+        );
+        $this->assertNull($response->getNextCursor());
+    }
+
+    public function testToArrayKeepsEmptyStringCursors(): void
+    {
         $response = new CursorPaginationResponse(15, '', '', false);
-        $result = $response->toArray();
-        
-        $this->assertEquals(15, $result['limit']);
-        $this->assertArrayNotHasKey('current_cursor', $result);
-        $this->assertArrayNotHasKey('next_cursor', $result);
-        $this->assertArrayNotHasKey('has_more', $result);
+
+        $this->assertSame(
+            ['limit' => 15, 'current_cursor' => '', 'next_cursor' => '', 'has_more' => false],
+            $response->toArray()
+        );
     }
 
     public function testGetResponseDocumentationProperties(): void
     {
         $properties = CursorPaginationResponse::getResponseDocumentationProperties();
-        $this->assertCount(3, $properties);
+        $this->assertCount(4, $properties);
         $this->assertEquals('limit', $properties[0]->getPropertyName());
-        $this->assertEquals('next_cursor', $properties[1]->getPropertyName());
-        $this->assertEquals('has_more', $properties[2]->getPropertyName());
+        $this->assertEquals('current_cursor', $properties[1]->getPropertyName());
+        $this->assertFalse($properties[1]->isRequired());
+        $this->assertEquals('next_cursor', $properties[2]->getPropertyName());
+        $this->assertFalse($properties[2]->isRequired());
+        $this->assertEquals('has_more', $properties[3]->getPropertyName());
     }
 }

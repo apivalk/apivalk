@@ -21,16 +21,21 @@ class OffsetPaginationResponseTest extends TestCase
         $this->assertEquals($expected, $response->toArray());
     }
 
-    public function testToArrayFiltersNull(): void
+    public function testToArrayOnFirstPageKeepsZeroOffsetAndHasMoreFalse(): void
     {
         $response = new OffsetPaginationResponse(20, 0, false, null);
-        $result = $response->toArray();
-        
-        $this->assertEquals(20, $result['limit']);
-        // 0 is filtered out!
-        $this->assertArrayNotHasKey('offset', $result);
-        $this->assertArrayNotHasKey('total', $result);
-        $this->assertArrayNotHasKey('has_more', $result);
+
+        $this->assertSame(
+            ['limit' => 20, 'offset' => 0, 'has_more' => false],
+            $response->toArray()
+        );
+    }
+
+    public function testToArrayKeepsZeroTotal(): void
+    {
+        $response = new OffsetPaginationResponse(20, 0, false, 0);
+
+        $this->assertSame(0, $response->toArray()['total']);
     }
 
     public function testGetResponseDocumentationProperties(): void
